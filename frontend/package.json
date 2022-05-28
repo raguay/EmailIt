@@ -1,0 +1,29 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/vite-plugin-svelte": "^1.0.0-next.30",
+    "svelte": "^3.44.0",
+    "vite": "^2.9.5"
+  },
+  "dependencies": {
+    "@codemirror/closebrackets": "^0.19.2",
+    "@codemirror/commands": "^0.20.0",
+    "@codemirror/comment": "^0.19.1",
+    "@codemirror/gutter": "^0.19.9",
+    "@codemirror/highlight": "^0.19.8",
+    "@codemirror/history": "^0.19.2",
+    "@codemirror/lang-markdown": "^0.20.1",
+    "@codemirror/matchbrackets": "^0.19.4",
+    "@codemirror/rectangular-selection": "^0.19.2",
+    "@codemirror/search": "^0.20.1",
+    "showdown": "^2.1.0"
+  }
+}

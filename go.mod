@@ -2,7 +2,7 @@ module changeme
 
 go 1.17
 
-require github.com/wailsapp/wails/v2 v2.0.0-beta.35
+require github.com/wailsapp/wails/v2 v2.0.0-beta.37
 
 require (
 	github.com/go-ole/go-ole v1.2.6 // indirect

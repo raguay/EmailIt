@@ -30,7 +30,7 @@
 
 <style>
   #scriptmenu {
-    diplay: flex;
+    display: flex;
     flex-direction: column;
     padding: 10px;
     margin: 0px;
@@ -167,10 +167,10 @@
         headers: {
           'Content-type': 'application/json'
         },
-        body: Body.json({
+        body: {
           script: script.name,
           text: text
-        })
+        }
       }).then(resp => {
         return resp.data;
       })

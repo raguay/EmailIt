@@ -1,28 +1,120 @@
+<script>
+  import { onMount } from "svelte";
+  import { theme } from "../stores/theme.js";
+
+  export let show;
+
+  let emails = [];
+  let addedit = false;
+  let name = "";
+  let email = "";
+
+  onMount(() => {
+    getEmails();
+  });
+
+  function getEmails(callback) {
+    //
+    // Get the emails from the server.
+    //
+    fetch("http://localhost:9978/api/emailit/emails", {
+      method: "GET",
+      headers: {
+        "Content-type": "application/json",
+      },
+    })
+      .then((resp) => {
+        return resp.json();
+      })
+      .then((data) => {
+        emails = data.emails;
+        if (typeof callback !== "undefined") callback();
+      });
+  }
+
+  function newAddress() {
+    console.log("add new...");
+    addedit = true;
+    name = "";
+    email = "";
+  }
+
+  function closeAddressBook() {
+    show = false;
+  }
+
+  function addNew() {
+    email = email.trim();
+    name = name.trim();
+    emails = emails.filter((item) => item.email !== email);
+    emails.push({
+      name: name,
+      email: email,
+    });
+    emails = emails;
+    fetch("http://localhost:9978/api/emailit/addEmail", {
+      method: "PUT",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({
+        name: name,
+        email: email,
+      }),
+    });
+    addedit = false;
+  }
+
+  function editEmail(eemail) {
+    console.log(eemail);
+    addedit = true;
+    name = eemail.name;
+    email = eemail.email;
+  }
+
+  function deleteEmail(dem) {
+    dem.email = dem.email.trim();
+    emails = emails.filter((item) => item.email !== dem.email);
+    fetch("http://localhost:9978/api/emailit/addEmail", {
+      method: "DELETE",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: {
+        name: "",
+        email: dem.email,
+      },
+    });
+  }
+</script>
+
 <div
   id="addressBook"
   style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize}; border-color: {$theme.borderColor};"
 >
-  <div
-    id='tablediv'
-  >
+  <div id="tablediv">
     <table>
       <thead>
-        <th>Name</th> <th>Address</th> <th></th> <th></th>
+        <th>Name</th> <th>Address</th> <th /> <th />
       </thead>
       <tbody>
         {#each emails as pemail}
           <tr>
             <td>{pemail.name}</td>
-            <td>{pemail.email}</td> 
+            <td>{pemail.email}</td>
             <td
-              class='iconClick'
-              on:click={() => { editEmail(pemail); }}
+              class="iconClick"
+              on:click={() => {
+                editEmail(pemail);
+              }}
             >
               🖋
             </td>
             <td
-              class='iconClick'
-              on:click={() => { deleteEmail(pemail); }}
+              class="iconClick"
+              on:click={() => {
+                deleteEmail(pemail);
+              }}
             >
               ❌
             </td>
@@ -44,20 +136,17 @@
     >
       Close
     </button>
-
   </div>
 </div>
 
 {#if addedit}
-  <div 
+  <div
     id="addeditdiv"
     style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize}; border-color: {$theme.textAreaColor};"
   >
     <div id="addeditrow">
-      <label for="aename">
-        Name:
-      </label>
-      <input 
+      <label for="aename"> Name: </label>
+      <input
         type="text"
         id="aename"
         bind:value={name}
@@ -65,11 +154,9 @@
       />
     </div>
     <div id="addeditrow">
-      <label for="aeemail">
-        Email:
-      </label>
-      <input 
-        type="text" 
+      <label for="aeemail"> Email: </label>
+      <input
+        type="text"
         id="aeemail"
         bind:value={email}
         style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
@@ -83,7 +170,9 @@
         Save
       </button>
       <button
-        on:click={() => { addedit = false; }}
+        on:click={() => {
+          addedit = false;
+        }}
         style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
       >
         Close
@@ -114,7 +203,7 @@
     flex-direction: row;
     margin: 10px auto;
   }
-  
+
   #buttonrow button {
     border-radius: 10px;
     margin: 10px;
@@ -147,92 +236,3 @@
     cursor: pointer;
   }
 </style>
-
-<script>
-  import { onMount } from 'svelte';
-  import { theme } from '../stores/theme.js';
-
-  export let show;
-
-  let emails = [];
-  let addedit = false;
-  let name = '';
-  let email = '';
-
-  onMount(() => {
-    getEmails();
-  });
-
-  function getEmails(callback) {
-    // 
-    // Get the emails from the server.
-    // 
-    fetch('http://localhost:9978/api/emailit/emails', {
-        method: 'GET',
-        headers: {
-          'Content-type': 'application/json'
-        }
-      }).then(resp => {
-        return resp.data;
-      })
-      .then(data => {
-        emails = data.emails;
-        if(typeof callback !== 'undefined') callback();
-      });
-  }
-
-  function newAddress() {
-    console.log('add new...');
-    addedit = true;
-    name = '';
-    email = '';
-  }
-
-  function closeAddressBook() {
-    show = false;
-  }
-
-  function addNew() {
-    email = email.trim();
-    name = name.trim();
-    emails = emails.filter(item => item.email !== email);
-    emails.push({
-      name: name,
-      email: email
-    });
-    emails = emails;
-    fetch('http://localhost:9978/api/emailit/addEmail', {
-      method: 'PUT',
-      headers: {
-        'Content-type': 'application/json'
-      },
-      body: Body.json({
-        name: name,
-        email: email
-      })
-    });
-    addedit = false;
-  }
-
-  function editEmail(eemail) {
-    console.log(eemail);
-    addedit = true;
-    name = eemail.name;
-    email = eemail.email;
-  }
-
-  function deleteEmail(dem) {
-    dem.email = dem.email.trim();
-    emails = emails.filter(item => item.email !== dem.email);
-    fetch('http://localhost:9978/api/emailit/addEmail', {
-      method: 'DELETE',
-      headers: {
-        'Content-type': 'application/json'
-      },
-      body: Body.json({
-        name: '',
-        email: dem.email
-      })
-    });
-  }
-</script>

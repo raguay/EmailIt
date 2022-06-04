@@ -14,6 +14,7 @@
     "vite": "^2.9.5"
   },
   "dependencies": {
+    "@codemirror/basic-setup": "^0.20.0",
     "@codemirror/closebrackets": "^0.19.2",
     "@codemirror/commands": "^0.20.0",
     "@codemirror/comment": "^0.19.1",
@@ -22,8 +23,13 @@
     "@codemirror/history": "^0.19.2",
     "@codemirror/lang-markdown": "^0.20.1",
     "@codemirror/matchbrackets": "^0.19.4",
+    "@codemirror/panel": "^0.19.1",
     "@codemirror/rectangular-selection": "^0.19.2",
     "@codemirror/search": "^0.20.1",
+    "@codemirror/state": "^0.20.0",
+    "@codemirror/theme-one-dark": "^0.20.0",
+    "@codemirror/tooltip": "^0.19.16",
+    "@codemirror/view": "^0.20.7",
     "showdown": "^2.1.0"
   }
 }

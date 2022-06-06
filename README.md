@@ -34,7 +34,7 @@ If you want to develop the program, you can run developer mode with:
 wails dev
 ```
 
-This requires the [EmailItServer](https://github.com/raguay/EmailItServer.git) for the backend logic currently. I've not gotten far enough to have it all itegrated. This project is slowly being created.
+This requires the [EmailItServer](https://github.com/raguay/EmailItServer.git) for the back-end logic currently. I've not gotten far enough to have it all integrated. This project is slowly being created.
 
 ## Documentation
 

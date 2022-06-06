@@ -10,47 +10,47 @@
   export let keywordsFieldName = labelFieldName;
   export let valueFieldName = undefined;
 
-  export let labelFunction = function(item) {
+  export let labelFunction = function (item) {
     if (item === undefined || item === null) {
       return "";
     }
     return labelFieldName ? item[labelFieldName] : item;
   };
 
-  export let keywordsFunction = function(item) {
+  export let keywordsFunction = function (item) {
     if (item === undefined || item === null) {
       return "";
     }
     return keywordsFieldName ? item[keywordsFieldName] : labelFunction(item);
   };
 
-  export let valueFunction = function(item, force_single = false) {
+  export let valueFunction = function (item, force_single = false) {
     if (item === undefined || item === null) {
       return item;
     }
     if (!multiple || force_single) {
       return valueFieldName ? item[valueFieldName] : item;
     } else {
-      return item.map(i => (valueFieldName ? i[valueFieldName] : i));
+      return item.map((i) => (valueFieldName ? i[valueFieldName] : i));
     }
   };
 
-  export let keywordsCleanFunction = function(keywords) {
+  export let keywordsCleanFunction = function (keywords) {
     return keywords;
   };
 
-  export let textCleanFunction = function(userEnteredText) {
+  export let textCleanFunction = function (userEnteredText) {
     return userEnteredText;
   };
 
   // events
-  export let beforeChange = function(oldSelectedItem, newSelectedItem) {
+  export let beforeChange = function (oldSelectedItem, newSelectedItem) {
     return true;
   };
-  export let onChange = function(newSelectedItem) {};
-  export let onFocus = function() {};
-  export let onBlur = function() {};
-  export let onCreate = function(text) {
+  export let onChange = function (newSelectedItem) {};
+  export let onFocus = function () {};
+  export let onBlur = function () {};
+  export let onCreate = function (text) {
     if (debug) {
       console.log("onCreate: " + text);
     }
@@ -276,7 +276,7 @@
       // item label
       label: safeLabelFunction(item),
       // store reference to the origial item
-      item: item
+      item: item,
     };
   }
 
@@ -322,7 +322,7 @@
     const itemKeywords = listItem.keywords;
 
     let matches = 0;
-    searchWords.forEach(searchWord => {
+    searchWords.forEach((searchWord) => {
       if (itemKeywords.includes(searchWord)) {
         matches++;
       }
@@ -373,7 +373,7 @@
       const currentRequestId = lastRequestId;
       loading = true;
 
-      const AsyncGenerator = async function*() {}.constructor;
+      const AsyncGenerator = async function* () {}.constructor;
 
       // searchFunction is a generator
       if (searchFunction instanceof AsyncGenerator) {
@@ -427,10 +427,10 @@
     if (localFiltering) {
       var searchWords = textFiltered.split(" ");
       if (ignoreAccents) {
-        searchWords = searchWords.map(word => removeAccents(word));
+        searchWords = searchWords.map((word) => removeAccents(word));
       }
 
-      tempfilteredListItems = listItems.filter(listItem => {
+      tempfilteredListItems = listItems.filter((listItem) => {
         var matches = numberOfMatches(listItem, searchWords);
         if (matchAllKeywords) {
           return matches >= searchWords.length;
@@ -488,7 +488,7 @@
       }
       // selecting something already selected => unselect it
       else if (selectedItem.includes(newSelectedItem)) {
-        selectedItem = selectedItem.filter(i => i !== newSelectedItem);
+        selectedItem = selectedItem.filter((i) => i !== newSelectedItem);
       }
       // adds the element to the selection
       else {
@@ -607,7 +607,7 @@
       Backspace:
         multiple && selectedItem && selectedItem.length && !text
           ? onBackspace.bind(this)
-          : null
+          : null,
     };
     const fn = fnmap[key];
     if (typeof fn === "function") {
@@ -652,7 +652,7 @@
     if (debug) {
       console.log("unselectItem", tag);
     }
-    selectedItem = selectedItem.filter(i => i !== tag);
+    selectedItem = selectedItem.filter((i) => i !== tag);
     input.focus();
   }
 
@@ -812,15 +812,15 @@
 
   function highlightFilter(keywords, fields) {
     keywords = keywords.split(/\s+/g);
-    return item => {
+    return (item) => {
       const newItem = Object.assign({ highlighted: {} }, item);
       if (fields) {
-        fields.forEach(field => {
+        fields.forEach((field) => {
           if (newItem[field] && !newItem.highlighted[field]) {
             newItem.highlighted[field] = newItem[field];
           }
           if (newItem.highlighted[field]) {
-            keywords.forEach(keyword => {
+            keywords.forEach((keyword) => {
               const reg = new RegExp("(" + keyword + ")", "ig");
               newItem.highlighted[field] = newItem.highlighted[field].replace(
                 reg,
@@ -855,6 +855,130 @@
     }
   }
 </script>
+
+<div
+  class="{className ? className : ''}
+  {hideArrow || !items.length ? 'hide-arrow' : ''}
+  {multiple ? 'is-multiple' : ''} autocomplete select is-fullwidth {uniqueId}"
+  class:show-clear={clearable}
+  class:is-loading={showLoadingIndicator && loading}
+>
+  <select name={selectName} id={selectId} bind:value use:multipleAction>
+    {#if !multiple && value}
+      <option {value} selected>{text}</option>
+    {:else if multiple && selectedItem}
+      {#each selectedItem as i}
+        <option value={valueFunction(i, true)} selected>
+          {safeLabelFunction(i)}
+        </option>
+      {/each}
+    {/if}
+  </select>
+  <div class="input-container">
+    {#if multiple && selectedItem}
+      {#each selectedItem as tagItem}
+        <slot
+          name="tag"
+          label={safeLabelFunction(tagItem)}
+          item={tagItem}
+          {unselectItem}
+        >
+          <div class="tags has-addons">
+            <span class="tag">{safeLabelFunction(tagItem)}</span>
+            <span
+              class="tag is-delete"
+              on:click|preventDefault={unselectItem(tagItem)}
+            />
+          </div>
+        </slot>
+      {/each}
+    {/if}
+    <input
+      type="text"
+      class="{inputClassName ? inputClassName : ''} input autocomplete-input"
+      id={inputId ? inputId : ""}
+      autocomplete={html5autocomplete ? "on" : "off"}
+      {placeholder}
+      {name}
+      {disabled}
+      {title}
+      readonly={readonly || (lock && selectedItem)}
+      bind:this={input}
+      bind:value={text}
+      on:input={onInput}
+      on:focus={onFocusInternal}
+      on:blur={onBlurInternal}
+      on:keydown={onKeyDown}
+      on:click={onInputClick}
+      on:keypress={onKeyPress}
+      style="background-color: {theme.textAreaColor}; color: {theme.textColor}; border-color: {theme.borderColor};"
+    />
+    {#if clearable}
+      <span on:click={clear} class="autocomplete-clear-button">&#10006;</span>
+    {/if}
+  </div>
+  <div
+    class="{dropdownClassName
+      ? dropdownClassName
+      : ''} autocomplete-list {showList ? '' : 'hidden'}
+    is-fullwidth"
+    style="background-color: {theme.textAreaColor}; color: {theme.textColor}; border-color: {theme.borderColor};"
+    bind:this={list}
+  >
+    {#if filteredListItems && filteredListItems.length > 0}
+      {#each filteredListItems as listItem, i}
+        {#if listItem && (maxItemsToShowInList <= 0 || i < maxItemsToShowInList)}
+          {#if listItem}
+            <div
+              class="autocomplete-list-item {i === highlightIndex
+                ? 'selected'
+                : ''}"
+              class:confirmed={isConfirmed(listItem.item)}
+              on:click={() => onListItemClick(listItem)}
+              on:pointerenter={() => {
+                highlightIndex = i;
+              }}
+            >
+              <slot
+                name="item"
+                item={listItem.item}
+                label={listItem.highlighted
+                  ? listItem.highlighted.label
+                  : listItem.label}
+              >
+                {#if listItem.highlighted}
+                  {@html listItem.highlighted.label}
+                {:else}
+                  {@html listItem.label}
+                {/if}
+              </slot>
+            </div>
+          {/if}
+        {/if}
+      {/each}
+
+      {#if maxItemsToShowInList > 0 && filteredListItems.length > maxItemsToShowInList}
+        <div class="autocomplete-list-item-no-results">
+          ...{filteredListItems.length - maxItemsToShowInList} results not shown
+        </div>
+      {/if}
+    {:else if loading && loadingText}
+      <div class="autocomplete-list-item-loading">
+        <slot name="loading" {loadingText}>{loadingText}</slot>
+      </div>
+    {:else if create}
+      <div class="autocomplete-list-item-create" on:click={selectItem}>
+        <slot name="create" {createText}>{createText}</slot>
+      </div>
+    {:else if noResultsText}
+      <div class="autocomplete-list-item-no-results">
+        <slot name="no-results" {noResultsText}>{noResultsText}</slot>
+      </div>
+    {/if}
+  </div>
+</div>
+
+<svelte:window on:click={onDocumentClick} />
 
 <style>
   .autocomplete {
@@ -1019,115 +1143,3 @@
     background: none;
   }
 </style>
-
-<div
-  class="{className ? className : ''}
-  {hideArrow || !items.length ? 'hide-arrow' : ''}
-  {multiple ? 'is-multiple' : ''} autocomplete select is-fullwidth {uniqueId}"
-  class:show-clear={clearable}
-  class:is-loading={showLoadingIndicator && loading}>
-  <select name={selectName} id={selectId} bind:value use:multipleAction>
-    {#if !multiple && value}
-      <option {value} selected>{text}</option>
-    {:else if multiple && selectedItem}
-      {#each selectedItem as i}
-        <option value={valueFunction(i, true)} selected>
-          {safeLabelFunction(i)}
-        </option>
-      {/each}
-    {/if}
-  </select>
-  <div class="input-container">
-    {#if multiple && selectedItem}
-      {#each selectedItem as tagItem}
-        <slot
-          name="tag"
-          label={safeLabelFunction(tagItem)}
-          item={tagItem}
-          {unselectItem}>
-          <div class="tags has-addons">
-            <span class="tag">{safeLabelFunction(tagItem)}</span>
-            <span
-              class="tag is-delete"
-              on:click|preventDefault={unselectItem(tagItem)} />
-          </div>
-        </slot>
-      {/each}
-    {/if}
-    <input
-      type="text"
-      class="{inputClassName ? inputClassName : ''} input autocomplete-input"
-      id={inputId ? inputId : ''}
-      autocomplete={html5autocomplete ? 'on' : 'off'}
-      {placeholder}
-      {name}
-      {disabled}
-      {title}
-      readonly={readonly || (lock && selectedItem)}
-      bind:this={input}
-      bind:value={text}
-      on:input={onInput}
-      on:focus={onFocusInternal}
-      on:blur={onBlurInternal}
-      on:keydown={onKeyDown}
-      on:click={onInputClick}
-      on:keypress={onKeyPress} 
-        style="background-color: {theme.textAreaColor}; color: {theme.textColor}; border-color: {theme.borderColor};"
-    />
-    {#if clearable}
-      <span on:click={clear} class="autocomplete-clear-button">&#10006;</span>
-    {/if}
-  </div>
-  <div
-    class="{dropdownClassName ? dropdownClassName : ''} autocomplete-list {showList ? '' : 'hidden'}
-    is-fullwidth"
-    style="background-color: {theme.textAreaColor}; color: {theme.textColor}; border-color: {theme.borderColor};"
-    bind:this={list}>
-    {#if filteredListItems && filteredListItems.length > 0}
-      {#each filteredListItems as listItem, i}
-        {#if listItem && (maxItemsToShowInList <= 0 || i < maxItemsToShowInList)}
-          {#if listItem}
-            <div
-              class="autocomplete-list-item {i === highlightIndex ? 'selected' : ''}"
-              class:confirmed={isConfirmed(listItem.item)}
-              on:click={() => onListItemClick(listItem)}
-              on:pointerenter={() => {
-                highlightIndex = i;
-              }}>
-              <slot
-                name="item"
-                item={listItem.item}
-                label={listItem.highlighted ? listItem.highlighted.label : listItem.label}>
-                {#if listItem.highlighted}
-                  {@html listItem.highlighted.label}
-                {:else}
-                  {@html listItem.label}
-                {/if}
-              </slot>
-            </div>
-          {/if}
-        {/if}
-      {/each}
-
-      {#if maxItemsToShowInList > 0 && filteredListItems.length > maxItemsToShowInList}
-        <div class="autocomplete-list-item-no-results">
-          ...{filteredListItems.length - maxItemsToShowInList} results not shown
-        </div>
-      {/if}
-    {:else if loading && loadingText}
-      <div class="autocomplete-list-item-loading">
-        <slot name="loading" {loadingText}>{loadingText}</slot>
-      </div>
-    {:else if create}
-      <div class="autocomplete-list-item-create" on:click={selectItem}>
-        <slot name="create" {createText}>{createText}</slot>
-      </div>
-    {:else if noResultsText}
-      <div class="autocomplete-list-item-no-results">
-        <slot name="no-results" {noResultsText}>{noResultsText}</slot>
-      </div>
-    {/if}
-  </div>
-</div>
-
-<svelte:window on:click={onDocumentClick} />

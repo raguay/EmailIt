@@ -56,7 +56,7 @@
         },
       })
         .then((resp) => {
-          return resp.json;
+          return resp.json();
         })
         .then((data) => {
           template = data.text.template;
@@ -93,7 +93,7 @@
     }
   }
 
-  function getTemplatesList() {
+  function getTemplatesList(callback) {
     fetch("http://localhost:9978/api/template/list", {
       method: "GET",
       headers: {
@@ -101,7 +101,7 @@
       },
     })
       .then((resp) => {
-        return resp.json;
+        return resp.json();
       })
       .then((data) => {
         $templates = data.templates;
@@ -198,8 +198,8 @@
     </div>
   </div>
   <CodeMirror
-    height="400px"
-    width="970px"
+    height="375px"
+    width="980px"
     config={editorConfig}
     {initFinished}
     on:textChange={(event) => {
@@ -249,6 +249,7 @@
   #templates {
     display: flex;
     flex-direction: column;
+    margin: 10px;
     padding: 10px;
     height: 100%;
     width: 100%;
@@ -262,8 +263,9 @@
   }
 
   #description {
-    width: 800px;
+    width: 790px;
     border: solid 1px transparent;
+    font-size: inherit;
     border-radius: 10px;
     padding: 5px 11px;
     height: 37px;

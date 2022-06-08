@@ -1,5 +1,5 @@
 <script>
-  import { onMount, tick } from "svelte";
+  import { onMount } from "svelte";
   import CodeMirror from "../components/CodeMirror.svelte";
   import SimpleAutoComplete from "../components/SimpleAutoComplete.svelte";
   import { state } from "../stores/state.js";
@@ -31,7 +31,7 @@
     getUserScripts(() => {});
   });
 
-  function getUserScripts() {
+  function getUserScripts(callback) {
     fetch("http://localhost:9978/api/scripts/user", {
       method: "GET",
       headers: {
@@ -62,7 +62,7 @@
           scriptName = data.script.name;
           script = data.script.script;
           description = data.script.description;
-          insert = data.script.insert;
+          insert = data.script.insert == "true" ? true : false;
           $scriptEditor.setValue(script);
           if (typeof callback !== "undefined") callback();
         });
@@ -87,7 +87,7 @@
       }).then(() => {
         scriptSel = "";
         scriptName = "";
-        insert = "";
+        insert = true;
         description = "";
         script = "";
         $scriptEditor.setValue(script);
@@ -97,7 +97,7 @@
     }
   }
 
-  function getScriptsList() {
+  function getScriptsList(callback) {
     fetch("http://localhost:9978/api/scripts/list", {
       method: "GET",
       headers: {
@@ -122,7 +122,7 @@
         },
       }).then(() => {
         scriptName = "";
-        insert = "";
+        insert = true;
         description = "";
         script = "";
         scriptSel = "";
@@ -206,13 +206,13 @@
       <input
         id="description"
         bind:value={description}
-        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
+        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize}"
       />
     </div>
   </div>
   <CodeMirror
-    height="400px"
-    width="970px"
+    height="380px"
+    width="980px"
     config={editorConfig}
     {initFinished}
     on:textChange={(event) => {
@@ -261,6 +261,7 @@
     display: flex;
     flex-direction: column;
     padding: 10px;
+    margin: 0px 10px 10px 10px;
     height: 100%;
     width: 100%;
   }
@@ -273,7 +274,7 @@
   }
 
   #description {
-    width: 800px;
+    width: 785px;
     border: solid 1px transparent;
     border-radius: 10px;
     padding: 5px 11px;

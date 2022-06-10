@@ -2,6 +2,7 @@
   import { onMount, afterUpdate } from "svelte";
   import { theme } from "../stores/theme.js";
   import { state } from "../stores/state.js";
+  import { BrowserOpenURL } from "../../wailsjs/runtime";
 
   let log;
   let logDiv;
@@ -62,11 +63,11 @@
   }
 
   async function viewNodeRed() {
-    // open('http://localhost:9978/red/admin');
+    BrowserOpenURL("http://localhost:9978/red/admin");
   }
 
   async function viewNodeRedDashboard() {
-    // open('http://localhost:9978/red/api/ui');
+    BrowserOpenURL("http://localhost:9978/red/api/ui");
   }
 </script>
 

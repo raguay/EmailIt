@@ -1,58 +1,141 @@
-<div id='script' style="color: {styles.textcolor}; background-color: {styles.appBackground};">
-  {#if (typeof script !== 'undefined') && (typeof envs !== 'undefined')}
-    <label id='scriptName'
-           for='scriptName'>
-      Name of Script
-    </label>
-    <input id='scriptName'
-           name='scriptName'
-           on:blur={changeScript}
-           bind:value={script.name}>
-    <label id='scriptScript'
-           for='scriptScript'>
+<script>
+  import { createEventDispatcher, onMount, tick } from "svelte";
+  import { theme } from "../stores/theme.js";
+
+  export let config;
+
+  let script;
+  let envs;
+
+  const dispatch = createEventDispatcher();
+
+  onMount(() => {
+    //
+    // Get the list of external scripts from the server.
+    //
+    // extScripts {
+    //    name     - User given name for the script
+    //    script   - File name of the script
+    //    path     - directory of the script
+    //    env      - name of the environment
+    // }
+    //
+    if (config.script !== "new") {
+      script = getExtScript(config.script);
+    } else {
+      script = {
+        name: "new",
+        script: "",
+        path: "",
+        env: "",
+      };
+    }
+    envs = getEnvNames();
+  });
+
+  function getExtScript(name) {
+    //
+    // TODO: Get the named external script and return it.
+    //
+    return {
+      name: "test",
+      script: "test",
+      path: "~/bin",
+      env: "default",
+    };
+  }
+
+  function getEnvNames() {
+    //
+    // TODO: Get the list of environments from the server.
+    //
+    return ["default"];
+  }
+
+  function changeScript() {
+    if (script.name !== "" && script.name !== null && script.name !== "new") {
+      //
+      // TODO: Add/Update the script
+      //
+    }
+  }
+
+  function deleteScript() {
+    //
+    // TODO: Remove the script
+    //
+    tick();
+    goback();
+  }
+
+  function goback() {
+    dispatch("changeView", {
+      view: "lists",
+      config: {},
+    });
+  }
+</script>
+
+<div
+  id="script"
+  style="color: {$theme.textcolor}; background-color: {$theme.appBackground};"
+>
+  {#if typeof script !== "undefined" && typeof envs !== "undefined"}
+    <label id="scriptName" for="scriptName"> Name of Script </label>
+    <input
+      id="scriptName"
+      name="scriptName"
+      on:blur={changeScript}
+      bind:value={script.name}
+    />
+    <label id="scriptScript" for="scriptScript">
       What is the name of the Script file?
     </label>
-    <input id='scriptScript'
-           name='scriptScript'
-           on:blur={changeScript}
-           bind:value={script.script}>
-    <label id='scriptPath'
-           for='scriptPath'>
+    <input
+      id="scriptScript"
+      name="scriptScript"
+      on:blur={changeScript}
+      bind:value={script.script}
+    />
+    <label id="scriptPath" for="scriptPath">
       What is the directory for the script?
     </label>
-    <input id='scriptPath'
-           name='scriptPath'
-           on:blur={changeScript}
-           bind:value={script.path}>
-    <label id='scriptEnv'
-           for='scriptEnv'>
+    <input
+      id="scriptPath"
+      name="scriptPath"
+      on:blur={changeScript}
+      bind:value={script.path}
+    />
+    <label id="scriptEnv" for="scriptEnv">
       What is the environment for the script?
     </label>
-    <select id='scriptEnv'
-           name='scriptEnv'
-           on:blur={changeScript}
-           bind:value={script.env}>
+    <select
+      id="scriptEnv"
+      name="scriptEnv"
+      on:blur={changeScript}
+      bind:value={script.env}
+    >
       {#each envs as env}
-        <option value="{env}">{env}</option>
+        <option value={env}>{env}</option>
       {/each}
     </select>
   {/if}
-  <div id='buttonRow'>
-    <button 
-      class='buttonStyle'
-      type='button'
+  <div id="buttonRow">
+    <button
+      class="buttonStyle"
+      type="button"
       on:click={() => {
         changeScript();
         goback();
       }}
-      style="background-color: {styles.editorBackground}; color: {styles.textcolor};"
+      style="background-color: {$theme.textAreaColor}; color: {$theme.textcolor};"
     >
       Return
     </button>
-    <button 
-      class='buttonStyle'
-      type='button'
-      style='background-color: {styles.editorBackground}; color: {styles.textcolor};'
+    <button
+      class="buttonStyle"
+      type="button"
+      style="background-color: {$theme.textAreaColor}; color: {$theme.textcolor};"
       on:click={deleteScript}
     >
       Delete
@@ -93,64 +176,8 @@
     -ms-user-select: none;
     -o-user-select: none;
     user-select: none;
-    -webkit-tap-highlight-color:transparent;
-    outline-style:none;
+    -webkit-tap-highlight-color: transparent;
+    outline-style: none;
     cursor: pointer;
   }
 </style>
-
-<script>
-  import { createEventDispatcher, onMount, tick  } from 'svelte';
-
-  export let config;
-  export let ScriptPad;
-  export let styles;
-
-  let script;
-  let envs;
-  
-  const dispatch = createEventDispatcher();
-
-  onMount(() => {
-    //
-    // Get the list of external scripts from the server.
-    //
-    // extScripts {
-    //    name     - User given name for the script
-    //    script   - File name of the script
-    //    path     - directory of the script
-    //    env      - name of the environment
-    // }
-    //
-    if(config.script !== 'new') {
-      script = ScriptPad.getExtScript(config.script);
-    } else {
-      script = {
-        name: 'new',
-        script: '',
-        path: '',
-        env: ''
-      }
-    }
-    envs = ScriptPad.getEnvNames();
-  });
-
-  function changeScript() {
-    if((script.name !== '')&&(script.name !== null)&&(script.name !== 'new')) {
-      ScriptPad.addExtScript(script);
-    }
-  }
-  
-  function deleteScript() {
-    ScriptPad.removeExtScript(script.name);
-    tick();
-    goback();
-  }
-
-  function goback() {
-    dispatch('changeView',{
-      view: 'lists',
-      config: {}
-    })
-  }
-</script>

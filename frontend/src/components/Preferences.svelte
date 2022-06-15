@@ -1,52 +1,97 @@
-<div 
-  id="PreferencePanel" 
-style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
+<script>
+  import PrefNodeRed from "./PrefNodeRed.svelte";
+  import GenPrefs from "./GenPrefs.svelte";
+  import ThemePrefs from "./ThemePrefs.svelte";
+  import ExtScriptEditor from "./ExtScriptEditor.svelte";
+  import EnvEditor from "./EnvEditor.svelte";
+  import { theme } from "../stores/theme.js";
+  import { state } from "../stores/state.js";
+
+  let currentPref = "General";
+  let prefs = [
+    {
+      name: "General",
+    },
+    {
+      name: "Theme",
+    },
+    {
+      name: "Node-Red",
+    },
+    {
+      name: "External Scripts",
+    },
+    {
+      name: "Environments",
+    },
+  ];
+
+  function setNewCurrent(newCurrent) {
+    currentPref = newCurrent;
+  }
+
+  function viewEmailit() {
+    $state = "emailit";
+  }
+
+  function viewNotes() {
+    $state = "notes";
+  }
+</script>
+
+<div
+  id="PreferencePanel"
+  style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
 >
   <ul id="tabs">
     {#each prefs as pref}
       {#if pref.name === currentPref}
-        <li 
+        <li
           class="tabName"
           style="border-bottom: 3px {$theme.backgroundColor}; z-index: 100;"
         >
           {pref.name}
         </li>
       {:else}
-        <li 
-          class="tabName" 
+        <li
+          class="tabName"
           style="border-color: gray;"
-          on:click="{(event) => { setNewCurrent(pref.name);}}"
+          on:click={(event) => {
+            setNewCurrent(pref.name);
+          }}
         >
           {pref.name}
         </li>
       {/if}
     {/each}
   </ul>
-  <div 
-    id="prefListWrap"
-  >
-    {#if currentPref === 'General'}
+  <div id="prefListWrap">
+    {#if currentPref === "General"}
       <GenPrefs />
-    {:else if currentPref === 'Theme'}
+    {:else if currentPref === "Theme"}
       <ThemePrefs />
-    {:else if currentPref === 'Node-Red'}
+    {:else if currentPref === "Node-Red"}
       <PrefNodeRed />
-    {:else if currentPref === 'External Scripts'}
+    {:else if currentPref === "External Scripts"}
       <ExtScriptEditor />
-    {:else if currentPref === 'Environments'}
+    {:else if currentPref === "Environments"}
       <EnvEditor />
     {/if}
   </div>
   <div id="buttonPanel">
     <button
       style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
-      on:click="{(event) => { viewEmailit(); }}"
+      on:click={(event) => {
+        viewEmailit();
+      }}
     >
       EmailIt+
     </button>
     <button
       style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
-      on:click="{(event) => { viewNotes(); }}"
+      on:click={(event) => {
+        viewNotes();
+      }}
     >
       Notes
     </button>
@@ -103,7 +148,7 @@ style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; c
     margin: 0px 10px;
     padding: 5px 10px 5px 10px;
     user-select: none;
-    outline-style:none;
+    outline-style: none;
     cursor: pointer;
   }
 
@@ -120,38 +165,3 @@ style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; c
     border-bottom: solid 0px;
   }
 </style>
-
-<script>
-  import PrefNodeRed from './PrefNodeRed.svelte';
-  import GenPrefs from './GenPrefs.svelte';
-  import ThemePrefs from './ThemePrefs.svelte';
-  import ExtScriptEditor from './ExtScriptEditor.svelte';
-  import EnvEditor from './EnvEditor.svelte';
-  import { theme } from '../stores/theme.js';
-  import { state } from '../stores/state.js';
-
-  let currentPref = 'General';
-  let prefs = [{
-    name: "General"
-  },{
-    name: "Theme"
-  }, {
-    name: "Node-Red"
-  }, {
-    name: "External Scripts"
-  }, {
-    name: "Environments"
-  }];
-
-  function setNewCurrent(newCurrent) {
-    currentPref = newCurrent;
-  }
-
-  function viewEmailit() {
-    $state = 'emailit';
-  }
-
-  function viewNotes() {
-    $state = 'notes';
-  }
-</script>

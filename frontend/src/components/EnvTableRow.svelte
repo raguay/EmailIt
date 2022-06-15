@@ -1,13 +1,14 @@
+<script>
+  export let name;
+  export let value;
+</script>
+
 <tr>
-  <td class='editTD'>
-    <span>
-      ✏️
-    </span>
+  <td class="editTD">
+    <span> ✏️ </span>
   </td>
-  <td class='deleteTD'>
-    <span>
-      ❌
-    </span>
+  <td class="deleteTD">
+    <span> ❌ </span>
   </td>
   <td>{name}</td>
   <td>{value}</td>
@@ -22,8 +23,3 @@
     max-width: 5px;
   }
 </style>
-
-<script>
-  export let name;
-  export let value;
-</script>

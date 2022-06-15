@@ -1,17 +1,29 @@
-<div 
-  id='EnvEditor' 
+<script>
+  import EnvList from "./EnvList.svelte";
+  import Env from "./Env.svelte";
+  import { theme } from "../stores/theme.js";
+
+  let view = "lists";
+  let config = {
+    env: "Default",
+  };
+
+  function changeView(newView) {
+    view = newView.detail.view;
+    config = newView.detail.config;
+  }
+</script>
+
+<div
+  id="EnvEditor"
   style="color: {$theme.textColor}; background-color: {$theme.backgroundColor};"
 >
-  {#if view === 'lists'}
-    <div id='listviews'>
-      <EnvList
-        on:changeView={changeView}
-      />
+  {#if view === "lists"}
+    <div id="listviews">
+      <EnvList on:changeView={changeView} />
     </div>
-  {:else if view === 'script'}
-    <Env
-      on:changeView={changeView}
-    />
+  {:else if view === "script"}
+    <Env {config} on:changeView={changeView} />
   {/if}
 </div>
 
@@ -32,21 +44,3 @@
     overflow-y: scroll;
   }
 </style>
-
-<script>
-  import { createEventDispatcher, onMount, tick  } from 'svelte';
-  import EnvList from './EnvList.svelte';
-  import Env from './Env.svelte';
-  import { theme } from '../stores/theme.js';
-  
-  const dispatch = createEventDispatcher();
-  
-  let view = 'lists';
-  let config = {};
-
-
-  function changeView(newView) {
-    view = newView.detail.view;
-    config = newView.detail.config;
-  }
-</script>

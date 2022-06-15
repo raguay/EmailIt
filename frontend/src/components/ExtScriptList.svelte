@@ -1,19 +1,64 @@
-<div id='scriptlist'>
+<script>
+  import { createEventDispatcher, onMount } from "svelte";
+  import { theme } from "../stores/theme.js";
+
+  let scripts = [];
+
+  const dispatch = createEventDispatcher();
+
+  onMount(() => {
+    //
+    // Get the list of external scripts from the server.
+    //
+    scripts = listExtScripts();
+  });
+
+  function listExtScripts() {
+    //
+    // TODO: get the list of external scripts from the server.
+    //
+    return [];
+  }
+
+  function openScript(name) {
+    dispatch("changeView", {
+      view: "script",
+      config: {
+        script: name,
+      },
+    });
+  }
+
+  function addNew() {
+    dispatch("changeView", {
+      view: "script",
+      config: {
+        script: "new",
+      },
+    });
+  }
+</script>
+
+<div id="scriptlist">
   <h1>External Scripts</h1>
   <ol>
     {#each scripts as script}
       <li>
-        <span class='scriptName'
-              on:click={() => { openScript(script); }}
-        >{script}</span>
+        <span
+          class="scriptName"
+          on:click={() => {
+            openScript(script);
+          }}>{script}</span
+        >
       </li>
     {/each}
   </ol>
-  <div id='buttonRow'>
-    <button id='new'
-      class='buttonStyle'
-      type='button'
-      style='background-color: {styles.editorBackground}; color: {styles.textcolor};'
+  <div id="buttonRow">
+    <button
+      id="new"
+      class="buttonStyle"
+      type="button"
+      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor};"
       on:click={addNew}
     >
       New Script
@@ -56,7 +101,7 @@
     cursor: pointer;
     user-select: none;
   }
-  
+
   .buttonStyle {
     border-radius: 5px;
     border-color: black;
@@ -72,45 +117,8 @@
     -ms-user-select: none;
     -o-user-select: none;
     user-select: none;
-    -webkit-tap-highlight-color:transparent;
-    outline-style:none;
+    -webkit-tap-highlight-color: transparent;
+    outline-style: none;
     cursor: pointer;
   }
 </style>
-
-<script>
-  import { createEventDispatcher, onMount  } from 'svelte';
-  
-  export let config;
-  export let ScriptPad;
-  export let styles;
-
-  let scripts = [];
-  
-  const dispatch = createEventDispatcher();
-  
-  onMount(() => {
-    //
-    // Get the list of external scripts from the server.
-    //
-    scripts = ScriptPad.listExtScripts();
-  });
-  
-  function openScript(name) {
-    dispatch('changeView', {
-      view: 'script',
-      config: {
-        script: name
-      }
-    })
-  }
-
-  function addNew() {
-    dispatch('changeView', {
-      view: 'script',
-      config: {
-        script: 'new'
-      }
-    });
-  }
-</script>

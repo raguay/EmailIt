@@ -1,30 +1,103 @@
-<div id='envlist'>
+<script>
+  import { createEventDispatcher, onMount } from "svelte";
+  import { theme } from "../stores/theme.js";
+
+  let envs = [];
+  let createDefault = false;
+
+  const dispatch = createEventDispatcher();
+
+  onMount(() => {
+    //
+    // Get the list of environments from the server.
+    //
+    getEnvList();
+
+    //
+    // See if the default has been created or not.
+    //
+    var def = envs.filter((item) => item === "Default");
+    if (Array.isArray(def) && def.length === 0) {
+      createDefault = true;
+    }
+  });
+
+  async function getEnvList() {
+    //
+    // TODO: Get the list of environment names from the server.
+    //
+    var resp = await fetch("http://localhost:9978/api/scripts/env/list");
+    envs = await resp.json();
+  }
+
+  function addNew() {
+    dispatch("changeView", {
+      view: "env",
+      config: {
+        env: "new",
+        envVar: [],
+      },
+    });
+  }
+
+  function openEnv(nm) {
+    dispatch("changeView", {
+      view: "env",
+      config: {
+        env: nm,
+      },
+    });
+  }
+
+  function createDefaultEnv() {
+    //
+    // Get the default environment
+    //
+
+    // TODO: Create a default environment.
+
+    //
+    // Switch to the editing of the default environment.
+    //
+    dispatch("changeView", {
+      view: "env",
+      config: {
+        env: "Default",
+      },
+    });
+  }
+</script>
+
+<div id="envlist">
   <h1>Environments</h1>
   <ol>
     {#each envs as env}
       <li>
-        <span class='envName'
-              on:click={() => { openEnv(env); }}
-        >{env}</span>
+        <span
+          class="envName"
+          on:click={() => {
+            openEnv(env);
+          }}>{env}</span
+        >
       </li>
     {/each}
   </ol>
-  <div id='buttonRow'>
-    <button 
-      id='new'
-      class='buttonStyle'
-      style='background-color: {styles.editorBackground}; color: {styles.textcolor};'
-      type='button'
+  <div id="buttonRow">
+    <button
+      id="new"
+      class="buttonStyle"
+      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor};"
+      type="button"
       on:click={addNew}
     >
       New Environment
     </button>
     {#if createDefault}
       <button
-        id='default'
-        class='buttonStyle'
-        style='background-color: {styles.editorBackground}; color: {styles.textcolor};'
-        type='button'
+        id="default"
+        class="buttonStyle"
+        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor};"
+        type="button"
         on:click={createDefaultEnv}
       >
         Create Default
@@ -41,7 +114,7 @@
     padding: 20px;
     user-select: none;
   }
-  
+
   #envlist ol {
     margin: 0px;
     padding: 0px;
@@ -56,7 +129,7 @@
     text-align: center;
     user-select: none;
   }
-  
+
   #buttonRow {
     display: flex;
     flex-direction: row;
@@ -68,7 +141,7 @@
     user-select: none;
     cursor: pointer;
   }
-  
+
   .buttonStyle {
     border-radius: 5px;
     border-color: black;
@@ -84,81 +157,8 @@
     -ms-user-select: none;
     -o-user-select: none;
     user-select: none;
-    -webkit-tap-highlight-color:transparent;
-    outline-style:none;
+    -webkit-tap-highlight-color: transparent;
+    outline-style: none;
     cursor: pointer;
   }
 </style>
-
-<script>
-  import { createEventDispatcher, onMount  } from 'svelte';
-  
-  export let config;
-  export let ScriptPad;
-  export let styles;
-  
-  let envs = [];
-  let createDefault = false;
-
-  const dispatch = createEventDispatcher();
-  
-  onMount(() => {
-    //
-    // Get the list of environments from the server.
-    //
-    getEnvList();
-
-    //
-    // See if the default has been created or not.
-    //
-    var def = envs.filter(item => item === 'Default');
-    if(Array.isArray(def) && (def.length === 0)) {
-      createDefault = true;
-    }
-  })
-  
-  function getEnvList() {
-    envs = ScriptPad.getEnvNames();
-  }
-  
-  function addNew() {
-    dispatch('changeView', {
-      view: 'env',
-      config: {
-        env: 'new',
-        envVar: []
-      }
-    })
-  }
-  
-  function openEnv(nm) {
-    dispatch('changeView', {
-      view: 'env',
-      config: {
-        env: nm
-      }
-    })
-  }
-
-  function createDefaultEnv() {
-    //
-    // Get the default environment
-    //
-    var defEnv = ScriptPad.createDefaultEnv();
-
-    //
-    // Save the default environment.
-    //
-    ScriptPad.addEnv(defEnv);
-
-    //
-    // Switch to the editing of the default environment.
-    //
-    dispatch('changeView', {
-      view: 'env',
-      config: {
-        env: 'Default'
-      }
-    });
-  }
-</script>

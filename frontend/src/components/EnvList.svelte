@@ -7,16 +7,19 @@
 
   const dispatch = createEventDispatcher();
 
-  onMount(() => {
+  onMount(async () => {
     //
     // Get the list of environments from the server.
     //
-    getEnvList();
+    await getEnvList();
 
     //
     // See if the default has been created or not.
     //
-    var def = envs.filter((item) => item === "Default");
+    var def = envs.filter((item) => {
+      console.log(item);
+      return item == "Default";
+    });
     if (Array.isArray(def) && def.length === 0) {
       createDefault = true;
     }
@@ -24,20 +27,32 @@
 
   async function getEnvList() {
     //
-    // TODO: Get the list of environment names from the server.
+    // Get the list of environment names from the server.
     //
     var resp = await fetch("http://localhost:9978/api/scripts/env/list");
     envs = await resp.json();
+    console.log(envs);
   }
 
-  function addNew() {
-    dispatch("changeView", {
+  async function addEnv(env) {
+    //
+    // Add the new environment.
+    //
+    await fetch(`http://localhost:9978/api/scripts/env/${env.name}`, {
+      method: "PUT",
+      body: JSON.stringify(env),
+    });
+  }
+
+  async function addNew() {
+    let newEnv = {
       view: "env",
       config: {
         env: "new",
         envVar: [],
       },
-    });
+    };
+    dispatch("changeView", newEnv);
   }
 
   function openEnv(nm) {
@@ -49,13 +64,14 @@
     });
   }
 
-  function createDefaultEnv() {
+  async function createDefaultEnv() {
     //
     // Get the default environment
     //
 
-    // TODO: Create a default environment.
-
+    await fetch("http://localhost:9978/api/scripts/env/Default", {
+      method: "PUT",
+    });
     //
     // Switch to the editing of the default environment.
     //

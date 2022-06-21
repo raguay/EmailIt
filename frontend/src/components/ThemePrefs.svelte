@@ -504,6 +504,7 @@
     flex-flow: column wrap;
     padding: 0px 0px 0px 10px;
     height: 165px;
+    overflow-y: auto;
   }
 
   .circlePickerWrap {

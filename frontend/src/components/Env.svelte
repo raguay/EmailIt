@@ -12,9 +12,9 @@
 
   const dispatch = createEventDispatcher();
 
-  onMount(() => {
+  onMount(async () => {
     //
-    // Get the list of external scripts from the server.
+    // Get the list of environments from the server.
     //
     // scriptEnv {
     //    name    - Name of the environment
@@ -26,60 +26,73 @@
         if (config.env === "default") {
           config.env = "Default";
         }
-        env = getEnv(config.env);
+        env = await getEnv(config.env);
       } else {
         //
         // Create a new one for the user to change.
         //
         env = {
           name: "new",
-          envVar: [],
+          envVar: {},
         };
       }
     }
   });
 
-  function getEnv(name) {
+  async function getEnv(name) {
     //
-    // TODO: get the environment from the server.
+    // get the environment from the server.
     //
-    return [];
+    var resp = await fetch(`http://localhost:9978/api/scripts/env/${name}`);
+    var list = await resp.json();
+    return list;
   }
 
-  function changeEnv() {
+  async function changeEnv() {
     if (
       typeof env !== "undefined" &&
+      env !== null &&
       env.name !== "" &&
       env.name !== null &&
       env.name !== "new"
     ) {
+      await addEnv(env);
     }
-    addEnv(env);
   }
 
-  function addEnv(env) {
+  async function addEnv(ev) {
     //
-    // TODO: Add the new environment.
+    // Add the new environment.
     //
+    await fetch(`http://localhost:9978/api/scripts/env/${ev.name}`, {
+      method: "PUT",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(ev),
+    });
   }
 
-  function deleteEnv() {
+  async function deleteEnv() {
     if (
       typeof env !== "undefined" &&
       env.name !== null &&
       env.name !== "new" &&
       env.name !== ""
     ) {
-      removeEnv(env.name);
+      await removeEnv(env.name);
       tick();
       goback();
     }
   }
 
-  function removeEnv(envName) {
+  async function removeEnv(envName) {
     //
-    // TODO: remove environment name.
+    // Remove environment name.
     //
+    await fetch(`http://localhost:9978/api/scripts/env/${envName}`, {
+      method: "DELETE",
+    });
   }
 
   function goback() {
@@ -89,12 +102,18 @@
     });
   }
 
-  function addKV() {
+  async function addKV() {
     env.envVar[KVname] = KVvalue;
     addNew = false;
     KVname = "";
     KVvalue = "";
-    changeEnv();
+    await changeEnv();
+  }
+
+  async function deleteRow(kv) {
+    delete env.envVar[kv[0]];
+    await changeEnv();
+    env = await getEnv(config.env);
   }
 </script>
 
@@ -103,13 +122,16 @@
   style="color: {$theme.textColor}; background-color: {$theme.textareaColor};"
 >
   {#if typeof env !== "undefined"}
-    <label id="envName" for="envName"> Name of the Environment </label>
-    <input
-      id="envName"
-      name="envName"
-      on:blur={changeEnv}
-      bind:value={env.name}
-    />
+    <div style="display: flex; flex-direction: row;">
+      <label id="envName" for="envName"> Name of the Environment </label>
+      <input
+        id="envName"
+        name="envName"
+        style="padding-left: 10px; margin-top: -5px; margin-left: 20px; border-radius: 10px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize}; border: solid 3px {$theme.borderColor};"
+        on:blur={changeEnv}
+        bind:value={env.name}
+      />
+    </div>
     {#if env.envVar !== "undefined"}
       <div id="EnvTable">
         <table>
@@ -122,33 +144,54 @@
             </tr>
           </thead>
           <tbody>
-            {#each Object.entries(env.envVar) as kv}
-              <EnvTableRow name={kv[0]} value={kv[1]} />
-            {/each}
+            {#if Object.entries(env.envVar).length > 0}
+              {#each Object.entries(env.envVar) as kv}
+                <EnvTableRow
+                  name={kv[0]}
+                  value={kv[1]}
+                  on:deleteRow={() => {
+                    deleteRow(kv);
+                  }}
+                  on:editRow={(item) => {
+                    env.envVar[item.detail.name] = item.detail.value;
+                    addKV();
+                  }}
+                />
+              {/each}
+            {/if}
             {#if addNew}
-              <tr
-                ><td>
-                  <input class="inputKV" type="text" bind:value={KVname} />
-                </td><td>
+              <tr>
+                <td>
                   <input
                     class="inputKV"
                     type="text"
+                    style="background-color: {$theme.textAreaColor}; text= {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
+                    bind:value={KVname}
+                  />
+                </td>
+                <td>
+                  <input
+                    class="inputKV"
+                    type="text"
+                    style="background-color: {$theme.textAreaColor}; text= {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
                     bind:value={KVvalue}
                     on:blur={addKV}
                   />
-                </td></tr
-              >
+                </td>
+              </tr>
             {:else}
-              <tr
-                ><td span="2"
-                  ><span
+              <tr>
+                <td span="2">
+                  <span
                     class="addNewItem"
                     on:click={() => {
                       addNew = true;
-                    }}>+</span
-                  ></td
-                ></tr
-              >
+                    }}
+                  >
+                    +
+                  </span>
+                </td>
+              </tr>
             {/if}
           </tbody>
         </table>
@@ -160,7 +203,7 @@
       id="goback"
       class="buttonStyle"
       type="button"
-      style="background-color: {styles.editorBackground}; color: {styles.textcolor};"
+      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor};"
       on:click={() => {
         changeEnv();
         goback();
@@ -171,7 +214,7 @@
     <button
       class="buttonStyle"
       type="button"
-      style="background-color: {styles.editorBackground}; color: {styles.textcolor};"
+      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor};"
       on:click={deleteEnv}
     >
       Delete
@@ -189,12 +232,17 @@
     width: 100%;
   }
 
+  th,
+  td {
+    min-width: 10px;
+  }
+
   #EnvTable {
     display: flex;
     flex-direction: column;
     overflow: auto;
     width: 100%;
-    height: auto;
+    height: 300px;
   }
 
   #buttonRow {
@@ -227,7 +275,7 @@
 
   td,
   th {
-    min-width: 100px;
+    min-width: 10px;
     text-align: left;
   }
 

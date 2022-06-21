@@ -22,7 +22,7 @@
     <div id="listviews">
       <EnvList on:changeView={changeView} />
     </div>
-  {:else if view === "script"}
+  {:else if view === "env"}
     <Env {config} on:changeView={changeView} />
   {/if}
 </div>

@@ -539,6 +539,7 @@
     flex-flow: column wrap;
     padding: 0px 0px 0px 10px;
     height: 165px;
+    align-items: left;
     overflow-y: auto;
   }
 
@@ -546,6 +547,7 @@
     display: flex;
     flex-direction: row;
     margin: 10px auto;
+    width: 210px;
   }
 
   .variousPickerLabel1 {

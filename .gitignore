@@ -10,6 +10,7 @@ lerna-debug.log*
 build/bin
 build/darwin
 build/windows
+EmailIt-macOS-Universal.zip
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json

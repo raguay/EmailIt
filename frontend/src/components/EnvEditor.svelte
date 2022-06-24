@@ -31,8 +31,8 @@
   #EnvEditor {
     display: flex;
     flex-direction: column;
-    padding: 5px;
     margin: 0px;
+    padding: 5px;
   }
 
   #listviews {

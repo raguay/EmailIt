@@ -203,7 +203,7 @@
       id="goback"
       class="buttonStyle"
       type="button"
-      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor};"
+      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       on:click={() => {
         changeEnv();
         goback();
@@ -214,7 +214,7 @@
     <button
       class="buttonStyle"
       type="button"
-      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor};"
+      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       on:click={deleteEnv}
     >
       Delete
@@ -257,7 +257,7 @@
     border-radius: 5px;
     border-color: black;
     font-size: 15px;
-    height: 30px;
+    height: 40px;
     text-shadow: 2px 2px 2px black;
     box-shadow: 2px 2px 5px 2px black;
     outline: none;

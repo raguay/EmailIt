@@ -102,11 +102,11 @@
   #PreferencePanel {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 100%;
+    height: 560px;
+    width: 1000px;
     overflow: hidden;
     list-style: none;
-    padding: 0px;
+    padding: 10px;
     margin: 0px;
     user-select: none;
     outline-style: none;

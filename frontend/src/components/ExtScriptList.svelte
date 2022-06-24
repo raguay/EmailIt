@@ -6,25 +6,31 @@
 
   const dispatch = createEventDispatcher();
 
-  onMount(() => {
+  onMount(async () => {
     //
     // Get the list of external scripts from the server.
     //
-    scripts = listExtScripts();
+    scripts = await listExtScripts();
   });
 
-  function listExtScripts() {
+  async function listExtScripts() {
     //
-    // TODO: get the list of external scripts from the server.
+    // Get the list of external scripts from the server.
     //
-    return [];
+    let resp = await fetch("http://localhost:9978/api/scripts/ext/list", {
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
+    let scrpt = await resp.json();
+    return scrpt;
   }
 
-  function openScript(name) {
+  function openScript(snm) {
     dispatch("changeView", {
       view: "script",
       config: {
-        script: name,
+        script: snm,
       },
     });
   }
@@ -40,7 +46,7 @@
 </script>
 
 <div id="scriptlist">
-  <h1>External Scripts</h1>
+  <h2>External Scripts</h2>
   <ol>
     {#each scripts as script}
       <li>
@@ -58,7 +64,7 @@
       id="new"
       class="buttonStyle"
       type="button"
-      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor};"
+      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       on:click={addNew}
     >
       New Script
@@ -71,13 +77,14 @@
     display: flex;
     flex-direction: column;
     margin: 0px;
-    padding: 10px 20px 20px 20px;
     user-select: none;
   }
 
   #scriptlist ol {
     margin: 0px;
     padding: 0px;
+    overflow-y: auto;
+    height: 260px;
   }
 
   #scriptlist ol il {
@@ -85,9 +92,10 @@
     padding: 0px;
   }
 
-  #scriptlist h1 {
+  #scriptlist h2 {
     text-align: center;
     user-select: none;
+    margin: 5px;
   }
 
   #buttonRow {
@@ -103,10 +111,10 @@
   }
 
   .buttonStyle {
-    border-radius: 5px;
+    border-radius: 5px 5px 5px 5px;
     border-color: black;
     font-size: 15px;
-    height: 30px;
+    height: 40px;
     text-shadow: 2px 2px 2px black;
     box-shadow: 2px 2px 5px 2px black;
     outline: none;

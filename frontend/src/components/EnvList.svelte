@@ -85,7 +85,7 @@
 </script>
 
 <div id="envlist">
-  <h1>Environments</h1>
+  <h2>Environments</h2>
   <ol>
     {#each envs as env}
       <li>
@@ -102,7 +102,7 @@
     <button
       id="new"
       class="buttonStyle"
-      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor};"
+      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       type="button"
       on:click={addNew}
     >
@@ -112,7 +112,7 @@
       <button
         id="default"
         class="buttonStyle"
-        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor};"
+        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
         type="button"
         on:click={createDefaultEnv}
       >
@@ -127,13 +127,15 @@
     display: flex;
     flex-direction: column;
     margin: 0px;
-    padding: 20px;
+    padding: 0px;
     user-select: none;
   }
 
   #envlist ol {
     margin: 0px;
     padding: 0px;
+    overflow-y: auto;
+    height: 260px;
   }
 
   #envlist ol il {
@@ -141,9 +143,10 @@
     padding: 0px;
   }
 
-  #envlist h1 {
+  #envlist h2 {
     text-align: center;
     user-select: none;
+    margin: 5px;
   }
 
   #buttonRow {
@@ -159,10 +162,10 @@
   }
 
   .buttonStyle {
-    border-radius: 5px;
+    border-radius: 5px 5px 5px 5px;
     border-color: black;
     font-size: 15px;
-    height: 30px;
+    height: 40px;
     text-shadow: 2px 2px 2px black;
     box-shadow: 2px 2px 5px 2px black;
     outline: none;

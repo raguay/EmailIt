@@ -9,7 +9,7 @@
 
   const dispatch = createEventDispatcher();
 
-  onMount(() => {
+  onMount(async () => {
     //
     // Get the list of external scripts from the server.
     //
@@ -21,7 +21,7 @@
     // }
     //
     if (config.script !== "new") {
-      script = getExtScript(config.script);
+      script = await getExtScript(config.script);
     } else {
       script = {
         name: "new",
@@ -30,40 +30,62 @@
         env: "",
       };
     }
-    envs = getEnvNames();
+    envs = await getEnvNames();
+    console.log(script);
   });
 
-  function getExtScript(name) {
+  async function getExtScript(name) {
     //
-    // TODO: Get the named external script and return it.
+    // Get the named external script and return it.
     //
-    return {
-      name: "test",
-      script: "test",
-      path: "~/bin",
-      env: "default",
-    };
+    let resp = await fetch(`http://localhost:9978/api/scripts/ext/${name}`, {
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
+    let scpt = await resp.json();
+    return scpt;
   }
 
-  function getEnvNames() {
+  async function getEnvNames() {
     //
-    // TODO: Get the list of environments from the server.
+    // Get the list of environments from the server.
     //
-    return ["default"];
+    let resp = await fetch(`http://localhost:9978/api/scripts/env/list`, {
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
+    let scpt = await resp.json();
+
+    return scpt;
   }
 
-  function changeScript() {
+  async function changeScript() {
     if (script.name !== "" && script.name !== null && script.name !== "new") {
       //
       // TODO: Add/Update the script
       //
+      await fetch(`http://localhost:9978/api/scripts/ext/${script.name}`, {
+        method: "PUT",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(script),
+      });
     }
   }
 
-  function deleteScript() {
+  async function deleteScript() {
     //
-    // TODO: Remove the script
+    // Remove the script
     //
+    await fetch(`http://localhost:9978/api/scripts/ext/${script.name}`, {
+      method: "DELETE",
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
     tick();
     goback();
   }
@@ -78,13 +100,14 @@
 
 <div
   id="script"
-  style="color: {$theme.textcolor}; background-color: {$theme.appBackground};"
+  style="color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
 >
   {#if typeof script !== "undefined" && typeof envs !== "undefined"}
     <label id="scriptName" for="scriptName"> Name of Script </label>
     <input
       id="scriptName"
       name="scriptName"
+      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       on:blur={changeScript}
       bind:value={script.name}
     />
@@ -94,6 +117,7 @@
     <input
       id="scriptScript"
       name="scriptScript"
+      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       on:blur={changeScript}
       bind:value={script.script}
     />
@@ -103,6 +127,7 @@
     <input
       id="scriptPath"
       name="scriptPath"
+      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       on:blur={changeScript}
       bind:value={script.path}
     />
@@ -112,6 +137,7 @@
     <select
       id="scriptEnv"
       name="scriptEnv"
+      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       on:blur={changeScript}
       bind:value={script.env}
     >
@@ -124,18 +150,18 @@
     <button
       class="buttonStyle"
       type="button"
+      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       on:click={() => {
         changeScript();
         goback();
       }}
-      style="background-color: {$theme.textAreaColor}; color: {$theme.textcolor};"
     >
       Return
     </button>
     <button
       class="buttonStyle"
       type="button"
-      style="background-color: {$theme.textAreaColor}; color: {$theme.textcolor};"
+      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       on:click={deleteScript}
     >
       Delete
@@ -153,19 +179,19 @@
     width: 100%;
   }
 
-  .buttonRow {
+  #buttonRow {
     display: flex;
     flex-direction: row;
     width: 100%;
     padding: 0px;
-    margin: 10px 0px auto 0px;
+    margin: 20px auto 0px auto;
   }
 
   .buttonStyle {
-    border-radius: 5px;
+    border-radius: 5px 5px 5px 5px;
     border-color: black;
     font-size: 15px;
-    height: 30px;
+    height: 40px;
     text-shadow: 2px 2px 2px black;
     box-shadow: 2px 2px 5px 2px black;
     outline: none;
@@ -179,5 +205,10 @@
     -webkit-tap-highlight-color: transparent;
     outline-style: none;
     cursor: pointer;
+  }
+
+  label,
+  select {
+    margin-top: 10px;
   }
 </style>

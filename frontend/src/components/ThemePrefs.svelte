@@ -17,7 +17,7 @@
     getThemes();
   });
 
-  function getThemes() {
+  function getThemes(callback) {
     fetch("http://localhost:9978/api/theme/list", {
       method: "GET",
       headers: {
@@ -33,20 +33,21 @@
       });
   }
 
-  function setKeepInput(style, test) {
-    if (style === "New" && !test) {
+  function styleSelectorChange() {
+    if (style === "New") {
       keepNewInput = true;
     }
   }
 
-  function styleSelectorChange() {
-    if (!keepNewInput) {
-    }
-  }
+  async function getStyleList() {
+    var result = [];
 
-  function getStyleList() {
-    var result = ["default", "New"];
-
+    let resp = await fetch(`http://localhost:9978/api/theme/list`, {
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
+    result = await resp.json();
     return result;
   }
 
@@ -147,18 +148,33 @@
     }
   }
 
-  function saveNewTheme() {}
+  function saveNewTheme() {
+    keepNewInput = false;
+    updateTheme();
+  }
 
-  function updateTheme() {}
+  async function updateTheme() {
+    await fetch(`http://localhost:9978/api/theme/${style}`, {
+      method: "PUT",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify($theme),
+    });
+    await getThemes();
+  }
 </script>
 
 <div id="themeName">
   <label>Name of theme: </label>
-  {#if style === "New" || keepNewInput}
+  {#if keepNewInput}
     <input
       class="prefInput"
       style="background-color: {$theme.textAreaColor}; color: {$theme.textColor};"
       bind:value={style}
+      on:change={() => {
+        keepNewInput = true;
+      }}
     />
     <button
       style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
@@ -171,7 +187,7 @@
       class="prefSelector"
       style="background-color: {$theme.textAreaColor}; color: {$theme.textColor};"
       bind:value={style}
-      on:change={(event) => {
+      on:change={() => {
         styleSelectorChange();
       }}
     >

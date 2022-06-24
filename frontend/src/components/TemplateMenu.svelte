@@ -105,7 +105,6 @@
         return resp.json();
       })
       .then((data) => {
-        console.log(data);
         if ($state === "emailit") {
           //
           // Paste the template in the body of the email.

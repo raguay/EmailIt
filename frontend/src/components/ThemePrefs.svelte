@@ -9,46 +9,45 @@
   let buttonColor = false;
   let keepNewInput = false;
   let pickerType = "";
-  let style = "default";
+  let style = "Default";
   let explanation;
   let themeList;
 
-  onMount(() => {
-    getThemes();
+  onMount(async () => {
+    themeList = await getStyleList();
   });
 
-  function getThemes(callback) {
-    fetch("http://localhost:9978/api/theme/list", {
+  async function styleSelectorChange() {
+    if (style === "New") {
+      keepNewInput = true;
+      $theme.name = style;
+    } else {
+      $theme = await getStyle(style);
+      $theme.name = style;
+    }
+  }
+
+  async function getStyle(nm) {
+    let resp = await fetch(`http://localhost:9978/api/theme/${nm}`, {
       method: "GET",
       headers: {
         "Content-type": "application/json",
       },
-    })
-      .then((resp) => {
-        return resp.json();
-      })
-      .then((data) => {
-        themeList = data.themes;
-        if (typeof callback !== "undefined") callback();
-      });
-  }
-
-  function styleSelectorChange() {
-    if (style === "New") {
-      keepNewInput = true;
-    }
+    });
+    let result = await resp.json();
+    result.theme.name = nm;
+    return result.theme;
   }
 
   async function getStyleList() {
-    var result = [];
-
     let resp = await fetch(`http://localhost:9978/api/theme/list`, {
+      method: "GET",
       headers: {
         "Content-type": "application/json",
       },
     });
-    result = await resp.json();
-    return result;
+    let result = await resp.json();
+    return result.themes;
   }
 
   function setColor(id, color) {
@@ -154,6 +153,7 @@
   }
 
   async function updateTheme() {
+    $theme.name = style;
     await fetch(`http://localhost:9978/api/theme/${style}`, {
       method: "PUT",
       headers: {
@@ -161,7 +161,20 @@
       },
       body: JSON.stringify($theme),
     });
-    await getThemes();
+    themeList = await getStyleList();
+  }
+
+  async function deleteStyle() {
+    await fetch(`http://localhost:9978/api/theme/${style}`, {
+      method: "DELETE",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify($theme),
+    });
+    themeList = await getStyleList();
+    style = "Default";
+    $theme = await getStyle(style);
   }
 </script>
 
@@ -203,6 +216,12 @@
       on:click={updateTheme}
     >
       Update Theme
+    </button>
+    <button
+      style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
+      on:click={deleteStyle}
+    >
+      Delete Theme
     </button>
   {/if}
 </div>

@@ -31,7 +31,6 @@
       };
     }
     envs = await getEnvNames();
-    console.log(script);
   });
 
   async function getExtScript(name) {

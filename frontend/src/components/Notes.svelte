@@ -58,7 +58,6 @@
         return resp.json();
       })
       .then((data) => {
-        console.log(data.note);
         $storedText[id] = data.note;
         if (typeof callback !== "undefined") callback();
       });
@@ -78,7 +77,6 @@
   }
 
   function editorChange(e) {
-    console.log("Getting note editor...");
     $noteEditor = e;
   }
 
@@ -148,7 +146,6 @@
         textChanged(event.detail.data);
       }}
       on:editorChange={(event) => {
-        console.log(event.detail.data);
         editorChange(event.detail.data);
       }}
     />

@@ -33,7 +33,6 @@
   }
 
   function newAddress() {
-    console.log("add new...");
     addedit = true;
     name = "";
     email = "";
@@ -67,7 +66,6 @@
 
   function editEmail(eemail) {
     console.log(eemail);
-    addedit = true;
     name = eemail.name;
     email = eemail.email;
   }

@@ -17,7 +17,6 @@
     // See if the default has been created or not.
     //
     var def = envs.filter((item) => {
-      console.log(item);
       return item == "Default";
     });
     if (Array.isArray(def) && def.length === 0) {
@@ -31,7 +30,6 @@
     //
     var resp = await fetch("http://localhost:9978/api/scripts/env/list");
     envs = await resp.json();
-    console.log(envs);
   }
 
   async function addEnv(env) {

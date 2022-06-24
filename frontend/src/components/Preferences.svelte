@@ -56,7 +56,7 @@
         <li
           class="tabName"
           style="border-color: gray;"
-          on:click={(event) => {
+          on:click={() => {
             setNewCurrent(pref.name);
           }}
         >
@@ -81,7 +81,7 @@
   <div id="buttonPanel">
     <button
       style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
-      on:click={(event) => {
+      on:click={() => {
         viewEmailit();
       }}
     >

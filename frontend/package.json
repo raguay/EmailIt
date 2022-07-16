@@ -9,27 +9,27 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^1.0.0-next.30",
+    "@sveltejs/vite-plugin-svelte": "^1.0.1",
     "svelte": "^3.49.0",
-    "vite": "^2.9.5"
+    "vite": "^3.0.0"
   },
   "dependencies": {
     "@codemirror/basic-setup": "^0.20.0",
     "@codemirror/closebrackets": "^0.19.2",
-    "@codemirror/commands": "^0.20.0",
+    "@codemirror/commands": "^6.0.1",
     "@codemirror/comment": "^0.19.1",
     "@codemirror/gutter": "^0.19.9",
     "@codemirror/highlight": "^0.19.8",
     "@codemirror/history": "^0.19.2",
-    "@codemirror/lang-markdown": "^0.20.1",
+    "@codemirror/lang-markdown": "^6.0.0",
     "@codemirror/matchbrackets": "^0.19.4",
     "@codemirror/panel": "^0.19.1",
     "@codemirror/rectangular-selection": "^0.19.2",
-    "@codemirror/search": "^0.20.1",
-    "@codemirror/state": "^0.20.0",
-    "@codemirror/theme-one-dark": "^0.20.0",
+    "@codemirror/search": "^6.0.0",
+    "@codemirror/state": "^6.1.0",
+    "@codemirror/theme-one-dark": "^6.0.0",
     "@codemirror/tooltip": "^0.19.16",
-    "@codemirror/view": "^0.20.7",
+    "@codemirror/view": "^6.0.3",
     "showdown": "^2.1.0"
   }
 }

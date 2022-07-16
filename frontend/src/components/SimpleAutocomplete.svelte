@@ -887,7 +887,7 @@
             <span class="tag">{safeLabelFunction(tagItem)}</span>
             <span
               class="tag is-delete"
-              on:click|preventDefault={unselectItem(tagItem)}
+              on:click|preventDefault={()=> {unselectItem(tagItem);}}
             />
           </div>
         </slot>

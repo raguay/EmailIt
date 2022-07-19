@@ -11,8 +11,8 @@
     crosshairCursor,
     highlightActiveLine,
     keymap,
+    EditorView,
   } from "@codemirror/view";
-  import { EditorView } from "@codemirror/basic-setup";
   import { EditorState } from "@codemirror/state";
   import {
     foldGutter,
@@ -139,8 +139,7 @@
     //
     if (edView !== null) {
       edView.destroy();
-      edState.destroy();
-      console.log("Cleared out old editor state...");
+      CodeMirrorEditor.innerHTML = "";
     }
 
     //

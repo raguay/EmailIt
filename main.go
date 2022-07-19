@@ -10,7 +10,7 @@ import (
 	"log"
 )
 
-//go:embed frontend/dist
+//go:embed frontend/public
 var assets embed.FS
 
 //go:embed build/appicon.png
@@ -34,7 +34,7 @@ func main() {
 		Frameless:         false,
 		StartHidden:       false,
 		HideWindowOnClose: false,
-		RGBA:              &options.RGBA{R: 33, G: 37, B: 43, A: 255},
+		BackgroundColour:  &options.RGBA{R: 33, G: 37, B: 43, A: 255},
 		Assets:            assets,
 		LogLevel:          logger.DEBUG,
 		OnStartup:         app.startup,

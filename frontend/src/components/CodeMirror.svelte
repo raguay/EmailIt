@@ -137,31 +137,32 @@
     // Clear out the div element in case a previous editor was
     // created.
     //
-    if (CodeMirrorEditor !== null) {
-      CodeMirrorEditor.innerHTML = "";
+    if (edView !== null) {
+      edView.destroy();
+      edState.destroy();
+      console.log("Cleared out old editor state...");
     }
 
     //
     // Setup the extensions array.
     //
     const exts = [
-      /*@__PURE__*/ highlightSpecialChars(),
-      /*@__PURE__*/ history(),
-      /*@__PURE__*/ drawSelection(),
-      /*@__PURE__*/ dropCursor(),
-      /*@__PURE__*/ EditorState.allowMultipleSelections.of(true),
-      /*@__PURE__*/ indentOnInput(),
-      /*@__PURE__*/ syntaxHighlighting(defaultHighlightStyle, {
+      highlightSpecialChars(),
+      history(),
+      drawSelection(),
+      dropCursor(),
+      EditorState.allowMultipleSelections.of(true),
+      indentOnInput(),
+      syntaxHighlighting(defaultHighlightStyle, {
         fallback: true,
       }),
-      /*@__PURE__*/ bracketMatching(),
-      /*@__PURE__*/ closeBrackets(),
-      /*@__PURE__*/ autocompletion(),
-      /*@__PURE__*/ rectangularSelection(),
-      /*@__PURE__*/ crosshairCursor(),
-      /*@__PURE__*/ highlightActiveLine(),
-      /*@__PURE__*/ highlightSelectionMatches(),
-      /*@__PURE__*/ keymap.of([
+      bracketMatching(),
+      closeBrackets(),
+      autocompletion(),
+      rectangularSelection(),
+      crosshairCursor(),
+      highlightSelectionMatches(),
+      keymap.of([
         ...closeBracketsKeymap,
         ...defaultKeymap,
         ...searchKeymap,
@@ -185,7 +186,6 @@
     // Add extensions based on the configuration.
     //
     if (config.lineNumbers) {
-      exts.push(highlightActiveLineGutter());
       exts.push(foldGutter());
       exts.push(lineNumbers());
     }

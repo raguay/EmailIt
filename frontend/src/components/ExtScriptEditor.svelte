@@ -29,7 +29,7 @@
   #ExtScriptEditor {
     display: flex;
     flex-direction: column;
-    padding: 10px;
+    padding: 0px;
     margin: 0px;
   }
 

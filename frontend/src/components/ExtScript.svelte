@@ -28,6 +28,7 @@
         script: "",
         path: "",
         env: "",
+        termscript: false,
       };
     }
     envs = await getEnvNames();
@@ -63,7 +64,7 @@
   async function changeScript() {
     if (script.name !== "" && script.name !== null && script.name !== "new") {
       //
-      // TODO: Add/Update the script
+      // Add/Update the script
       //
       await fetch(`http://localhost:9978/api/scripts/ext/${script.name}`, {
         method: "PUT",
@@ -102,7 +103,7 @@
   style="color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
 >
   {#if typeof script !== "undefined" && typeof envs !== "undefined"}
-    <label id="scriptName" for="scriptName"> Name of Script </label>
+    <label id="scriptNameLab" for="scriptName"> Name of Script </label>
     <input
       id="scriptName"
       name="scriptName"
@@ -144,28 +145,35 @@
         <option value={env}>{env}</option>
       {/each}
     </select>
+    <label id="termScriptLab" for="termScriptChk"> Terminal Script? </label>
+    <input
+      id="termScriptChk"
+      name="termScriptChk"
+      type="checkbox"
+      bind:value={script.termscript}
+    />
   {/if}
-  <div id="buttonRow">
-    <button
-      class="buttonStyle"
-      type="button"
-      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
-      on:click={() => {
-        changeScript();
-        goback();
-      }}
-    >
-      Return
-    </button>
-    <button
-      class="buttonStyle"
-      type="button"
-      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
-      on:click={deleteScript}
-    >
-      Delete
-    </button>
-  </div>
+</div>
+<div id="buttonRow">
+  <button
+    class="buttonStyle"
+    type="button"
+    style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
+    on:click={() => {
+      changeScript();
+      goback();
+    }}
+  >
+    Return
+  </button>
+  <button
+    class="buttonStyle"
+    type="button"
+    style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
+    on:click={deleteScript}
+  >
+    Delete
+  </button>
 </div>
 
 <style>
@@ -174,8 +182,9 @@
     flex-direction: column;
     margin: 0px;
     padding: 0px;
-    height: 100%;
+    max-height: 100%;
     width: 100%;
+    overflow-y: auto;
   }
 
   #buttonRow {
@@ -184,6 +193,11 @@
     width: 100%;
     padding: 0px;
     margin: 20px auto 0px auto;
+  }
+
+  #scriptNameLab {
+    padding-top: 0px;
+    margin-top: 0px;
   }
 
   .buttonStyle {

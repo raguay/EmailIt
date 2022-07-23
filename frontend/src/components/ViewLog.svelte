@@ -55,11 +55,15 @@
   }
 
   function viewEmailIt() {
-    state.set("emailit");
+    $state = "emailit";
   }
 
   function viewNotes() {
-    state.set("notes");
+    $state = "notes";
+  }
+
+  function viewTerminal() {
+    $state = "scriptterm";
   }
 
   async function viewNodeRed() {
@@ -94,6 +98,12 @@
       style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
     >
       Notes
+    </button>
+    <button
+      on:click={viewTerminal}
+      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
+    >
+      Script Terminal
     </button>
     <button
       on:click={viewNodeRed}

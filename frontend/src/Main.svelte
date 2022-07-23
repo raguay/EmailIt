@@ -8,18 +8,20 @@
   import ScriptsEditor from "./components/ScriptsEditor.svelte";
   import TemplatesEditor from "./components/TemplatesEditor.svelte";
   import Preferences from "./components/Preferences.svelte";
+  import ScriptTerminal from "./components/ScriptTerminal.svelte";
   import { state } from "./stores/state.js";
   import { scripts } from "./stores/scripts.js";
+  import { termscripts } from "./stores/termscripts.js";
   import { showScripts } from "./stores/showScripts.js";
   import { templates } from "./stores/templates.js";
   import { showTemplates } from "./stores/showTemplates.js";
-  import { commandLineEmail } from "./stores/commandLineEmail.js";
   import { theme } from "./stores/theme.js";
 
   let starting = true;
 
   onMount(() => {
     getScriptsList();
+    getTermScriptsList();
     getTemplatesList();
     getTheme();
   });
@@ -58,6 +60,23 @@
       })
       .then((data) => {
         $scripts = data.data;
+        if (typeof callback !== "undefined") callback();
+      });
+  }
+
+  function getTermScriptsList() {
+    fetch("http://localhost:9978/api/scripts/term/list", {
+      method: "GET",
+      headers: {
+        "Content-type": "application/json",
+      },
+    })
+      .then((resp) => {
+        return resp.json();
+      })
+      .then((data) => {
+        $termscripts = data.data;
+        console.log($termscripts);
         if (typeof callback !== "undefined") callback();
       });
   }
@@ -109,6 +128,11 @@
           e.preventDefault();
           break;
 
+        case "l":
+          $state = "scriptterm";
+          e.preventDefault();
+          break;
+
         case "p":
           $state = "preferences";
           e.preventDefault();
@@ -132,6 +156,12 @@
   <TemplatesEditor />
 {:else if $state === "preferences"}
   <Preferences />
+{:else if $state === "scriptterm"}
+  <ScriptTerminal />
+{:else}
+  <div>
+    <h1>Something went wront!</h1>
+  </div>
 {/if}
 <ScriptMenu />
 <TemplateMenu />

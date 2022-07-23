@@ -6,8 +6,9 @@
   import { theme } from "../stores/theme.js";
   import { showScripts } from "../stores/showScripts.js";
   import { showTemplates } from "../stores/showTemplates.js";
-  import { scripts } from "../stores/scripts.js";
   import { scriptEditor } from "../stores/scriptEditor.js";
+  import { scripts } from "../stores/scripts.js";
+  import { termscripts } from "../stores/termscripts.js";
 
   let editorConfig = {
     language: "javascript",
@@ -21,14 +22,15 @@
   let scriptName = "";
   let description = "";
   let insert = false;
+  let termscript = false;
   let list;
 
   onMount(() => {
     //
-    // Load everything for working with the notes:
+    // Load everything for working with the scripts
     //
-    initFinished = true;
     getUserScripts(() => {});
+    initFinished = true;
   });
 
   function getUserScripts(callback) {
@@ -63,6 +65,11 @@
           script = data.script.script;
           description = data.script.description;
           insert = data.script.insert == "true" ? true : false;
+          if (typeof data.script.termscript === "undefined") {
+            termscript = false;
+          } else {
+            termscript = data.script.termscript;
+          }
           $scriptEditor.setValue(script);
           if (typeof callback !== "undefined") callback();
         });
@@ -82,17 +89,20 @@
             insert: insert,
             description: description,
             script: script,
+            termscript: termscript,
           },
         }),
       }).then(() => {
         scriptSel = "";
         scriptName = "";
-        insert = true;
+        insert = false;
         description = "";
         script = "";
+        termscript = false;
         $scriptEditor.setValue(script);
         getScriptsList();
         getUserScripts();
+        getTermScriptsList();
       });
     }
   }
@@ -113,6 +123,22 @@
       });
   }
 
+  function getTermScriptsList(callback) {
+    fetch("http://localhost:9978/api/scripts/term/list", {
+      method: "GET",
+      headers: {
+        "Content-type": "application/json",
+      },
+    })
+      .then((resp) => {
+        return resp.json();
+      })
+      .then((data) => {
+        $termscripts = data.data;
+        if (typeof callback !== "undefined") callback();
+      });
+  }
+
   function deleteScript() {
     if (scriptName !== undefined && scriptName !== "") {
       fetch(`http://localhost:9978/api/scripts/${scriptName}`, {
@@ -122,6 +148,7 @@
         },
       }).then(() => {
         scriptName = "";
+        scriptSel = "";
         insert = true;
         description = "";
         script = "";
@@ -129,6 +156,7 @@
         $scriptEditor.setValue(script);
         getScriptsList();
         getUserScripts();
+        getTermScriptsList();
       });
     }
   }
@@ -157,6 +185,10 @@
 
   function viewTemplateMenu() {
     $showTemplates = !$showTemplates;
+  }
+
+  function viewScriptTerm() {
+    $state = "scriptterm";
   }
 
   function changeName(newName) {
@@ -208,6 +240,14 @@
         bind:value={description}
         style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize}"
       />
+      <label id="termScriptLab" for="termScriptChk"> Terminal Script? </label>
+      <input
+        id="termScriptChk"
+        name="termScriptChk"
+        type="checkbox"
+        bind:checked={termscript}
+        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize}"
+      />
     </div>
   </div>
   <CodeMirror
@@ -242,6 +282,12 @@
       Notes
     </button>
     <button
+      on:click={viewScriptTerm}
+      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
+    >
+      Script Terminal
+    </button>
+    <button
       on:click={viewScriptsMenu}
       style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
     >
@@ -274,24 +320,26 @@
   }
 
   #description {
-    width: 785px;
+    width: 620px;
     border: solid 1px transparent;
     border-radius: 10px;
     padding: 5px 11px;
     height: 37px;
   }
 
-  #insertChkLab {
-    width: 90px;
+  #insertChkLab,
+  #termScriptLab {
+    width: 100px;
     margin: auto 5px auto 10px;
   }
 
-  #insertChk {
-    margin: auto 5px;
+  #insertChk,
+  #termScriptChk {
+    margin: auto 0px auto 5px;
   }
 
   :global(.scriptDiv) {
-    width: 680px;
+    width: 640px;
   }
 
   :global(.scriptInput) {
@@ -309,8 +357,8 @@
   .headerRow label {
     display: grid;
     justify-content: right;
-    margin: auto 20px auto 0px;
-    width: 150px;
+    margin: auto 20px auto 15px;
+    width: 155px;
   }
 
   #buttonRow {

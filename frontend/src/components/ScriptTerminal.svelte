@@ -12,7 +12,18 @@
   let commands = [];
   let curr_line = "";
   let tCommands = {
-    cd: cdCommand,
+    cd: {
+      command: cdCommand,
+    },
+    help: {
+      command: helpCommand,
+    },
+    ls: {
+      command: lsCommand,
+    },
+    open: {
+      command: openCommand,
+    },
   };
   let mode = "insert";
   let wd = "~";
@@ -39,8 +50,11 @@
     left: `${esc}[D`,
     right: `${esc}[C`,
   };
+  let homeDir = "";
 
-  onMount(() => {
+  onMount(async () => {
+    homeDir = await window.go.main.App.GetHomeDir();
+    wd = homeDir;
     term = new Terminal({
       rendererType: "canvas",
       convertEol: true,
@@ -136,6 +150,8 @@
           } else {
             mode = "insert";
           }
+        } else if (domEvent.key === "l" && domEvent.ctrlKey) {
+          term.clear();
         } else {
           //
           // Every other key, add to the line and terminal.
@@ -160,13 +176,13 @@
             term.write(termAtb.left);
             mode = "insert";
             break;
-          case "j":
+          case "k":
             if (lcommandRow !== 0) {
               lcommandRow -= 1;
               term.write(termAtb.up);
             }
             break;
-          case "k":
+          case "j":
             if (lcommandRow < lastData.data.length - 1) {
               term.write(termAtb.down);
               lcommandRow += 1;
@@ -197,9 +213,14 @@
             mode = "insert";
 
             //
+            // Add the command to the command line.
+            //
+            term.write(`${lastData.data[lcommandRow].tcommand}\n\r`);
+
+            //
             // Get the command to run and run it.
             //
-            console.log("run the line");
+            RunTerminalCommand(lastData.data[lcommandRow].tcommand);
             break;
           default:
             break;
@@ -211,6 +232,10 @@
     //
     term.focus();
   });
+
+  function splitAt(index, xs) {
+    return [xs.slice(0, index), xs.slice(index)];
+  }
 
   function ProcessLine(text) {
     //
@@ -303,46 +328,178 @@
       term.write(
         `    ${termAtb[line.color]}${line.text}${termAtb.default}\r\n`
       );
-      if (typeof line.tcommand !== "undefined" && line.command.length > 0) {
-        //
-        // We have a terminal command to perform.
-        //
-        RunTerminalCommand(line.tcommand);
-      }
     });
+  }
 
+  async function RunTerminalCommand(text) {
     //
     // Keep a list of valid commands.
     //
     commands.push(lastData.line);
 
     //
-    // Go to next line and give a prompt.
-    //
-    term.prompt();
-  }
-
-  function RunTerminalCommand(text) {
-    //
     // Get the command and it's arguments separated.
     //
     let words = text.split(" ");
     if (words.length > 0) {
-      tCommands[words[0]](words.slice(1).join(" "));
+      await tCommands[words[0]].command(words.slice(1).join(" "));
     }
+    term.prompt();
   }
 
-  function cdCommand(text) {
+  async function cdCommand(text) {
     //
     // Remove inclosing quotes
     //
-    if (text[0] === '"' || text[0] === '"') {
+    if (text[0] === '"' || text[0] === "'") {
       text = text.slice(1, text.length - 1);
     }
     if (text.length > 0) {
-      wd = text;
+      let path = new String(text);
+      if (text[0] !== "/") {
+        let ndir = new String(text);
+        let nwd = new String(wd);
+        path = await window.go.main.App.AppendPath(nwd, ndir);
+      }
+      let exists = await window.go.main.App.DirExists(path);
+      if (exists) {
+        wd = path;
+      } else {
+        term.write(`    <Error> The path "${path} doesn't exist!\n\n`);
+      }
     }
     lastData.valid = false;
+  }
+
+  async function helpCommand(text) {
+    text = text.trim().split(" ")[0];
+    if (text.length === 0) {
+      //
+      // show the commands available.
+      //
+      $termscripts.forEach((item) => {
+        //
+        // Make sure the description lines are not too long.
+        //
+        var description = [item.description];
+        let index = 80;
+        let subin = 0;
+        while (description[subin].length > index) {
+          while (description[subin][index] !== " ") index--;
+          let nsub = splitAt(index, description[subin]);
+          if (subin === 0) {
+            description = nsub;
+          } else {
+            description = description.slice(0, subin).concat(nsub);
+          }
+          subin++;
+          index = 80;
+        }
+        if (subin === 0) {
+          description = description[0];
+        } else {
+          description = description.join("\n\r          ");
+        }
+        term.write(`    ${item.name}   ${description}\n\r`);
+      });
+    } else {
+      //
+      // show the help string for the command.
+      //
+      let spt = $termscripts.find(item => item.name === text);
+      if (spt === "undefined") {
+        term.write(
+          `\n\r    ${termAtb.red}<Error>${termAtb.default} ${text} is an invalid Command.\n\r`
+        );
+      } else {
+        term.write(`    ${spt.name}  -  ${spt.help}\n\r`);
+      }
+    }
+    lastData.valid = false;
+  }
+
+  async function lsCommand(text) {
+    if (text[0] === '"' || text[0] === "'") {
+      text = text.slice(1, text.length - 1);
+    }
+    text = new String(text.trim());
+    var path = new String(wd);
+    if (text !== "") {
+      if (text[0] === "/") {
+        path = text;
+      } else {
+        path = await window.go.main.App.AppendPath(path, text);
+      }
+    }
+    var dirReal = await window.go.main.App.DirExists(path);
+    if (dirReal) {
+      var result = await window.go.main.App.ReadDir(path);
+      var lines = [];
+      for (let i = 0; i < result.length; i++) {
+        //
+        // Rewrite lastData.lines to have a tcommand for each entry printed.
+        //
+        let item = result[i];
+        let npath = await window.go.main.App.AppendPath(item.Dir, item.Name);
+        dirReal = await window.go.main.App.DirExists(npath);
+        if (dirReal) {
+          lines.push({
+            name: item.Name,
+            tcommand: `cd '${npath}'`,
+          });
+        } else {
+          lines.push({
+            name: item.Name,
+            tcommand: `open '${npath}'`,
+          });
+        }
+
+        //
+        // Print the item name.
+        //
+        term.write(`    ${item.Name}\n\r`);
+      }
+      lastData.data = lines;
+      lastData.valid = true;
+    } else {
+      let fileReal = await window.go.main.App.FileExists(path);
+      if (fileReal) {
+        term.write(`    ${text}\n\r`);
+        lastData.data = [
+          {
+            name: text,
+            tcommand: `ls '${path}'`,
+          },
+        ];
+      } else {
+        term.write(
+          `\n\r    ${termAtb.red}<Error>${termAtb.default} ${path} is an invalid Directory.\n\r`
+        );
+      }
+    }
+  }
+
+  async function openCommand(text) {
+    //
+    // Fix up the file path given to the open command.
+    //
+    if (text[0] === '"' || text[0] === "'") {
+      text = text.slice(1, text.length - 1);
+    }
+    if (text[0] !== "/") {
+      text = await window.go.main.App.AppendPath(wd, text);
+    }
+    text = new String(text.trim());
+
+    //
+    // Run the open command on the file.
+    //
+    await window.go.main.App.RunCommandLine(
+      "/usr/bin/open",
+      ["-t", text],
+      [],
+      ""
+    );
   }
 
   function viewEmailIt() {

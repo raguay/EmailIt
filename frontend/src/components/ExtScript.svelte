@@ -14,10 +14,13 @@
     // Get the list of external scripts from the server.
     //
     // extScripts {
-    //    name     - User given name for the script
-    //    script   - File name of the script
-    //    path     - directory of the script
-    //    env      - name of the environment
+    //    name         - User given name for the script
+    //    script       - File name of the script
+    //    path         - directory of the script
+    //    env          - name of the environment
+    //    description  - A description of what the script does.
+    //    help         - A help message for the script
+    //    termscript   - True if it's a termianl script. Otherwise, it's false.
     // }
     //
     if (config.script !== "new") {
@@ -29,6 +32,8 @@
         path: "",
         env: "",
         termscript: false,
+        description: "",
+        help: "",
       };
     }
     envs = await getEnvNames();
@@ -110,6 +115,22 @@
       style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       on:blur={changeScript}
       bind:value={script.name}
+    />
+    <label id="scriptDesLab" for="scriptDes">Description</label>
+    <input
+      id="scriptDes"
+      name="scriptDes"
+      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
+      bind:value={script.description}
+      on:blur={changeScript}
+    />
+    <label id="helpLab" for="help">Help</label>
+    <input
+      id="help"
+      name="help"
+      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
+      bind:value={script.help}
+      on:blur={changeScript}
     />
     <label id="scriptScript" for="scriptScript">
       What is the name of the Script file?

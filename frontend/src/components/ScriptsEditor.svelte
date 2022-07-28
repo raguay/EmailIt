@@ -90,6 +90,7 @@
             description: description,
             script: script,
             termscript: termscript,
+            help: description,
           },
         }),
       }).then(() => {
@@ -152,7 +153,6 @@
         insert = true;
         description = "";
         script = "";
-        scriptSel = "";
         $scriptEditor.setValue(script);
         getScriptsList();
         getUserScripts();

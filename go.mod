@@ -2,7 +2,11 @@ module changeme
 
 go 1.18
 
-require github.com/wailsapp/wails/v2 v2.0.0-beta.39.2
+require (
+	github.com/atotto/clipboard v0.1.4
+	github.com/otiai10/copy v1.7.0
+	github.com/wailsapp/wails/v2 v2.0.0-beta.39.2
+)
 
 require (
 	github.com/bep/debounce v1.2.1 // indirect

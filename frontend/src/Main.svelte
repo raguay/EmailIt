@@ -76,7 +76,6 @@
       })
       .then((data) => {
         $termscripts = data.data;
-        console.log($termscripts);
         if (typeof callback !== "undefined") callback();
       });
   }

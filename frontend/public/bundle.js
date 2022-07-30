@@ -1,5 +1,5 @@
 
-(function(l, r) { if (!l || l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (self.location.host || 'localhost').split(':')[0] + ':35729/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(self.document);
+(function(l, r) { if (!l || l.getElementById('livereloadscript')) return; r = l.createElement('script'); r.async = 1; r.src = '//' + (self.location.host || 'localhost').split(':')[0] + ':35730/livereload.js?snipver=1'; r.id = 'livereloadscript'; l.getElementsByTagName('head')[0].appendChild(r) })(self.document);
 var app = (function () {
     'use strict';
 
@@ -57807,7 +57807,7 @@ var app = (function () {
     			set_style(div0, "color", /*$theme*/ ctx[2].textColor);
     			set_style(div0, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(div0, "class", "svelte-1tua3so");
-    			add_location(div0, file$1, 525, 2, 13817);
+    			add_location(div0, file$1, 608, 2, 16120);
     			attr_dev(span0, "id", "modeIndicator");
 
     			attr_dev(span0, "style", span0_style_value = "background-color : " + (/*mode*/ ctx[0] === 'insert'
@@ -57815,46 +57815,46 @@ var app = (function () {
     			: /*$theme*/ ctx[2].Purple) + "; color: " + /*$theme*/ ctx[2].backgroundColor);
 
     			attr_dev(span0, "class", "svelte-1tua3so");
-    			add_location(span0, file$1, 533, 4, 14116);
+    			add_location(span0, file$1, 616, 4, 16419);
     			attr_dev(span1, "id", "workingdir");
     			attr_dev(span1, "class", "svelte-1tua3so");
-    			add_location(span1, file$1, 539, 4, 14302);
+    			add_location(span1, file$1, 622, 4, 16605);
     			attr_dev(div1, "id", "statusline");
     			set_style(div1, "background-color", /*$theme*/ ctx[2].backgroundColor);
     			set_style(div1, "color", /*$theme*/ ctx[2].textColor);
     			set_style(div1, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(div1, "class", "svelte-1tua3so");
-    			add_location(div1, file$1, 529, 2, 13964);
+    			add_location(div1, file$1, 612, 2, 16267);
     			set_style(button0, "background-color", /*$theme*/ ctx[2].textAreaColor);
     			set_style(button0, "color", /*$theme*/ ctx[2].textColor);
     			set_style(button0, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(button0, "class", "svelte-1tua3so");
-    			add_location(button0, file$1, 544, 4, 14388);
+    			add_location(button0, file$1, 627, 4, 16691);
     			set_style(button1, "background-color", /*$theme*/ ctx[2].textAreaColor);
     			set_style(button1, "color", /*$theme*/ ctx[2].textColor);
     			set_style(button1, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(button1, "class", "svelte-1tua3so");
-    			add_location(button1, file$1, 550, 4, 14582);
+    			add_location(button1, file$1, 633, 4, 16885);
     			set_style(button2, "background-color", /*$theme*/ ctx[2].textAreaColor);
     			set_style(button2, "color", /*$theme*/ ctx[2].textColor);
     			set_style(button2, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(button2, "class", "svelte-1tua3so");
-    			add_location(button2, file$1, 556, 4, 14772);
+    			add_location(button2, file$1, 639, 4, 17075);
     			set_style(button3, "background-color", /*$theme*/ ctx[2].textAreaColor);
     			set_style(button3, "color", /*$theme*/ ctx[2].textColor);
     			set_style(button3, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(button3, "class", "svelte-1tua3so");
-    			add_location(button3, file$1, 562, 4, 14958);
+    			add_location(button3, file$1, 645, 4, 17261);
     			attr_dev(div2, "id", "buttonRow");
     			attr_dev(div2, "class", "svelte-1tua3so");
-    			add_location(div2, file$1, 543, 2, 14363);
+    			add_location(div2, file$1, 626, 2, 16666);
     			attr_dev(div3, "id", "ScriptTermDiv");
     			set_style(div3, "background-color", /*$theme*/ ctx[2].backgroundColor);
     			set_style(div3, "font-family", /*$theme*/ ctx[2].font);
     			set_style(div3, "color", /*$theme*/ ctx[2].textColor);
     			set_style(div3, "font-size", /*$theme*/ ctx[2].fontSize);
     			attr_dev(div3, "class", "svelte-1tua3so");
-    			add_location(div3, file$1, 521, 0, 13648);
+    			add_location(div3, file$1, 604, 0, 15951);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -58038,7 +58038,8 @@ var app = (function () {
     		cd: { command: cdCommand },
     		help: { command: helpCommand },
     		ls: { command: lsCommand },
-    		open: { command: openCommand }
+    		open: { command: openCommand },
+    		runscript: { command: runscriptCommand }
     	};
 
     	let mode = "insert";
@@ -58516,6 +58517,75 @@ var app = (function () {
     		await window.go.main.App.RunCommandLine("/usr/bin/open", ["-t", text], [], "");
     	}
 
+    	async function runscriptCommand(text) {
+    		//
+    		// Run a script on a file or text. Make sure enough arguments were given. It requires two arguments separated by a comma:
+    		// the script name and the file name or text to be processed.
+    		//
+    		lastData.valid = false;
+
+    		var scriptName = text.split(",");
+
+    		if (scriptName.length < 2) {
+    			term.write(`\n\r    ${termAtb.red}<Error>${termAtb.default} runscript wasn't given enough arguments.\n\r`);
+    		} else {
+    			//
+    			// Get the script name and file name or text separated.
+    			//
+    			text = scriptName.splice(1).join(",").trim();
+
+    			scriptName = scriptName[0].trim();
+
+    			//
+    			// Fix up the file path given to the open command.
+    			//
+    			var isText = false;
+
+    			if (text[0] === '"' || text[0] === "'") {
+    				text = text.slice(1, text.length - 1);
+    				isText = true;
+    			}
+
+    			if (text[0] !== "/" && !isText) {
+    				text = await window.go.main.App.AppendPath(wd, text);
+    				isText = false;
+    			}
+
+    			text = new String(text.trim());
+
+    			//
+    			// Process the text based on what it is.
+    			//
+    			if (isText) {
+    				//
+    				// Send the text to run the script on.
+    				//
+    				await fetch("http://localhost:9978/api/script/run", {
+    					method: "PUT",
+    					headers: { "Content-type": "application/json" },
+    					body: JSON.stringify({ script: scriptName, text })
+    				}).then(resp => {
+    					return resp.json();
+    				}).then(data => {
+    					term.write(`\n\r     ${data.text}\n\r`);
+    				});
+    			} else {
+    				//
+    				// It is a file to run the script on.
+    				//
+    				await fetch("http://localhost:9978/api/script/run", {
+    					method: "PUT",
+    					headers: { "Content-type": "application/json" },
+    					body: JSON.stringify({ script: scriptName, text: "", file: text })
+    				}).then(resp => {
+    					return resp.json();
+    				}).then(data => {
+    					term.write(`\n\r     ${data.text}\n\r`);
+    				});
+    			}
+    		}
+    	}
+
     	function viewEmailIt() {
     		set_store_value(state, $state = "emailit", $state);
     	}
@@ -58566,6 +58636,7 @@ var app = (function () {
     		helpCommand,
     		lsCommand,
     		openCommand,
+    		runscriptCommand,
     		viewEmailIt,
     		viewNotes,
     		viewLog,

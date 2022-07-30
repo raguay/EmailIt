@@ -24,6 +24,9 @@
     open: {
       command: openCommand,
     },
+    runscript: {
+      command: runscriptCommand,
+    },
   };
   let mode = "insert";
   let wd = "~";
@@ -406,7 +409,7 @@
       //
       // show the help string for the command.
       //
-      let spt = $termscripts.find(item => item.name === text);
+      let spt = $termscripts.find((item) => item.name === text);
       if (spt === "undefined") {
         term.write(
           `\n\r    ${termAtb.red}<Error>${termAtb.default} ${text} is an invalid Command.\n\r`
@@ -500,6 +503,86 @@
       [],
       ""
     );
+  }
+
+  async function runscriptCommand(text) {
+    //
+    // Run a script on a file or text. Make sure enough arguments were given. It requires two arguments separated by a comma:
+    // the script name and the file name or text to be processed.
+    //
+    lastData.valid = false;
+    var scriptName = text.split(",");
+    if (scriptName.length < 2) {
+      term.write(
+        `\n\r    ${termAtb.red}<Error>${termAtb.default} runscript wasn't given enough arguments.\n\r`
+      );
+    } else {
+      //
+      // Get the script name and file name or text separated.
+      //
+      text = scriptName.splice(1).join(",").trim();
+      scriptName = scriptName[0].trim();
+
+      //
+      // Fix up the file path given to the open command.
+      //
+      var isText = false;
+      if (text[0] === '"' || text[0] === "'") {
+        text = text.slice(1, text.length - 1);
+        isText = true;
+      }
+      if (text[0] !== "/" && !isText) {
+        text = await window.go.main.App.AppendPath(wd, text);
+        isText = false;
+      }
+      text = new String(text.trim());
+
+      //
+      // Process the text based on what it is.
+      //
+      if (isText) {
+        //
+        // Send the text to run the script on.
+        //
+        await fetch("http://localhost:9978/api/script/run", {
+          method: "PUT",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            script: scriptName,
+            text: text,
+          }),
+        })
+          .then((resp) => {
+            return resp.json();
+          })
+          .then((data) => {
+            term.write(`\n\r     ${data.text}\n\r`);
+          });
+      } else {
+        //
+        // It is a file to run the script on.
+        //
+        await fetch("http://localhost:9978/api/script/run", {
+          method: "PUT",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            script: scriptName,
+            text: "",
+            file: text,
+          }),
+        })
+          .then((resp) => {
+            return resp.json();
+          })
+          .then((data) => {
+            term.write(`\n\r     ${data.text}\n\r`);
+          });
+      }
+    }
   }
 
   function viewEmailIt() {

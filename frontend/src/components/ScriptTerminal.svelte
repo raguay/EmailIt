@@ -7,6 +7,7 @@
   import { theme } from "../stores/theme.js";
   import { state } from "../stores/state.js";
   import { termscripts } from "../stores/termscripts.js";
+  import { aliases } from "../stores/aliases.js";
 
   let term = null;
   let commands = [];
@@ -29,6 +30,9 @@
     },
     edit: {
       command: editCommand,
+    },
+    alias: {
+      command: aliasCommand,
     },
   };
   let mode = "insert";
@@ -233,6 +237,12 @@
         }
       }
     });
+
+    //
+    // Load the aliases.
+    //
+    loadAliases();
+
     //
     // Make sure the terminal is focused.
     //
@@ -243,11 +253,11 @@
     return [xs.slice(0, index), xs.slice(index)];
   }
 
-  function ProcessLine(text) {
+  async function ProcessLine(text) {
     //
     // Get the words of the line.
     //
-    var words = text.split(" ");
+    var words = text.trim().split(" ");
     lastData.line = text;
     lastData.valid = false;
     curr_line = "";
@@ -257,35 +267,53 @@
     //
     let scrpt = $termscripts.filter((item) => item.name === words[0]);
     if (scrpt.length === 0) {
-      //
-      // Command not found. Print the error and give a new prompt.
-      //
-      term.write(
-        `\r\n\r\n    ${termAtb.red}<Error>${termAtb.default} The command "${words[0]}" wasn't found!\r\n\r\n`
-      );
-      term.prompt();
+      let alias = $aliases.filter((item) => item.name === words[0]);
+      if (alias.length === 0) {
+        //
+        // Command not found. Print the error and give a new prompt.
+        //
+        term.write(
+          `\r\n\r\n    ${termAtb.red}<Error>${termAtb.default} The command "${words[0]}" wasn't found!\r\n\r\n`
+        );
+        term.prompt();
+      } else {
+        //
+        // run the aliases commands.
+        //
+        var parts = alias[0].line.split(";");
+        for (const item of parts) {
+          await ProcessLine(item);
+        }
+      }
     } else {
       //
       // Command found. Run it!
       //
-      fetch("http://localhost:9978/api/script/run", {
-        method: "PUT",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
-          script: scrpt[0].name,
-          text: words.slice(1).join(" "),
-          envVar: { SCRIPTTERMCWD: wd },
-        }),
-      })
-        .then((resp) => {
-          return resp.json();
-        })
-        .then((data) => {
-          ProcessScriptReturn(data.text);
-        });
+      await runCommandLineScripts(scrpt[0], words.slice(1).join(" "));
     }
+  }
+
+  async function runCommandLineScripts(scrpt, args) {
+    //
+    // Command found. Run it!
+    //
+    await fetch("http://localhost:9978/api/script/run", {
+      method: "PUT",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({
+        script: scrpt.name,
+        text: args,
+        envVar: { SCRIPTTERMCWD: wd },
+      }),
+    })
+      .then((resp) => {
+        return resp.json();
+      })
+      .then((data) => {
+        ProcessScriptReturn(data.text);
+      });
   }
 
   function ProcessScriptReturn(data) {
@@ -344,11 +372,22 @@
     commands.push(lastData.line);
 
     //
-    // Get the command and it's arguments separated.
+    // Get the command and it's arguments separated. There can by any number of commands separated by a semicolon.
     //
-    let words = text.split(" ");
-    if (words.length > 0) {
-      await tCommands[words[0]].command(words.slice(1).join(" "));
+    let com = text.split(" ");
+    if (com[0].trim() !== "alias") {
+      let parts = text.split(";");
+      for (let i = 0; i < parts.length; i++) {
+        let words = parts[i].split(" ");
+        if (words.length > 0) {
+          await tCommands[words[0]].command(words.slice(1).join(" "));
+        }
+      }
+    } else {
+      //
+      // this is the alias command. Run it without decomposing the line.
+      //
+      await tCommands[com[0]].command(com.slice(1).join(" "));
     }
     term.prompt();
   }
@@ -373,6 +412,8 @@
       } else {
         term.write(`    <Error> The path "${path} doesn't exist!\n\n`);
       }
+    } else {
+      wd = homeDir;
     }
     lastData.valid = false;
   }
@@ -408,6 +449,18 @@
         }
         term.write(`    ${item.name}   ${description}\n\r`);
       });
+      //
+      // Show the aliases if any.
+      //
+      if ($aliases.length > 0) {
+        //
+        // We have aliases. Show them.
+        //
+        term.write(`\n\r    Aliases:\n\r\n\r`);
+        $aliases.forEach((item) => {
+          term.write(`    ${item.name}="${item.line}"\n\r`);
+        });
+      }
     } else {
       //
       // show the help string for the command.
@@ -603,9 +656,8 @@
     //
     // Setup the user editor data file.
     //
-    const hdir = await window.go.main.App.GetHomeDir();
     let userEditor = await window.go.main.App.AppendPath(
-      hdir,
+      homeDir,
       ".myeditorchoice"
     );
     if (!(await window.go.main.App.FileExists(userEditor))) {
@@ -692,6 +744,62 @@
     if (typeof callback !== "undefined" || callback !== null) {
       callback(err, result);
     }
+  }
+
+  async function aliasCommand(text) {
+    //
+    // Add to the Aliases.
+    //
+    let parts = text.trim().split("=");
+    if (parts.length > 1) {
+      //
+      // Add to the aliases array.
+      //
+      let ln = parts[1];
+      if (ln[0] === '"' || ln[0] === "'") {
+        ln = text.slice(1, ln.length - 1);
+      }
+      $aliases.push({
+        name: parts[0],
+        line: ln,
+      });
+
+      //
+      // Save the new alias.
+      //
+      saveAliases();
+    } else if (text.trim() === "") {
+      //
+      // List the aliases.
+      //
+      for (const item of $aliases) {
+        term.write(`\n\r    ${item.name} = "${item.line}"`);
+      }
+      term.write("\n\r");
+    } else {
+      term.write(
+        `\n\r    ${termAtb.red}<Error>${termAtb.default} Not enough parameters for an alias.\n\r`
+      );
+    }
+  }
+
+  async function loadAliases() {
+    let userAliases = await window.go.main.App.AppendPath(
+      homeDir,
+      ".myaliases"
+    );
+    if (await window.go.main.App.FileExists(userAliases)) {
+      let tmp = await window.go.main.App.ReadFile(userAliases);
+      $aliases = JSON.parse(tmp);
+    }
+  }
+
+  async function saveAliases() {
+    let userAliases = await window.go.main.App.AppendPath(
+      homeDir,
+      ".myaliases"
+    );
+    window.go.main.App.WriteFile(userAliases, JSON.stringify($aliases));
   }
 
   function viewEmailIt() {

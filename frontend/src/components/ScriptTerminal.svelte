@@ -27,6 +27,9 @@
     runscript: {
       command: runscriptCommand,
     },
+    edit: {
+      command: editCommand,
+    },
   };
   let mode = "insert";
   let wd = "~";
@@ -582,6 +585,112 @@
             term.write(`\n\r     ${data.text}\n\r`);
           });
       }
+    }
+  }
+
+  async function editCommand(text) {
+    //
+    // fix the file name.
+    //
+    if (text[0] === '"' || text[0] === "'") {
+      text = text.slice(1, text.length - 1);
+    }
+    if (text[0] !== "/") {
+      text = await window.go.main.App.AppendPath(wd, text);
+    }
+    text = new String(text.trim());
+
+    //
+    // Setup the user editor data file.
+    //
+    const hdir = await window.go.main.App.GetHomeDir();
+    let userEditor = await window.go.main.App.AppendPath(
+      hdir,
+      ".myeditorchoice"
+    );
+    if (!(await window.go.main.App.FileExists(userEditor))) {
+      //
+      // They don't have this file setup. Open in the system's default editor.  TODO: Not usable on non-macOS systems.
+      //
+      await runCommandLine(
+        `/usr/bin/open '${text}'`,
+        [],
+        (err, stdout) => {},
+        wd
+      );
+    } else {
+      //
+      // Get the user editor.
+      //
+      var editor = await window.go.main.App.ReadFile(userEditor);
+      editor = editor.toString().trim();
+      if (editor.endsWith(".app")) {
+        //
+        // Open the file with a program. TODO: Not usable on non-macOS systems.
+        //
+        await runCommandLine(
+          `/usr/bin/open -a ${editor} '${text}'`,
+          [],
+          (err, stdout) => {},
+          wd
+        );
+      } else {
+        //
+        // It is a command line editor. Open specially.
+        //
+        if (editor === "emacs") {
+          //
+          // Open emacs.
+          //
+          await runCommandLine(
+            'emacsclient -n -q "' + file + '"',
+            [],
+            (err, result) => {},
+            wd
+          );
+        }
+      }
+    }
+  }
+
+  async function runCommandLine(line, rEnv, callback, dir) {
+    //
+    // Get the environment to use. TODO: it should pull up the default environment.
+    //
+    var nEnv = {};
+    if (typeof rEnv !== "undefined") {
+      nEnv = { ...nEnv, ...rEnv };
+    }
+
+    //
+    // Fix the environment from a map to an array of strings.
+    //
+    var penv = [];
+    for (const key in nEnv) {
+      penv.push(`${key}=${nEnv[key]}`);
+    }
+
+    //
+    // Make sure dir has a value.
+    //
+    if (typeof dir === "undefined") dir = ".";
+
+    //
+    // Run the command line in a shell. #TODO: make the shell configurable.
+    //
+    var args = ["/bin/zsh", "-c", line];
+    var cmd = "/bin/zsh";
+
+    //
+    // Run the command line.
+    //
+    var result = await window.go.main.App.RunCommandLine(cmd, args, penv, dir);
+    var err = await window.go.main.App.GetError();
+    //
+    // If callback is given, call it with the results.
+    //
+    if (typeof callback !== "undefined" || callback !== null) {
+      callback(err, result);
     }
   }
 

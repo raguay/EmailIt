@@ -34,6 +34,9 @@
     alias: {
       command: aliasCommand,
     },
+    hist: {
+      command: histCommand,
+    },
   };
   let mode = "insert";
   let wd = "~";
@@ -225,12 +228,12 @@
             //
             // Add the command to the command line.
             //
-            term.write(`${lastData.data[lcommandRow].tcommand}\n\r`);
+            term.write(`${lastData.data[lcommandRow].command}\n\r`);
 
             //
             // Get the command to run and run it.
             //
-            RunTerminalCommand(lastData.data[lcommandRow].tcommand);
+            ProcessLine(lastData.data[lcommandRow].command);
             break;
           default:
             break;
@@ -331,8 +334,7 @@
     //    lines: [{
     //      text: <text to display>,
     //      color: <color to show>,
-    //      lcommand: <command line string to run>,
-    //      tcommand: <terminal Command to run>
+    //      command: <command line string to run>
     //    }, {
     //      <next line structure>
     //    }, ...]
@@ -504,12 +506,12 @@
         if (dirReal) {
           lines.push({
             name: item.Name,
-            tcommand: `cd '${npath}'`,
+            command: `cd '${npath}'`,
           });
         } else {
           lines.push({
             name: item.Name,
-            tcommand: `open '${npath}'`,
+            command: `open '${npath}'`,
           });
         }
 
@@ -559,6 +561,7 @@
       [],
       ""
     );
+    lastData.valid = false;
   }
 
   async function runscriptCommand(text) {
@@ -639,6 +642,7 @@
           });
       }
     }
+    lastData.valid = false;
   }
 
   async function editCommand(text) {
@@ -703,6 +707,7 @@
         }
       }
     }
+    lastData.valid = false;
   }
 
   async function runCommandLine(line, rEnv, callback, dir) {
@@ -772,15 +777,16 @@
       //
       // List the aliases.
       //
+      term.write("   Aliases:\n\r");
       for (const item of $aliases) {
-        term.write(`\n\r    ${item.name} = "${item.line}"`);
+        term.write(`    ${item.name} = "${item.line}"\n\r`);
       }
-      term.write("\n\r");
     } else {
       term.write(
         `\n\r    ${termAtb.red}<Error>${termAtb.default} Not enough parameters for an alias.\n\r`
       );
     }
+    lastData.valid = false;
   }
 
   async function loadAliases() {
@@ -800,6 +806,43 @@
       ".myaliases"
     );
     window.go.main.App.WriteFile(userAliases, JSON.stringify($aliases));
+  }
+
+  async function histCommand(text) {
+    //
+    // Get needed variables ready.
+    //
+    let lines = [];
+    let depth = 5;
+
+    //
+    // See if we were given a depth to show.
+    //
+    text = parseInt(text.trim());
+    if (Number.isInteger(text)) {
+      depth = text;
+    }
+
+    //
+    // Make sure we have that many commands to display.
+    //
+    if (depth > commands.length - 1) {
+      depth = commands.length - 1;
+    }
+
+    //
+    // Display the command and create the command for it. Don't show the last
+    // command as it will be the history command.
+    //
+    for (let i = commands.length - (depth + 1); i < commands.length - 1; i++) {
+      term.write(`    ${commands[i]}\n\r`);
+      lines.push({
+        name: commands[i],
+        command: commands[i],
+      });
+    }
+    lastData.data = lines;
+    lastData.valid = true;
   }
 
   function viewEmailIt() {

@@ -57809,7 +57809,7 @@ var app = (function () {
     			set_style(div0, "color", /*$theme*/ ctx[2].textColor);
     			set_style(div0, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(div0, "class", "svelte-1tua3so");
-    			add_location(div0, file_1, 825, 2, 21520);
+    			add_location(div0, file_1, 868, 2, 22477);
     			attr_dev(span0, "id", "modeIndicator");
 
     			attr_dev(span0, "style", span0_style_value = "background-color : " + (/*mode*/ ctx[0] === 'insert'
@@ -57817,46 +57817,46 @@ var app = (function () {
     			: /*$theme*/ ctx[2].Purple) + "; color: " + /*$theme*/ ctx[2].backgroundColor);
 
     			attr_dev(span0, "class", "svelte-1tua3so");
-    			add_location(span0, file_1, 833, 4, 21819);
+    			add_location(span0, file_1, 876, 4, 22776);
     			attr_dev(span1, "id", "workingdir");
     			attr_dev(span1, "class", "svelte-1tua3so");
-    			add_location(span1, file_1, 839, 4, 22005);
+    			add_location(span1, file_1, 882, 4, 22962);
     			attr_dev(div1, "id", "statusline");
     			set_style(div1, "background-color", /*$theme*/ ctx[2].backgroundColor);
     			set_style(div1, "color", /*$theme*/ ctx[2].textColor);
     			set_style(div1, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(div1, "class", "svelte-1tua3so");
-    			add_location(div1, file_1, 829, 2, 21667);
+    			add_location(div1, file_1, 872, 2, 22624);
     			set_style(button0, "background-color", /*$theme*/ ctx[2].textAreaColor);
     			set_style(button0, "color", /*$theme*/ ctx[2].textColor);
     			set_style(button0, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(button0, "class", "svelte-1tua3so");
-    			add_location(button0, file_1, 844, 4, 22091);
+    			add_location(button0, file_1, 887, 4, 23048);
     			set_style(button1, "background-color", /*$theme*/ ctx[2].textAreaColor);
     			set_style(button1, "color", /*$theme*/ ctx[2].textColor);
     			set_style(button1, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(button1, "class", "svelte-1tua3so");
-    			add_location(button1, file_1, 850, 4, 22285);
+    			add_location(button1, file_1, 893, 4, 23242);
     			set_style(button2, "background-color", /*$theme*/ ctx[2].textAreaColor);
     			set_style(button2, "color", /*$theme*/ ctx[2].textColor);
     			set_style(button2, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(button2, "class", "svelte-1tua3so");
-    			add_location(button2, file_1, 856, 4, 22475);
+    			add_location(button2, file_1, 899, 4, 23432);
     			set_style(button3, "background-color", /*$theme*/ ctx[2].textAreaColor);
     			set_style(button3, "color", /*$theme*/ ctx[2].textColor);
     			set_style(button3, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(button3, "class", "svelte-1tua3so");
-    			add_location(button3, file_1, 862, 4, 22661);
+    			add_location(button3, file_1, 905, 4, 23618);
     			attr_dev(div2, "id", "buttonRow");
     			attr_dev(div2, "class", "svelte-1tua3so");
-    			add_location(div2, file_1, 843, 2, 22066);
+    			add_location(div2, file_1, 886, 2, 23023);
     			attr_dev(div3, "id", "ScriptTermDiv");
     			set_style(div3, "background-color", /*$theme*/ ctx[2].backgroundColor);
     			set_style(div3, "font-family", /*$theme*/ ctx[2].font);
     			set_style(div3, "color", /*$theme*/ ctx[2].textColor);
     			set_style(div3, "font-size", /*$theme*/ ctx[2].fontSize);
     			attr_dev(div3, "class", "svelte-1tua3so");
-    			add_location(div3, file_1, 821, 0, 21351);
+    			add_location(div3, file_1, 864, 0, 22308);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -58092,7 +58092,8 @@ var app = (function () {
     		open: { command: openCommand },
     		runscript: { command: runscriptCommand },
     		edit: { command: editCommand },
-    		alias: { command: aliasCommand }
+    		alias: { command: aliasCommand },
+    		hist: { command: histCommand }
     	};
 
     	let mode = "insert";
@@ -58280,11 +58281,11 @@ var app = (function () {
     						//
     						// Add the command to the command line.
     						//
-    						term.write(`${lastData.data[lcommandRow].tcommand}\n\r`);
+    						term.write(`${lastData.data[lcommandRow].command}\n\r`);
     						//
     						// Get the command to run and run it.
     						//
-    						RunTerminalCommand(lastData.data[lcommandRow].tcommand);
+    						ProcessLine(lastData.data[lcommandRow].command);
     						break;
     				}
     			}
@@ -58378,8 +58379,7 @@ var app = (function () {
     		//    lines: [{
     		//      text: <text to display>,
     		//      color: <color to show>,
-    		//      lcommand: <command line string to run>,
-    		//      tcommand: <terminal Command to run>
+    		//      command: <command line string to run>
     		//    }, {
     		//      <next line structure>
     		//    }, ...]
@@ -58575,12 +58575,12 @@ var app = (function () {
     				if (dirReal) {
     					lines.push({
     						name: item.Name,
-    						tcommand: `cd '${npath}'`
+    						command: `cd '${npath}'`
     					});
     				} else {
     					lines.push({
     						name: item.Name,
-    						tcommand: `open '${npath}'`
+    						command: `open '${npath}'`
     					});
     				}
 
@@ -58622,6 +58622,8 @@ var app = (function () {
     		// Run the open command on the file.
     		//
     		await window.go.main.App.RunCommandLine("/usr/bin/open", ["-t", text], [], "");
+
+    		lastData.valid = false;
     	}
 
     	async function runscriptCommand(text) {
@@ -58691,6 +58693,8 @@ var app = (function () {
     				});
     			}
     		}
+
+    		lastData.valid = false;
     	}
 
     	async function editCommand(text) {
@@ -58763,6 +58767,8 @@ var app = (function () {
     				}
     			}
     		}
+
+    		lastData.valid = false;
     	}
 
     	async function aliasCommand(text) {
@@ -58791,14 +58797,16 @@ var app = (function () {
     			//
     			// List the aliases.
     			//
-    			for (const item of $aliases) {
-    				term.write(`\n\r    ${item.name} = "${item.line}"`);
-    			}
+    			term.write("   Aliases:\n\r");
 
-    			term.write("\n\r");
+    			for (const item of $aliases) {
+    				term.write(`    ${item.name} = "${item.line}"\n\r`);
+    			}
     		} else {
     			term.write(`\n\r    ${termAtb.red}<Error>${termAtb.default} Not enough parameters for an alias.\n\r`);
     		}
+
+    		lastData.valid = false;
     	}
 
     	async function loadAliases() {
@@ -58813,6 +58821,43 @@ var app = (function () {
     	async function saveAliases() {
     		let userAliases = await window.go.main.App.AppendPath(homeDir, ".myaliases");
     		window.go.main.App.WriteFile(userAliases, JSON.stringify($aliases));
+    	}
+
+    	async function histCommand(text) {
+    		//
+    		// Get needed variables ready.
+    		//
+    		let lines = [];
+
+    		let depth = 5;
+
+    		//
+    		// See if we were given a depth to show.
+    		//
+    		text = parseInt(text.trim());
+
+    		if (Number.isInteger(text)) {
+    			depth = text;
+    		}
+
+    		//
+    		// Make sure we have that many commands to display.
+    		//
+    		if (depth > commands.length - 1) {
+    			depth = commands.length - 1;
+    		}
+
+    		//
+    		// Display the command and create the command for it. Don't show the last
+    		// command as it will be the history command.
+    		//
+    		for (let i = commands.length - (depth + 1); i < commands.length - 1; i++) {
+    			term.write(`    ${commands[i]}\n\r`);
+    			lines.push({ name: commands[i], command: commands[i] });
+    		}
+
+    		lastData.data = lines;
+    		lastData.valid = true;
     	}
 
     	function viewEmailIt() {
@@ -58873,6 +58918,7 @@ var app = (function () {
     		aliasCommand,
     		loadAliases,
     		saveAliases,
+    		histCommand,
     		viewEmailIt,
     		viewNotes,
     		viewLog,

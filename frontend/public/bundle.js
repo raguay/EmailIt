@@ -57809,7 +57809,7 @@ var app = (function () {
     			set_style(div0, "color", /*$theme*/ ctx[2].textColor);
     			set_style(div0, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(div0, "class", "svelte-1tua3so");
-    			add_location(div0, file_1, 868, 2, 22477);
+    			add_location(div0, file_1, 1008, 2, 26027);
     			attr_dev(span0, "id", "modeIndicator");
 
     			attr_dev(span0, "style", span0_style_value = "background-color : " + (/*mode*/ ctx[0] === 'insert'
@@ -57817,46 +57817,46 @@ var app = (function () {
     			: /*$theme*/ ctx[2].Purple) + "; color: " + /*$theme*/ ctx[2].backgroundColor);
 
     			attr_dev(span0, "class", "svelte-1tua3so");
-    			add_location(span0, file_1, 876, 4, 22776);
+    			add_location(span0, file_1, 1016, 4, 26326);
     			attr_dev(span1, "id", "workingdir");
     			attr_dev(span1, "class", "svelte-1tua3so");
-    			add_location(span1, file_1, 882, 4, 22962);
+    			add_location(span1, file_1, 1022, 4, 26512);
     			attr_dev(div1, "id", "statusline");
     			set_style(div1, "background-color", /*$theme*/ ctx[2].backgroundColor);
     			set_style(div1, "color", /*$theme*/ ctx[2].textColor);
     			set_style(div1, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(div1, "class", "svelte-1tua3so");
-    			add_location(div1, file_1, 872, 2, 22624);
+    			add_location(div1, file_1, 1012, 2, 26174);
     			set_style(button0, "background-color", /*$theme*/ ctx[2].textAreaColor);
     			set_style(button0, "color", /*$theme*/ ctx[2].textColor);
     			set_style(button0, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(button0, "class", "svelte-1tua3so");
-    			add_location(button0, file_1, 887, 4, 23048);
+    			add_location(button0, file_1, 1027, 4, 26598);
     			set_style(button1, "background-color", /*$theme*/ ctx[2].textAreaColor);
     			set_style(button1, "color", /*$theme*/ ctx[2].textColor);
     			set_style(button1, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(button1, "class", "svelte-1tua3so");
-    			add_location(button1, file_1, 893, 4, 23242);
+    			add_location(button1, file_1, 1033, 4, 26792);
     			set_style(button2, "background-color", /*$theme*/ ctx[2].textAreaColor);
     			set_style(button2, "color", /*$theme*/ ctx[2].textColor);
     			set_style(button2, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(button2, "class", "svelte-1tua3so");
-    			add_location(button2, file_1, 899, 4, 23432);
+    			add_location(button2, file_1, 1039, 4, 26982);
     			set_style(button3, "background-color", /*$theme*/ ctx[2].textAreaColor);
     			set_style(button3, "color", /*$theme*/ ctx[2].textColor);
     			set_style(button3, "border-color", /*$theme*/ ctx[2].borderColor);
     			attr_dev(button3, "class", "svelte-1tua3so");
-    			add_location(button3, file_1, 905, 4, 23618);
+    			add_location(button3, file_1, 1045, 4, 27168);
     			attr_dev(div2, "id", "buttonRow");
     			attr_dev(div2, "class", "svelte-1tua3so");
-    			add_location(div2, file_1, 886, 2, 23023);
+    			add_location(div2, file_1, 1026, 2, 26573);
     			attr_dev(div3, "id", "ScriptTermDiv");
     			set_style(div3, "background-color", /*$theme*/ ctx[2].backgroundColor);
     			set_style(div3, "font-family", /*$theme*/ ctx[2].font);
     			set_style(div3, "color", /*$theme*/ ctx[2].textColor);
     			set_style(div3, "font-size", /*$theme*/ ctx[2].fontSize);
     			attr_dev(div3, "class", "svelte-1tua3so");
-    			add_location(div3, file_1, 864, 0, 22308);
+    			add_location(div3, file_1, 1004, 0, 25858);
     		},
     		l: function claim(nodes) {
     			throw new Error("options.hydrate only works if the component was compiled with the `hydratable: true` option");
@@ -58020,6 +58020,34 @@ var app = (function () {
     	return [xs.slice(0, index), xs.slice(index)];
     }
 
+    function truncateLines(text) {
+    	var description = [text];
+    	let index = 80;
+    	let subin = 0;
+
+    	while (description[subin].length > index) {
+    		while (description[subin][index] !== " ") index--;
+    		let nsub = splitAt(index, description[subin]);
+
+    		if (subin === 0) {
+    			description = nsub;
+    		} else {
+    			description = description.slice(0, subin).concat(nsub);
+    		}
+
+    		subin++;
+    		index = 80;
+    	}
+
+    	if (subin === 0) {
+    		description = description[0];
+    	} else {
+    		description = description.join("\n\r           ");
+    	}
+
+    	return description;
+    }
+
     async function runCommandLine(line, rEnv, callback, dir) {
     	//
     	// Get the environment to use. TODO: it should pull up the default environment.
@@ -58093,7 +58121,10 @@ var app = (function () {
     		runscript: { command: runscriptCommand },
     		edit: { command: editCommand },
     		alias: { command: aliasCommand },
-    		hist: { command: histCommand }
+    		hist: { command: histCommand },
+    		rm: { command: rmCommand },
+    		mkfile: { command: mkfileCommand },
+    		mkdir: { command: mkdirCommand }
     	};
 
     	let mode = "insert";
@@ -58484,32 +58515,9 @@ var app = (function () {
     				//
     				// Make sure the description lines are not too long.
     				//
-    				var description = [item.description];
+    				let description = truncateLines(item.description);
 
-    				let index = 80;
-    				let subin = 0;
-
-    				while (description[subin].length > index) {
-    					while (description[subin][index] !== " ") index--;
-    					let nsub = splitAt(index, description[subin]);
-
-    					if (subin === 0) {
-    						description = nsub;
-    					} else {
-    						description = description.slice(0, subin).concat(nsub);
-    					}
-
-    					subin++;
-    					index = 80;
-    				}
-
-    				if (subin === 0) {
-    					description = description[0];
-    				} else {
-    					description = description.join("\n\r          ");
-    				}
-
-    				term.write(`    ${item.name}   ${description}\n\r`);
+    				term.write(`    ${item.name}    ${description}\n\r`);
     			});
 
     			//
@@ -58534,7 +58542,8 @@ var app = (function () {
     			if (spt === "undefined") {
     				term.write(`\n\r    ${termAtb.red}<Error>${termAtb.default} ${text} is an invalid Command.\n\r`);
     			} else {
-    				term.write(`    ${spt.name}  -  ${spt.help}\n\r`);
+    				let help = truncateLines(spt.help);
+    				term.write(`    ${spt.name}  -  ${help}\n\r`);
     			}
     		}
 
@@ -58860,6 +58869,150 @@ var app = (function () {
     		lastData.valid = true;
     	}
 
+    	async function rmCommand(text) {
+    		let textblank = false;
+
+    		if (text[0] === '"' || text[0] === "'") {
+    			text = text.slice(1, text.length - 1);
+    		}
+
+    		text = text.trim();
+    		var path = new String(wd);
+
+    		if (text !== "") {
+    			textblank = false;
+    			text = new String(text);
+
+    			if (text[0] === "/") {
+    				path = text;
+    			} else {
+    				path = await window.go.main.App.AppendPath(path, text);
+    			}
+    		} else {
+    			textblank = true;
+    		}
+
+    		var dirReal = await window.go.main.App.DirExists(path);
+
+    		if (dirReal && textblank) {
+    			var result = await window.go.main.App.ReadDir(path);
+    			var lines = [];
+
+    			for (let i = 0; i < result.length; i++) {
+    				//
+    				// Rewrite lastData.lines to have a tcommand for each entry printed.
+    				//
+    				let item = result[i];
+
+    				let npath = await window.go.main.App.AppendPath(item.Dir, item.Name);
+
+    				lines.push({
+    					name: item.Name,
+    					command: `rm '${npath}'`
+    				});
+
+    				//
+    				// Print the item name.
+    				//
+    				term.write(`    ${item.Name}\n\r`);
+    			}
+
+    			lastData.data = lines;
+    			lastData.valid = true;
+    		} else {
+    			let fileReal = await window.go.main.App.FileExists(path);
+
+    			if (fileReal || dirReal) {
+    				//
+    				// Remove the file or directory.
+    				//
+    				await window.go.main.App.DeleteEntries(path);
+    			} else {
+    				term.write(`\n\r    ${termAtb.red}<Error>${termAtb.default} ${path} is an invalid Directory.\n\r`);
+    			}
+    		}
+    	}
+
+    	async function mkdirCommand(text) {
+    		let textblank = false;
+
+    		if (text[0] === '"' || text[0] === "'") {
+    			text = text.slice(1, text.length - 1);
+    		}
+
+    		text = text.trim();
+    		var path = new String(wd);
+
+    		if (text !== "") {
+    			textblank = false;
+    			text = new String(text);
+
+    			if (text[0] === "/") {
+    				path = text;
+    			} else {
+    				path = await window.go.main.App.AppendPath(path, text);
+    			}
+    		} else {
+    			textblank = true;
+    		}
+
+    		var dirReal = await window.go.main.App.DirExists(path);
+
+    		if (!dirReal && !textblank) {
+    			//
+    			// Create the directory.
+    			//
+    			await window.go.main.App.MakeDir(path);
+    		} else {
+    			//
+    			// It already exists.
+    			//
+    			term.write(`\r\n\r\n    ${termAtb.red}<Error>${termAtb.default} The directory "${path}" already exists!\r\n\r\n`);
+
+    			term.prompt();
+    		}
+    	}
+
+    	async function mkfileCommand(text) {
+    		let textblank = false;
+
+    		if (text[0] === '"' || text[0] === "'") {
+    			text = text.slice(1, text.length - 1);
+    		}
+
+    		text = text.trim();
+    		var path = new String(wd);
+
+    		if (text !== "") {
+    			textblank = false;
+    			text = new String(text);
+
+    			if (text[0] === "/") {
+    				path = text;
+    			} else {
+    				path = await window.go.main.App.AppendPath(path, text);
+    			}
+    		} else {
+    			textblank = true;
+    		}
+
+    		var fileReal = await window.go.main.App.FileExists(path);
+
+    		if (!fileReal && !textblank) {
+    			//
+    			// Create the file.
+    			//
+    			await window.go.main.App.MakeFile(path);
+    		} else {
+    			//
+    			// It already exists.
+    			//
+    			term.write(`\r\n\r\n    ${termAtb.red}<Error>${termAtb.default} The file "${path}" already exists!\r\n\r\n`);
+
+    			term.prompt();
+    		}
+    	}
+
     	function viewEmailIt() {
     		set_store_value(state, $state = "emailit", $state);
     	}
@@ -58910,6 +59063,7 @@ var app = (function () {
     		RunTerminalCommand,
     		cdCommand,
     		helpCommand,
+    		truncateLines,
     		lsCommand,
     		openCommand,
     		runscriptCommand,
@@ -58919,6 +59073,9 @@ var app = (function () {
     		loadAliases,
     		saveAliases,
     		histCommand,
+    		rmCommand,
+    		mkdirCommand,
+    		mkfileCommand,
     		viewEmailIt,
     		viewNotes,
     		viewLog,

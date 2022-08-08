@@ -37,6 +37,15 @@
     hist: {
       command: histCommand,
     },
+    rm: {
+      command: rmCommand,
+    },
+    mkfile: {
+      command: mkfileCommand,
+    },
+    mkdir: {
+      command: mkdirCommand,
+    },
   };
   let mode = "insert";
   let wd = "~";
@@ -430,26 +439,8 @@
         //
         // Make sure the description lines are not too long.
         //
-        var description = [item.description];
-        let index = 80;
-        let subin = 0;
-        while (description[subin].length > index) {
-          while (description[subin][index] !== " ") index--;
-          let nsub = splitAt(index, description[subin]);
-          if (subin === 0) {
-            description = nsub;
-          } else {
-            description = description.slice(0, subin).concat(nsub);
-          }
-          subin++;
-          index = 80;
-        }
-        if (subin === 0) {
-          description = description[0];
-        } else {
-          description = description.join("\n\r          ");
-        }
-        term.write(`    ${item.name}   ${description}\n\r`);
+        let description = truncateLines(item.description);
+        term.write(`    ${item.name}    ${description}\n\r`);
       });
       //
       // Show the aliases if any.
@@ -473,10 +464,34 @@
           `\n\r    ${termAtb.red}<Error>${termAtb.default} ${text} is an invalid Command.\n\r`
         );
       } else {
-        term.write(`    ${spt.name}  -  ${spt.help}\n\r`);
+        let help = truncateLines(spt.help);
+        term.write(`    ${spt.name}  -  ${help}\n\r`);
       }
     }
     lastData.valid = false;
+  }
+
+  function truncateLines(text) {
+    var description = [text];
+    let index = 80;
+    let subin = 0;
+    while (description[subin].length > index) {
+      while (description[subin][index] !== " ") index--;
+      let nsub = splitAt(index, description[subin]);
+      if (subin === 0) {
+        description = nsub;
+      } else {
+        description = description.slice(0, subin).concat(nsub);
+      }
+      subin++;
+      index = 80;
+    }
+    if (subin === 0) {
+      description = description[0];
+    } else {
+      description = description.join("\n\r           ");
+    }
+    return description;
   }
 
   async function lsCommand(text) {
@@ -843,6 +858,131 @@
     }
     lastData.data = lines;
     lastData.valid = true;
+  }
+
+  async function rmCommand(text) {
+    let textblank = false;
+    if (text[0] === '"' || text[0] === "'") {
+      text = text.slice(1, text.length - 1);
+    }
+    text = text.trim();
+    var path = new String(wd);
+    if (text !== "") {
+      textblank = false;
+      text = new String(text);
+      if (text[0] === "/") {
+        path = text;
+      } else {
+        path = await window.go.main.App.AppendPath(path, text);
+      }
+    } else {
+      textblank = true;
+    }
+    var dirReal = await window.go.main.App.DirExists(path);
+    if (dirReal && textblank) {
+      var result = await window.go.main.App.ReadDir(path);
+      var lines = [];
+      for (let i = 0; i < result.length; i++) {
+        //
+        // Rewrite lastData.lines to have a tcommand for each entry printed.
+        //
+        let item = result[i];
+        let npath = await window.go.main.App.AppendPath(item.Dir, item.Name);
+        lines.push({
+          name: item.Name,
+          command: `rm '${npath}'`,
+        });
+
+        //
+        // Print the item name.
+        //
+        term.write(`    ${item.Name}\n\r`);
+      }
+      lastData.data = lines;
+      lastData.valid = true;
+    } else {
+      let fileReal = await window.go.main.App.FileExists(path);
+      if (fileReal || dirReal) {
+        //
+        // Remove the file or directory.
+        //
+        await window.go.main.App.DeleteEntries(path);
+      } else {
+        term.write(
+          `\n\r    ${termAtb.red}<Error>${termAtb.default} ${path} is an invalid Directory.\n\r`
+        );
+      }
+    }
+  }
+
+  async function mkdirCommand(text) {
+    let textblank = false;
+    if (text[0] === '"' || text[0] === "'") {
+      text = text.slice(1, text.length - 1);
+    }
+    text = text.trim();
+    var path = new String(wd);
+    if (text !== "") {
+      textblank = false;
+      text = new String(text);
+      if (text[0] === "/") {
+        path = text;
+      } else {
+        path = await window.go.main.App.AppendPath(path, text);
+      }
+    } else {
+      textblank = true;
+    }
+    var dirReal = await window.go.main.App.DirExists(path);
+    if (!dirReal && !textblank) {
+      //
+      // Create the directory.
+      //
+      await window.go.main.App.MakeDir(path);
+    } else {
+      //
+      // It already exists.
+      //
+      term.write(
+        `\r\n\r\n    ${termAtb.red}<Error>${termAtb.default} The directory "${path}" already exists!\r\n\r\n`
+      );
+      term.prompt();
+    }
+  }
+
+  async function mkfileCommand(text) {
+    let textblank = false;
+    if (text[0] === '"' || text[0] === "'") {
+      text = text.slice(1, text.length - 1);
+    }
+    text = text.trim();
+    var path = new String(wd);
+    if (text !== "") {
+      textblank = false;
+      text = new String(text);
+      if (text[0] === "/") {
+        path = text;
+      } else {
+        path = await window.go.main.App.AppendPath(path, text);
+      }
+    } else {
+      textblank = true;
+    }
+    var fileReal = await window.go.main.App.FileExists(path);
+    if (!fileReal && !textblank) {
+      //
+      // Create the file.
+      //
+      await window.go.main.App.MakeFile(path);
+    } else {
+      //
+      // It already exists.
+      //
+      term.write(
+        `\r\n\r\n    ${termAtb.red}<Error>${termAtb.default} The file "${path}" already exists!\r\n\r\n`
+      );
+      term.prompt();
+    }
   }
 
   function viewEmailIt() {

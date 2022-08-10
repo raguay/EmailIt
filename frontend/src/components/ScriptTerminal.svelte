@@ -73,10 +73,12 @@
     right: `${esc}[C`,
   };
   let homeDir = "";
+  let exd = "";
 
   onMount(async () => {
     homeDir = await window.go.main.App.GetHomeDir();
     wd = homeDir;
+    exd = await window.go.main.App.GetExecutable();
     term = new Terminal({
       rendererType: "canvas",
       convertEol: true,

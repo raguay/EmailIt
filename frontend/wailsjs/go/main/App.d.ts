@@ -22,6 +22,8 @@ export function GetHomeDir():Promise<string>;
 
 export function GetOSName():Promise<string>;
 
+export function Getwd():Promise<string>;
+
 export function MakeDir(arg1:string):void;
 
 export function MakeFile(arg1:string):void;

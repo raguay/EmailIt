@@ -16,15 +16,37 @@
   import { templates } from "./stores/templates.js";
   import { showTemplates } from "./stores/showTemplates.js";
   import { theme } from "./stores/theme.js";
+  import { Jumper } from "svelte-loading-spinners";
 
   let starting = true;
+  let count = 0;
+  let loadItemsCount = 0;
+  const loadNumber = 4;
 
-  onMount(() => {
+  onMount(async () => {
+    //
+    // Wait to give the server time to start.
+    //
+    $state = "notready";
+    await wait(1000);
+
+    //
+    // Get stuff from the server.
+    //
     getScriptsList();
     getTermScriptsList();
     getTemplatesList();
     getTheme();
   });
+
+  function wait(ms) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        console.log("Done waiting");
+        resolve(ms);
+      }, ms);
+    });
+  }
 
   afterUpdate(() => {
     if (starting) {
@@ -44,7 +66,16 @@
       })
       .then((data) => {
         $theme = data.theme;
+        loadItemsCount++;
+        if (loadItemsCount === loadNumber) {
+          $state = "emailit";
+        }
         if (typeof callback !== "undefined") callback();
+      })
+      .catch(async () => {
+        count++;
+        await wait(100);
+        getTheme();
       });
   }
 
@@ -60,7 +91,16 @@
       })
       .then((data) => {
         $scripts = data.data;
+        loadItemsCount++;
+        if (loadItemsCount === loadNumber) {
+          $state = "emailit";
+        }
         if (typeof callback !== "undefined") callback();
+      })
+      .catch(async () => {
+        count++;
+        await wait(100);
+        getScriptsList();
       });
   }
 
@@ -76,7 +116,16 @@
       })
       .then((data) => {
         $termscripts = data.data;
+        loadItemsCount++;
+        if (loadItemsCount === loadNumber) {
+          $state = "emailit";
+        }
         if (typeof callback !== "undefined") callback();
+      })
+      .catch(async () => {
+        count++;
+        await wait(100);
+        getTermScriptsList();
       });
   }
 
@@ -92,7 +141,16 @@
       })
       .then((data) => {
         $templates = data.templates;
+        loadItemsCount++;
+        if (loadItemsCount === loadNumber) {
+          $state = "emailit";
+        }
         if (typeof callback !== "undefined") callback();
+      })
+      .catch(async () => {
+        count++;
+        await wait(100);
+        getTemplatesList();
       });
   }
 
@@ -158,8 +216,16 @@
 {:else if $state === "scriptterm"}
   <ScriptTerminal />
 {:else}
-  <div>
-    <h1>Something went wront!</h1>
+  <div
+    style="display: flex; flex-direction: column; width: 1000px; height: 500px;"
+  >
+    <div
+      style="display: flex; flex-direction: row; color: white; margin: auto;"
+    >
+      <h1 style="margin: auto 60px auto 100px;">Waiting on the Server!</h1>
+      <span style="margin: 10px; display: none;">{count}</span>
+      <Jumper size="60" color="#80ffea" unit="px" duration="1s" />
+    </div>
   </div>
 {/if}
 <ScriptMenu />

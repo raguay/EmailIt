@@ -9,6 +9,7 @@ import (
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -45,6 +46,40 @@ func NewApp() *App {
 
 // startup is called at application startup
 func (b *App) startup(ctx context.Context) {
+	//
+	// Launch the server.
+	//
+	exeLoc := b.GetExecutable()
+	exeParts := b.SplitFile(exeLoc)
+	serverLoc := b.AppendPath(exeParts.Dir, "EmailItServer")
+	fmt.Println(serverLoc)
+	if b.FileExists(serverLoc) {
+		//
+		// There is the server file. Launch it.
+		//
+		var sar []string
+		var ArgsArray [2]string
+		ArgsArray[1] = "&"
+		go b.RunCommandLine(serverLoc, ArgsArray[:], sar, exeParts.Dir)
+
+		//
+		// Launch the ScriptBar application.
+		//
+		time.Sleep(10 * time.Second)
+		ScriptBarLoc := b.AppendPath(exeParts.Dir, "ScriptBar.app")
+		if b.FileExists(ScriptBarLoc) {
+			b.SystemOpenFile(ScriptBarLoc)
+		}
+
+		//
+		// Launch the BullitenBoard application.
+		//
+		BBLoc := b.AppendPath(exeParts.Dir, "BullitenBoard.app")
+		if b.FileExists(BBLoc) {
+			b.SystemOpenFile(BBLoc)
+		}
+	}
+	fmt.Println("Everything is loaded...")
 }
 
 // domReady is called after the front-end dom has been loaded
@@ -53,6 +88,39 @@ func (b *App) domReady(ctx context.Context) {
 
 // shutdown is called at application termination
 func (b *App) shutdown(ctx context.Context) {
+	//
+	// Close the server.
+	//
+	req, err := http.NewRequest("DELETE", "http://localhost:9978/api/quit", nil)
+	_, err = http.DefaultClient.Do(req)
+	if err != nil {
+		b.err = err.Error()
+	}
+}
+
+func (b *App) SystemOpenFile(prog string) {
+	if b.FileExists(prog) {
+		var ArgsArray [2]string
+		var sar []string
+		ArgsArray[1] = prog
+		b.RunCommandLine("/usr/bin/open", ArgsArray[:], sar, "")
+	}
+}
+
+func (b *App) GetExecutable() string {
+	ex, err := os.Executable()
+	if err != nil {
+		b.err = err.Error()
+	}
+	return ex
+}
+
+func (b *App) Getwd() string {
+	wd, err := os.Getwd()
+	if err != nil {
+		b.err = err.Error()
+	}
+	return wd
 }
 
 func (b *App) ReadFile(path string) string {

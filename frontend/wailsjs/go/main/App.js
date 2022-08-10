@@ -42,6 +42,10 @@ export function GetOSName() {
   return window['go']['main']['App']['GetOSName']();
 }
 
+export function Getwd() {
+  return window['go']['main']['App']['Getwd']();
+}
+
 export function MakeDir(arg1) {
   return window['go']['main']['App']['MakeDir'](arg1);
 }

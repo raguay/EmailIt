@@ -1,8 +1,12 @@
+![EmailIt](https://socialify.git.ci/raguay/EmailIt/image?description=1&descriptionEditable=A%20email%20and%20text%20utility%20program%20with%20many%20unique%20features.&font=Source%20Code%20Pro&forks=1&issues=1&language=1&name=1&owner=1&pattern=Circuit%20Board&pulls=1&stargazers=1&theme=Dark)
+
 [![Richard's GitHub stats](https://github-readme-stats.vercel.app/api?username=raguay)](https://github.com/anuraghazra/github-readme-stats)
 
 # EmailIt
 
 A simple program for sending emails quickly through the EmailItServer. It also has notes, scripts to act on the text, and templates. I'm still actively developing this program, but the basics are functional. I've only built it as a macOS universal build. I'll be adding other builds in the future. This program is built with [Wails](https://wails.io/) and [Svelte](https://svelte.dev/).
+
+If you have questions, you can ask them in the [Discussions](https://github.com/raguay/EmailIt/discussions). If you have a bug, please create an [Issue](https://github.com/raguay/EmailIt/issues) for it. Thanks.
 
 ## How to build
 

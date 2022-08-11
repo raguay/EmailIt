@@ -81,7 +81,7 @@ After the server launches, the EmailIt main screen is shown:
 
 Here, you can easily type in an email address, a subject line, and the text body. The text body is assumed to be markdown format and will be converted to html before sending. The buttons along the bottom show the different functions that can be accessed at this screen. Any email used is saved into the [Address Book](#address-book). When you enter the `To` field, a list of addresses from the Address Book will be displayed. As you type, the list will contract to the ones that match what you are typing.
 
-![EmailIt Addresses Display](/images/addressesdialog.png)
+![EmailIt Addresses Display](/images/addressdialog.png)
 
 Before you can send an email, the email SMPT servers need to be setup. When you first run the program without any server, the button that says `CustomCT` will say `Create a New Account`. When you click it, you will be shown the accounts dialog.
 

@@ -87,12 +87,23 @@ Before you can send an email, the email SMPT servers need to be setup. When you 
 
 ![EmailIt Accounts Dialog](/images/account.png)
 
-I have several accounts setup, but for your first time, it will only have the buttons on the bottom. When you click on of the account buttons, that account is set to the `Current Account`. If you click `Cancel`, the current account to go back to the one when you first entered this dialog. If you click `Delete`, the `Current Account` will be deleted and changed to the topmost account in the list. If you click `Save`, you will go to the main screen with the account button showing the name of the account you selected. If you click `New`, the New Account dialog will be shown.
+I have several accounts setup, but for your first time, it will only have the buttons on the bottom. When you click on of the account buttons, that account is set to the `Current Account`. If you click `Cancel`, the current account will go back to the one when you first entered this dialog. If you click `Delete`, the `Current Account` will be deleted and changed to the topmost account in the list. If you click `Save`, you will go to the main screen with the account button showing the name of the account you selected. If you click `New`, the New Account dialog will be shown.
 
 ![EmailIt New Account Top](/images/newaccount1.png)
 
+The `Default` checkbox will make the new account the default account. All the other fields are fairly self explanitory. They are the different information needed to connect to most SMPT servers. I am using the [NodeMailer](https://nodemailer.com/about/) library to send the emails. You can read a great description of what to setup in their documentation. If you are using Google Gmail, make sure to see that section of the documentation to setup your Gmail account correctly.
+
 ![EmailIt New Account Bottom](/images/newaccount2.png)
 
+When you scroll down the new accounts dialog, the bottom fields are seen. The `Signiture` field is added to the end of all your emails. This should be in HTML format. The `Header HTML` and `Footer HTML` will be placed at the top and bottom of your email. This is where you can customise the look of your email with font size, color changes, etc. You would put an opening `<div>` with your custom styling in the header HTML and the footer HTML would close it out.
+
+When you are done, simply click `Save` or `Cancel` if you don't want to save it. Either one will take you back to the main screen.
+
+Once your message is typed, addressed, and has a subject, you can click the `Preview` button to see what it will look like:
+
+![EmailIt Preview](/images/preview.png)
+
+If you like what you see, you can click `Send It`
 
 ## Address Book
 

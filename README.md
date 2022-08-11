@@ -40,7 +40,13 @@ wails dev
 
 This requires the [EmailItServer](https://github.com/raguay/EmailItServer.git) for the back-end logic if you are making it yourself or running the dev version.
 
-EmailIt automatically launches the EmailItServer and [ScriptBar](https://github.com/raguay/ScriptBarApp) if you are using the latest download.
+EmailIt automatically launches the EmailItServer and [ScriptBar](https://github.com/raguay/ScriptBarApp) if you are using the latest download. To build the same, you have to have [mask]() installed and the EmailItServer and the ScriptBarApp copied in directory that contains the EmailIt code. The maskfile.md script can then be ran using:
+
+```sh
+mask build
+```
+
+You can look at the maskfile.md file to see what the build command does if you don't want to use mask itself.
 
 ## Documentation
 
@@ -51,6 +57,7 @@ I use this program everyday and is very helpful to my workflow. I hope you enjoy
 ### Table of Contents
 
 - [How To Use](#how-to-use)
+- [Address Book](#address-book)
 - [Scripts](#scripts)
 - [Templates](#templates)
 - [Script Terminal](#script-terminal)
@@ -64,7 +71,17 @@ I use this program everyday and is very helpful to my workflow. I hope you enjoy
 
 ## How to Use
 
-EmailIt is a program to email markdown based emails quickly, nine notes to organize thoughts, scripts to change the text, templates to create basic formats for notes or emails, a Node-Red server, and more. The scripts, templates, and notes can be used from other programs as well. I've created workflows for Alfred, Launchpad, Keyboard Maestro, and others.
+When you launch the program, it will first show the server loading screen:
+
+![Server Loading](/images/serverloading.png)
+
+After the server launches, the EmailIt main screen is shown:
+
+![EmailIt Main Screen](/images/mainscreen.png)
+
+Here, you can easily type in an email address, a subject line, and the text body. The text body is assumed to be markdown format and will be converted to html before sending. The buttons along the bottom show the different functions that can be accessed at this screen. Any email used is saved into the [Address Book](#address-book)
+
+## Address Book
 
 NOTE: Work in progress.
 

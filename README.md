@@ -58,6 +58,7 @@ I use this program everyday and is very helpful to my workflow. I hope you enjoy
 
 - [How To Use](#how-to-use)
 - [Address Book](#address-book)
+- [Notes](#notes)
 - [Scripts](#scripts)
 - [Templates](#templates)
 - [Script Terminal](#script-terminal)
@@ -103,9 +104,13 @@ Once your message is typed, addressed, and has a subject, you can click the `Pre
 
 ![EmailIt Preview](/images/preview.png)
 
-If you like what you see, you can click `Send It`
+If you like what you see, you can click `Send It`. Since my configuration doesn't setup any background or foreground colors, you see the default for the EmailIt program (or if you change the theme, whatever the new theme uses). The person that receives it will see the colors their email program uses (usually white background with black type). If you click `Edit`, you will go back to the main screen with the information you typed in still there.
 
 ## Address Book
+
+NOTE: Work in progress.
+
+## Notes
 
 NOTE: Work in progress.
 

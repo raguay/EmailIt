@@ -50,7 +50,7 @@ You can look at the maskfile.md file to see what the build command does if you d
 
 ## Documentation
 
-EmailIt came about when my favorite emails sending program went vaporware on me (The Let.ter application for macOS). I still needed a way to send markdown based emails to people quickly. I then merged in the [ScriptPad](https://github.com/raguay/SvelteScriptPad) program I created to have multiple notes, text altering scripts, and templates. I've also integrated the [ScriptBar](https://github.com/raguay/ScriptBarApp) program since it needs the EmailIt server to run.
+EmailIt came about when my favorite email sending program went vaporware on me (The Let.ter application for macOS). I still needed a way to send markdown based emails to people quickly. I then merged in the [ScriptPad](https://github.com/raguay/SvelteScriptPad) program I created to have multiple notes, text altering scripts, and templates. I often need to reference or copy something from a note to an email. I also have many email templates that I use in the Template interface. I've also integrated the [ScriptBar](https://github.com/raguay/ScriptBarApp) program since it needs the EmailIt server to run. The EmailItServer is a full web server that only allows localhost connections for security. It also contains a Node-Red server that I use for many automation tasks. The ScriptBarApp displays information from the Node-Red server and scripts that are ran that conform to the [TextBar](http://richsomerfield.com/apps/textbar/) or [xBar](https://xbarapp.com/) formats (xBar currently isn't working, but it is my goal.).
 
 I use this program everyday and is very helpful to my workflow. I hope you enjoy it as well.
 
@@ -79,7 +79,20 @@ After the server launches, the EmailIt main screen is shown:
 
 ![EmailIt Main Screen](/images/mainscreen.png)
 
-Here, you can easily type in an email address, a subject line, and the text body. The text body is assumed to be markdown format and will be converted to html before sending. The buttons along the bottom show the different functions that can be accessed at this screen. Any email used is saved into the [Address Book](#address-book)
+Here, you can easily type in an email address, a subject line, and the text body. The text body is assumed to be markdown format and will be converted to html before sending. The buttons along the bottom show the different functions that can be accessed at this screen. Any email used is saved into the [Address Book](#address-book). When you enter the `To` field, a list of addresses from the Address Book will be displayed. As you type, the list will contract to the ones that match what you are typing.
+
+![EmailIt Addresses Display](/images/addressesdialog.png)
+
+Before you can send an email, the email SMPT servers need to be setup. When you first run the program without any server, the button that says `CustomCT` will say `Create a New Account`. When you click it, you will be shown the accounts dialog.
+
+![EmailIt Accounts Dialog](/images/account.png)
+
+I have several accounts setup, but for your first time, it will only have the buttons on the bottom. When you click on of the account buttons, that account is set to the `Current Account`. If you click `Cancel`, the current account to go back to the one when you first entered this dialog. If you click `Delete`, the `Current Account` will be deleted and changed to the topmost account in the list. If you click `Save`, you will go to the main screen with the account button showing the name of the account you selected. If you click `New`, the New Account dialog will be shown.
+
+![EmailIt New Account Top](/images/newaccount1.png)
+
+![EmailIt New Account Bottom](/images/newaccount2.png)
+
 
 ## Address Book
 

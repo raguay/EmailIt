@@ -108,21 +108,35 @@ If you like what you see, you can click `Send`. Since my configuration doesn't s
 
 ## Address Book
 
+![Address Book](/images/addressbook.png)
+
 NOTE: Work in progress.
 
 ## Notes
+
+![Notes](/images/notes.png)
 
 NOTE: Work in progress.
 
 ## Scripts
 
+![Scripts Menu](/images/scriptmenu.png)
+
+![Scripts Editor](/images/scripteditor.png)
+
 NOTE: Work in progress.
 
 ## Templates
 
+![Templates Menu](/images/templatemenu.png)
+
+![Templates Editor](/images/templateeditor.png)
+
 NOTE: Work in progress.
 
 ## Script Terminal
+
+![Script Terminal](/images/scriptterminal.png)
 
 NOTE: Work in progress.
 
@@ -130,23 +144,39 @@ NOTE: Work in progress.
 
 NOTE: Work in progress.
 
-## General
+### General
+
+![General Preferences](/images/generalpref.png)
 
 NOTE: Work in progress.
 
-## Theme
+### Theme
+
+![Theme Preferences](/images/themepref.png)
 
 NOTE: Work in progress.
 
-## Node-Red
+### Node-Red
+
+![Node-Red Preferences](/images/noderedpref.png)
 
 NOTE: Work in progress.
 
-## External Scripts
+### External Scripts
+
+![External Scripts Preferences](/images/externalscripts.png)
+
+![Adding an External Script](/images/addingexternalscript.png)
+
+![Adding an External Script](/images/addingexternalscript2.png)
 
 NOTE: Work in progress.
 
-## Environments
+### Environments
+
+![Environments Preferences](/images/environments.png)
+
+![Adding an Environment](/images/addingenvironment.png)
 
 NOTE: Work in progress.
 

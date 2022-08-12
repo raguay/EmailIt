@@ -388,21 +388,44 @@ The Node-Red server has three special nodes for EmailIt: SPlogger, SPScripts, an
 
 ### External Scripts
 
+You can use external scripts to process text and for use in the Scripts Terminal. To setup a external script for using in EmailIt, simply go to the External Scripts Preferences.
+
 ![External Scripts Preferences](/images/externalscripts.png)
+
+The main screen shows the currently created external scripts. Clicking on a script name will open it in the External Script Editor. Clicking the `New` button will open the External Script Editor in a blank script.
 
 ![Adding an External Script](/images/addingexternalscript.png)
 
+Here you setup the different setting for the external script.
+
+The `Name` field is the name used in the Scripts Menu and for the `SPRunScript` Node-Red node. It doesn't have to anything to do with the actual name of the script file.
+
+The `Description` field is used to describe the action the script will perform. For Terminal Scripts, it will be shown in the general help builtin command.
+
+The `Help` field is displayed for terminal commands when you add the script name to the `help` builtin command.
+
+The `What's the name of the Script File?` is where you put the real name of the script. This should be the main file for running the script. It should be executable and have the proper `#!` (shebang) as the first line of the script.
+
+The `What's the directory of the script?` field is the full path to the directory that contains the script.
+
+
 ![Adding an External Script](/images/addingexternalscript2.png)
 
-NOTE: Work in progress.
+The `What is the environment for the script?` is a drop-down selector for selecting the environment to use for running the script.
+
+The `Terminal Script?` checkbox is for specifying if this is a terminal script.
 
 ### Environments
 
+All external scripts are ran using an environment. The environment describes the environment variables that are set before running the script. This is very useful for setting up a path for a particular version of a program. Scripts are always ran in the directory of the script.
+
 ![Environments Preferences](/images/environments.png)
+
+The main screen shows the different environments defined already. If there isn't a `Default` environment, then a button is shown to create it. Clicking on an environment name opens it in the environment editor.
 
 ![Adding an Environment](/images/addingenvironment.png)
 
-NOTE: Work in progress.
+The environment editor has the name at the top just like in the Theme Editor. Changing the name allows you to create a new environment based on the currently selected one. You can delete rows by clinking the `X` or edit the row by clicking the pencil. The `Delete` button will delete the currently displayed environment. The `Return` button will save all changes and go back to the environment list.
 
 ### EmailIt Server
 

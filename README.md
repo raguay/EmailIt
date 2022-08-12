@@ -50,7 +50,7 @@ You can look at the maskfile.md file to see what the build command does if you d
 
 ## Documentation
 
-EmailIt came about when my favorite email sending program went vaporware on me (The Let.ter application for macOS). I still needed a way to send markdown based emails to people quickly. I then merged in the [EmailIt](https://github.com/raguay/SvelteEmailIt) program I created to have multiple notes, text altering scripts, and templates. I often need to reference or copy something from a note to an email. I also have many email templates that I use in the Template interface. I've also integrated the [ScriptBar](https://github.com/raguay/ScriptBarApp) program since it needs the EmailIt server to run. The EmailItServer is a full web server that only allows localhost connections for security. It also contains a Node-Red server that I use for many automation tasks. The ScriptBarApp displays information from the Node-Red server and scripts that are ran that conform to the [TextBar](http://richsomerfield.com/apps/textbar/) or [xBar](https://xbarapp.com/) formats (xBar currently isn't working, but it is my goal.).
+EmailIt came about when my favorite email sending program went vaporware on me (The Let.ter application for macOS). I still needed a way to send markdown based emails to people quickly. I then merged in the functionality of [ScriptPad](https://github.com/raguay/SvelteScriptPad) program I created to have multiple notes, text altering scripts, and templates. I often need to reference or copy something from a note to an email. I also have many email templates that I use in the Template interface. I've also integrated the [ScriptBar](https://github.com/raguay/ScriptBarApp) program since it needs the EmailIt server to run. The EmailItServer is a full web server that only allows localhost connections for security. It also contains a Node-Red server that I use for many automation tasks. The ScriptBarApp displays information from the Node-Red server and scripts that are ran that conform to the [TextBar](http://richsomerfield.com/apps/textbar/) or [xBar](https://xbarapp.com/) formats (xBar currently isn't working, but it is my goal.).
 
 I use this program everyday and is very helpful to my workflow. I hope you enjoy it as well.
 
@@ -69,6 +69,7 @@ I use this program everyday and is very helpful to my workflow. I hope you enjoy
   - [External Scripts](#external-scripts)
   - [Environments](#environments)
 - [EmailIt Server](#emailit-server)
+- [ScriptBar](#scriptbar)
 - [Change Log](#change-log)
 
 ## How to Use
@@ -415,6 +416,10 @@ on this base. These endpoints only allow access from requests on the same machin
 | /nodered/var/<name> | A GET request will return the current value of the Node-Red variable. A PUT request will set the Node-Red variable to the `text` element of the JSON structure in the body. |
 
 All the endpoints are used to make the plugins for Alfred, Keyboard Maestro, Dropzone, PopClip, and Launchpad. Also, the ScriptBar program uses these endpoints as well. I'm planning to add serving pages on the user's computer as well.
+
+### ScriptBar
+
+NOTE: Work in progress.
 
 ## Change Log
 

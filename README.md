@@ -50,7 +50,7 @@ You can look at the maskfile.md file to see what the build command does if you d
 
 ## Documentation
 
-EmailIt came about when my favorite email sending program went vaporware on me (The Let.ter application for macOS). I still needed a way to send markdown based emails to people quickly. I then merged in the [ScriptPad](https://github.com/raguay/SvelteScriptPad) program I created to have multiple notes, text altering scripts, and templates. I often need to reference or copy something from a note to an email. I also have many email templates that I use in the Template interface. I've also integrated the [ScriptBar](https://github.com/raguay/ScriptBarApp) program since it needs the EmailIt server to run. The EmailItServer is a full web server that only allows localhost connections for security. It also contains a Node-Red server that I use for many automation tasks. The ScriptBarApp displays information from the Node-Red server and scripts that are ran that conform to the [TextBar](http://richsomerfield.com/apps/textbar/) or [xBar](https://xbarapp.com/) formats (xBar currently isn't working, but it is my goal.).
+EmailIt came about when my favorite email sending program went vaporware on me (The Let.ter application for macOS). I still needed a way to send markdown based emails to people quickly. I then merged in the [EmailIt](https://github.com/raguay/SvelteEmailIt) program I created to have multiple notes, text altering scripts, and templates. I often need to reference or copy something from a note to an email. I also have many email templates that I use in the Template interface. I've also integrated the [ScriptBar](https://github.com/raguay/ScriptBarApp) program since it needs the EmailIt server to run. The EmailItServer is a full web server that only allows localhost connections for security. It also contains a Node-Red server that I use for many automation tasks. The ScriptBarApp displays information from the Node-Red server and scripts that are ran that conform to the [TextBar](http://richsomerfield.com/apps/textbar/) or [xBar](https://xbarapp.com/) formats (xBar currently isn't working, but it is my goal.).
 
 I use this program everyday and is very helpful to my workflow. I hope you enjoy it as well.
 
@@ -68,6 +68,7 @@ I use this program everyday and is very helpful to my workflow. I hope you enjoy
   - [Node-Red](#node-red)
   - [External Scripts](#external-scripts)
   - [Environments](#environments)
+- [EmailIt Server](#emailit-server)
 - [Change Log](#change-log)
 
 ## How to Use
@@ -108,59 +109,275 @@ If you like what you see, you can click `Send`. Since my configuration doesn't s
 
 ## Address Book
 
+When you click `Address Book` on the main window, you will get the Address Book dialog.
+
 ![Address Book](/images/addressbook.png)
 
-NOTE: Work in progress.
+Here, you can edit an address by clicking the pencil, delete an address by clicking the `X`, and create a new address by clicking `New` button. These addresses are collected when you write an email or when you add them in this dialog.
 
 ## Notes
 
+When you click `Notes` button on the main screen, you will see the notes you are keeping in the program.
+
 ![Notes](/images/notes.png)
 
-NOTE: Work in progress.
+The nine color circles to the right select the different notes. I use one as a scratch pad for running text altering scripts. The buttons on the bottom go to different parts of the program.
 
 ## Scripts
 
+In the EmailIt editor or the Notes editor, you can click the `Scripts` button or `<ctrl>-m` to toggle the scripts menu. 
+
 ![Scripts Menu](/images/scriptmenu.png)
+
+The input at the top allows you to search the list by removing all items that don't match the letters you type. When you select a script and have text selected, it will process that text with the script and replace it with the results. If you don't select text, it will process the entire note.
+
+You can create or edit your scripts when you press the `Edit Scripts` button.
 
 ![Scripts Editor](/images/scripteditor.png)
 
-NOTE: Work in progress.
+The script editor is where you can create or edit your different scripts. System scripts or External scripts can't be edited here. When you type the `Name` field, it will show scripts similar to what you type. If you select one of them, you can edit that script. If you give a unique name, you can create that script.
+
+The `Insert?` checkbox is for telling the editor to insert the output of the script. 
+
+The `Terminal Script` tells the program that the script is for the Script Terminal and the output is a JSON structure for displaying information that can be acted upon. This is described more in the [Script Terminal](#script-terminal) section.
+
+The `Description` field is for a brief description of what the script does. For a Terminal Script, it is displayed in the `help` command.
+
+The text editor area is for writing your JavaScript routine. The `SP` object is how you get information and run different functions. 
+
+The variable `SP.text` contains either all the text in the note if there wasn't
+a selection, or just the selected text. You read this variable to get the text to
+process and write into the variable what you want to replace either the selection
+or all the text in the notepad.
+
+There are some predefined libraries in variables for your scripts to use. You
+can make use of the following:
+
+|  |  |
+| -- | ---- |
+| SP.mathjs | [Math.js library](http://mathjs.org/) |
+| SP.mathParser | The Math.js parser used to process text |
+| SP.moment | [moment.js library](https://momentjs.com) |
+| SP.Handlebars | [Handlebars library](https://handlebarsjs.com/) |
+
+The are some predefined function available as well:
+
+|  |  |
+| -- | ---- |
+| SP.insertCharacters(`<num>`,`<char>`) | This function makes a string of `<num>` `<char>`. |
+| SP.returnNote(`<id>`) | This function returns the note with the `<id>`. |
+| SP.runScript(`<scrpt>`,`<text>`) | This function runs the `<scrpt>` as a string on the `<text>` text. |
+| SP.ProcessMathSelection(`<text>`) | Runs the given text through the Math.js parser. |
+| SP.ProcessMathNote(`<id>`) | Run the given note id through the Math.js parser. |
+
+I have plans for creating more functions to be used. Stay tuned!
+
+You can create script in one note and use a different note for the input. 
+For example, in a note, place the following code:
+
+```js
+
+try {
+  var lines = SP.text.split('\n');
+  SP.text = '';
+  for(var i = 0; i < lines.length ; i++) {
+      var match = lines[i].trim().match(/^\d+\. (.*)$/);
+    if (match != null)
+        SP.text += match[1] + '\n';
+  }
+} catch (e) {
+   SP.text += "\n\n" + e.toString()
+}
+
+```
+
+Then go to a different note and place several lines of text. Run the
+script `Bullet lines with Numbers`. Every line will have the proper number at
+the front of it. Now, run the script `Evaluate Note # as Script` with `#` the
+number of the note where you put the script. The numbers at the beginning will now be
+removed! You can use the script editor to save this script and use it from the
+script menu.
+
+There are scripts for processing math: the 'Basic Math' and 'Evaluate Page for
+Math' scripts. The 'Basic Math' script is for processing arbitrary pieces of math
+in a selection. The 'Evaluate Page for Math' script is for processing the entire
+note with a nice running result along the right. The 'Basic Math' script doesn't
+reset the state of the math library (ie: variable definitions and functions),
+but the 'Evaluate Page for Math' does each time invoked so as to not create
+multiple copies of function and variables.
+
+Copy the following note to a notepad:
+
+```md
+
+# Using the ‘Evaluate Page for Math’ script
+
+Your notes can have any text you need. But when a line starts with a ‘>’, t
+hat whole line is processed for math. The line is processed and the answer pushed
+to the right with a ‘|’ symbol.
+
+> 6 * 95
+> x=6*8-10
+> x
+
+Text in the middle doesn’t clear out the variable or function assignments before it.
+
+> f(x)=x^2-5*x+12
+> f(60)
+> f(x)
+
+The length of the note isn’t a concern either.
+
+> f(100)
+
+> bank=34675
+> check=5067
+> balance = bank - check
+
+> sin(45)
+
+The math package used doesn’t do conversions or symbols inside of the mat
+h expressions. The math library used is [mathjs 4.0](http://mathjs.org/).
+
+```
+
+Then press `<ctrl>-m` and select the 'Evaluate Page for Math' script. Each
+line with the '>' as the front character now has the results to the right.
+When you change the text lines and re-run the script, the math lines are all 
+updated. All other lines are not effected by the script. You can change any
+equation or variable and it's effects will trickle down the page.
 
 ## Templates
 
+In the EmailIt editor or the Notes editor, you can click the `Templates` button or `<ctrl>-t` to toggle the template menu. 
+
 ![Templates Menu](/images/templatemenu.png)
+
+The input at the top will filter the list according to the letters typed. When you select a template, it is placed at the cursor point in the note.
+
+You can create/delete/edit templates in the Template Editor. You access the Template Editor by the `Edit Template` button at the bottom of the Note Editor.
 
 ![Templates Editor](/images/templateeditor.png)
 
-NOTE: Work in progress.
+When you type in the `Name` field, a list of templates that match the text is given. Selecting one of the templates allow you to edit that template. By typing a new name, you can create a new template.
+
+The `Description` field is for giving a short description.
+
+To save the new or edited template, you press the `Save` button at the bottom. To delete the current template in the editor, press the `Delete` button at the bottom of the editor.
+
+The text editor is where you create your template. Templates are processed using [Handlebars](https://handlebarsjs.com/) parser. Handlebars allows you to have a text file with anything in it along with some macros. Some macros need auguments and some do not. The macros are expanded and placed into the text. Macros with arguments are called helpers. Along with the standard Handlebar helpers, several others have been added as well. The following is an explanation of the additional helpers:
+
+| | |
+|--|----|
+| `{{save <name> <text>}}` | This command creates a helper named `<name>` with the expanding text of `<text>`. It also places the given `<text>` at the point of definition. This allows you to create text snippets on the fly inside the template. Very handy. |
+| `{{clipboard}}` | This helper command places the current clipboard contents at the point in the template. |
+| `{{date <format>}}` | This will format the current date and time as per the format string given. See the help document that is loaded upon initialization. |
+| `{{cdate <date/time> <format>}}` | This takes the date/time string and formats it according to the format given. See the help document that is loaded upon initialization. |
+| `{{env <name>}}` | This will place the environment variable that matches `<name>` at that location |
+| `{{last <weeks> <dow> <format>}}` | This will print the date `<weeks>` ago in the `<format>` format for the `<dow>` day of week. |
+| `{{next <weeks> <dow> <format>}}` | This will print the date `<weeks>` in the future using the `<format>` format for the `<dow>` day of week. |
+| `{{userfillin <question> <default>}}` | This will prompt the user with `<question>` and put the `<default>` as a quick answer. The response will be put into the template. |
+| `{{copyclip <clipname>}}` | This will put the Alfred Copy Clip workflow's `<clipname>` into the template. |
+
+The following data expansions are defined as well:
+
+| | |
+|--|----|
+| `{{cDateMDY}}` | gives the current date in Month Day, 4-digit year format |
+| `{{cDateDMY}}` | gives the current date in Day Month 4-digit Year format |
+| `{{cDateDOWDMY}}` | gives the current date in Day of Week, Day Month 4-digit year format |
+| `{{cDateDOWMDY}}` | gives the current date in Day of Week Month Day, 4-digit year format |
+| `{{cDay}}` | gives the current date in Day format |
+| `{{cMonth}}` | gives the current date in Month format |
+| `{{cYear}}` | gives the current date in 4-digit year format |
+| `{{cMonthShort}}` | gives the current date in Short Month name format |
+| `{{cYearShort}}` | gives the current date in 2-digit year format |
+| `{{cDOW}}` | gives the current date in Day of Week format |
+| `{{cMDthYShort}}` | gives the current date in Month day 2-digit year format |
+| `{{cMDthY}}` | gives the current date in Month Day 4-digit year format |
+| `{{cHMSampm}}` | gives the current date in h:mm:ss a format |
+| `{{cHMampm}}` | gives the current date in h:mm a format |
+| `{{cHMS24}}` | gives the current date in H:mm:ss 24 hour format |
+| `{{cHM24}}` | gives the current date in H:mm 24 hour format |
+
+I'm working on a way to have user defined Handlebar helpers and macros. 
 
 ## Script Terminal
 
+The Script Terminal is a terminal that runs scripts in the EmailIt program on text given or on files given. You can go to the Script Terminal by pressing the `ScriptTerminal` button in the Log screen, Notes screen, or the Script Editor Screen.
+
 ![Script Terminal](/images/scriptterminal.png)
 
-NOTE: Work in progress.
+By typing help, you will see all script terminal commands and scripts. The current list of builtin commands are:
+
+|  |  |
+|--|----|
+| help |   Show the help command in the terminal. |
+| ls   |   List the items in the specified directory. |
+| cd   |   A terminal script for changing directories. |
+| open |   Open the file given. |
+| runscript |   Run a script on a file or text string. |
+| edit  |  Edit the given file. |
+| alias |   The alais command allows you to substitute a single command for a list of commands. |
+| hist  |  The hist command lists the previous command lines that worked. You can activate one to rerun the command. |
+| rm    |  The rm command will delete the given file or directory. If nothing is given, it will list the current directory and an item can be delete using the command mode and r. |
+| mkdir |   The mkdir command makes the given directory if it doesn't already exist. |
+| mkfile |  The mkfile command makes the given file if it doesn't already exist. |
+
+The terminal has two operational modes: Command, and Insert. The Insert mode is the normal state of the terminal where you can type in commands and perform normal actions. The Command state is entered by pressing the `<ESC>` key. Not all commands allow for entering the Command state. In the command state, the cursor is placed on the last output line of the last command. You can go up the list with `k` key and down the list with the `j` key (normal Vim keystrokes). If you press the `r` key, the commands associated with that line (not displayed but in the terminal script output JSON structure) is printed on the command line and executed. You can leave the Command state by pressing the `i` key (for insert).
+
+The `ls`, `hist`, and `rm` builtin commands allow for entering the Command state on their output.
+
+This is in no way a full terminal emulator. It is a simple line based command running terminal. No pipes, redirections, flow control, etc. I mostly use this to run scripts on text files. You can run several commands at once by separating them with a `;`. Only the last command ran can be used for entering the Command state. The semicolon can be used in the commands for the Command state or `tcommand` fields in the terminal script JSON output.
+
+All terminal script have to take in a text line and output a JSON structure that tells the script terminal what to do. The JSON structure is:
+
+```JSON
+{
+  tcommand: <terminal command to run>
+  lines: [{
+    text: <text to display>,
+    color: <color to show>,
+    command: <command line string to run>
+  }, {
+     <next line structure>
+  }, ...]
+}
+```
+
+The `tcommand` is a builtin command that is ran directly when the command is ran.
+
+The `lines` structure is an array of objects containing a `text` field with the text to be printed to the terminal, `color` field is the color to print the output in, and a `command` field to be executed when the `r` key is pressed in Command state.
+
+The valid colors are: red, black, green, orange, blue, magenta, cyan, gray, and default. These colors are controlled by the current theme for EmailIt. The default color is the text color.
 
 ## Preferences
 
-NOTE: Work in progress.
+The preferences can be reached by pressing `<ctrl>-p` or `<cmd>-,` anywhere in the program. There are four sections currently: General, Theme, Node-Red, External Scripts, and Environments. I'm working on a GitHub download section, but it's not finished yet.
 
 ### General
 
 ![General Preferences](/images/generalpref.png)
 
-NOTE: Work in progress.
+The general section currently is empty. I'm adding functionality to install workflows for Alfred, Launchpad, Keyboard Meastro, etc. 
 
 ### Theme
 
 ![Theme Preferences](/images/themepref.png)
 
-NOTE: Work in progress.
+The Theme preference is where you can create and change your theme. By selecting `new` in the theme selector, you can create a new theme based on the current theme. The circle colors are for the Notes editor note selector on the right. The `Update Theme` button will save your changes. The `Delete Theme` button will delete the currently selected theme and set the default theme. You can change the color by clicking on the color circle.
+
+![Theme Preferences - Color Picker](/images/colorpicker.png)
+
+You can adjust the color by selecting an area in the color wheel. When you get the color you like, press the `Select` button. Pressing the `Cancel` button will go back to the original color.
 
 ### Node-Red
 
 ![Node-Red Preferences](/images/noderedpref.png)
 
-NOTE: Work in progress.
+The Node-Red preferences allows you to set the launching of the Node-Red server. You can also select the Node-Red Dashboard is configured and the button to launch it in the Log screen will be shown.
+
+The Node-Red server has three special nodes for EmailIt: SPlogger, SPScripts, and SPVariables. The Splogger node will take what is passed to it and display it on the log screen. The SPScripts node allows you to run a script defined in EmailIt on the input and the result is passed to the output. The SPVarialbes node allows you to place whatever is fed into it into a variable on the server with the name you give. You can then query that name from the server. This is used by the ScriptBar application to display Node-Red results.
 
 ### External Scripts
 
@@ -180,9 +397,28 @@ NOTE: Work in progress.
 
 NOTE: Work in progress.
 
+### EmailIt Server
+
+EmailIt has a web based API for interfacing with other applications, 
+command line tools, or whatever else would help. The base address for the 
+APIs is `http://localhost:9978/api`. Every endpoint in this table builds 
+on this base. These endpoints only allow access from requests on the same machine.
+
+| Endpoint | Description |
+| --- | ------ |
+| /note/<number>/(a or w) | A PUT request will assert the note value while the GET request will return the note. Both use a JSON structure with the element `note`. The `a` on the end will append to the note while a `w` will over write. |
+| /script/list | A GET request will return a list of scripts that can be ran on EmailIt. |
+| /script/run | A PUT request requires a JSON body with a `script` element and a `text` element. The `script` script will be ran with the `text` and returned in a JSON structure with a `text` element. |
+| /template/list | A GET request will return the name of all the templates in EmailIt. |
+| /template/run | A PUT request requires a JSON body with a 'template' element and a 'text' element. The `template` will be ran with the `text` as an input. The results are return in a JSON structure with the result in the 'text' element. |
+| /getip | A GET request will return the IP of the computer that is running EmailIt. |
+| /nodered/var/<name> | A GET request will return the current value of the Node-Red variable. A PUT request will set the Node-Red variable to the `text` element of the JSON structure in the body. |
+
+All the endpoints are used to make the plugins for Alfred, Keyboard Maestro, Dropzone, PopClip, and Launchpad. Also, the ScriptBar program uses these endpoints as well. I'm planning to add serving pages on the user's computer as well.
+
 ## Change Log
 
-### Feactures to add/fix - not in order
+### Features to add/fix - not in order
 
 - Finish and update existing Help pages.
 - Currently, if external program changes a note, EmailIt doesn't know about it.
@@ -198,6 +434,9 @@ NOTE: Work in progress.
 - Launching the adding of different workflows/extensions to other programs (Alfred, LaunchBar, Keyboard Maestro, etc.)
 - Test running on a new system.
 - ScriptBar: Have a message to add items when there isn't a configuration.
+- User created handlebar helpers and macros.
+- Undo history working. 
+- Allow the EmailIt server to send web pages on the users system.
 
 
 ### Change Log:
@@ -283,7 +522,7 @@ Moving the whole project to Tauri and CodeMirror 6 along with an email utility. 
     - Added a Cancel button to gracefully exit
     - Tidied up the looks
     - Added the `Insert` label
-    - Moved the NP variable to SP for `ScriptPad`
+    - Moved the NP variable to SP for `EmailIt`
 - RegularExp Editor
 	- Added a Cancel button and changed the "Change All" button to just "Change".
     - Fixed some looks and feel stuff

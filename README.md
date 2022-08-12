@@ -352,6 +352,12 @@ The `lines` structure is an array of objects containing a `text` field with the 
 
 The valid colors are: red, black, green, orange, blue, magenta, cyan, gray, and default. These colors are controlled by the current theme for EmailIt. The default color is the text color.
 
+## Logs
+
+![Logs Screen](/images/logs.png)
+
+The logs screen is used to see the output of the Node-Red server and anything sent to the `SPlogger` node. The `Node-Red` button will open the administrator screen for creating Node-Red flows. The `Node-Red Dashboard` will open the dashboard you setup for your Node-Red server. All the other buttons are already described in other sections.
+
 ## Preferences
 
 The preferences can be reached by pressing `<ctrl>-p` or `<cmd>-,` anywhere in the program. There are four sections currently: General, Theme, Node-Red, External Scripts, and Environments. I'm working on a GitHub download section, but it's not finished yet.
@@ -415,7 +421,7 @@ on this base. These endpoints only allow access from requests on the same machin
 | /getip | A GET request will return the IP of the computer that is running EmailIt. |
 | /nodered/var/<name> | A GET request will return the current value of the Node-Red variable. A PUT request will set the Node-Red variable to the `text` element of the JSON structure in the body. |
 
-All the endpoints are used to make the plugins for Alfred, Keyboard Maestro, Dropzone, PopClip, and Launchpad. Also, the ScriptBar program uses these endpoints as well. I'm planning to add serving pages on the user's computer as well.
+All the endpoints are used to make the plugins for Alfred, Keyboard Maestro, Dropzone, PopClip, and Launchpad. Also, the ScriptBar program uses these endpoints as well. I'm planning to add serving pages on the user's computer and other functionality as well. I have lots of ideas.
 
 ### ScriptBar
 

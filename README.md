@@ -353,7 +353,7 @@ The `lines` structure is an array of objects containing a `text` field with the 
 
 The valid colors are: red, black, green, orange, blue, magenta, cyan, gray, and default. These colors are controlled by the current theme for EmailIt. The default color is the text color.
 
-## Logs
+## Logs Screen
 
 ![Logs Screen](/images/logs.png)
 

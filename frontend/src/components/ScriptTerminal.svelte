@@ -729,9 +729,10 @@
 
   async function runCommandLine(line, rEnv, callback, dir) {
     //
-    // Get the environment to use. TODO: it should pull up the default environment.
+    // Get the environment to use.
     //
-    var nEnv = {};
+    var resp = await fetch(`http://localhost:9978/api/scripts/env/Default`);
+    var nEnv = await resp.json();
     if (typeof rEnv !== "undefined") {
       nEnv = { ...nEnv, ...rEnv };
     }

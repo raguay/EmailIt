@@ -18,6 +18,8 @@ export function GetEnvironment():Promise<Array<string>>;
 
 export function GetError():Promise<string>;
 
+export function GetExecutable():Promise<string>;
+
 export function GetHomeDir():Promise<string>;
 
 export function GetOSName():Promise<string>;
@@ -43,5 +45,7 @@ export function RunCommandLine(arg1:string,arg2:Array<string>,arg3:Array<string>
 export function SetClip(arg1:string):void;
 
 export function SplitFile(arg1:string):Promise<main.FileParts>;
+
+export function SystemOpenFile(arg1:string):void;
 
 export function WriteFile(arg1:string,arg2:string):void;

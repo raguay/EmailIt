@@ -53,8 +53,8 @@
         <span
           class="scriptName"
           on:click={() => {
-            openScript(script);
-          }}>{script}</span
+            openScript(script.name);
+          }}>{script.name}</span
         >
       </li>
     {/each}

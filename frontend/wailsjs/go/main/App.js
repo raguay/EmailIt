@@ -34,6 +34,10 @@ export function GetError() {
   return window['go']['main']['App']['GetError']();
 }
 
+export function GetExecutable() {
+  return window['go']['main']['App']['GetExecutable']();
+}
+
 export function GetHomeDir() {
   return window['go']['main']['App']['GetHomeDir']();
 }
@@ -84,6 +88,10 @@ export function SetClip(arg1) {
 
 export function SplitFile(arg1) {
   return window['go']['main']['App']['SplitFile'](arg1);
+}
+
+export function SystemOpenFile(arg1) {
+  return window['go']['main']['App']['SystemOpenFile'](arg1);
 }
 
 export function WriteFile(arg1, arg2) {

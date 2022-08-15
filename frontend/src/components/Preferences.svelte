@@ -4,6 +4,7 @@
   import ThemePrefs from "./ThemePrefs.svelte";
   import ExtScriptEditor from "./ExtScriptEditor.svelte";
   import EnvEditor from "./EnvEditor.svelte";
+  import GitHub from "./GitHub.svelte";
   import { theme } from "../stores/theme.js";
   import { state } from "../stores/state.js";
 
@@ -23,6 +24,9 @@
     },
     {
       name: "Environments",
+    },
+    {
+      name: "GitHub",
     },
   ];
 
@@ -80,6 +84,8 @@
       <ExtScriptEditor />
     {:else if currentPref === "Environments"}
       <EnvEditor />
+    {:else if currentPref === "GitHub"}
+      <GitHub />
     {/if}
   </div>
   <div id="buttonPanel">

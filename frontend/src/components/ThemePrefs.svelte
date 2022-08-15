@@ -15,6 +15,7 @@
 
   onMount(async () => {
     themeList = await getStyleList();
+    style = $theme.name;
   });
 
   async function styleSelectorChange() {
@@ -173,7 +174,7 @@
       body: JSON.stringify($theme),
     });
     themeList = await getStyleList();
-    style = "Default";
+    style = themeList[0];
     $theme = await getStyle(style);
   }
 </script>
@@ -547,7 +548,6 @@
     display: flex;
     flex-direction: row;
     margin: 10px auto;
-    width: 210px;
   }
 
   .variousPickerLabel1 {

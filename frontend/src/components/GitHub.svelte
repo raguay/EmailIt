@@ -187,7 +187,7 @@
           name: cfg.script.name,
           script: cfg.script.script,
           path: extDir,
-          env: cfg.script.env,
+          env: "Default",
           termscript: cfg.script.termscript,
           description: cfg.script.description,
           help: cfg.script.help,

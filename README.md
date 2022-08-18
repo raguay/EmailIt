@@ -446,6 +446,38 @@ on this base. These endpoints only allow access from requests on the same machin
 
 All the endpoints are used to make the plugins for Alfred, Keyboard Maestro, Dropzone, PopClip, and Launchpad. Also, the ScriptBar program uses these endpoints as well. I'm planning to add serving pages on the user's computer and other functionality as well. I have lots of ideas.
 
+### GitHub
+
+![GitHub Importer Screen](/images/github.png)
+
+The GitHub importing screen allows you go import external scripts and themes that are stored on GitHub. To install the script or theme, click the `install` button. Themes then have an extra button to `load` the theme downloaded.
+
+In order for this importer to find the script and themes, your script or theme has to have the `emailit` topic. A script will need the `script` topic as well, while a theme will need the `theme` topic included.
+
+When a script or theme is downloaded, a `delete` button will be shown. You can remove the script or theme by pressing the `delete` button.
+
+In order to load the script properly, the `package.json` file in the script's repository has to have these added fields:
+
+```json
+    "script": {
+        "name": <name of the script>,
+        "description": <a short description of what the script does>,
+        "help": <help text for the script>,
+        "termscript": <boolean flag for a Script Terminal script (true if it is a script terminal script. Otherwise, false.)>,
+        "script": <the scripts full name in the repository including extension>,
+    }
+```
+
+In order to load the theme properly, the `package.json` file for the theme's repository has to have these added fields:
+
+```json
+    "theme": {
+        "name": <name of the theme>,
+        "description": <description of the theme>,
+        "main": <the json file for the theme>,
+    }
+```
+
 ## Change Log
 
 ### Features to add/fix - not in order
@@ -459,17 +491,20 @@ All the endpoints are used to make the plugins for Alfred, Keyboard Maestro, Dro
 - Get it working on Linux and Windows.
 - BullitenBoard: A program to display messages and dialogs to the user. Currently a NW.js program. Move it to Wails.
 - Add in the regular expressions editor and runner.
-- Make the automatic launching of ScriptBar programmable/optional.
-- Get ScriptBar able to use xBar scripts.
 - Launching the adding of different workflows/extensions to other programs (Alfred, LaunchBar, Keyboard Maestro, etc.)
 - Test running on a new system.
-- ScriptBar: Have a message to add items when there isn't a configuration.
 - User created handlebar helpers and macros.
 - Undo history working. 
 - Allow the EmailIt server to send web pages on the users system.
 
 
 ### Change Log:
+
+#### August 18, 2022
+
+- Removed auto launch of ScriptBar. Latest update to macOS will not allow me to without code signing.
+- Moved documentation of ScriptBar to the ScriptBar repository.
+- Added GitHub importing of External Scripts and Themes.
 
 #### August 10, 2022
 

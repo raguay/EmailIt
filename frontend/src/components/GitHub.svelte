@@ -2,6 +2,9 @@
   import { onMount, afterUpdate } from "svelte";
   import { theme } from "../stores/theme.js";
   import { Octokit } from "@octokit/rest";
+  import { termscripts } from "../stores/termscripts.js";
+  import { scripts } from "../stores/scripts.js";
+  import util from "../modules/utils.js";
 
   let octok;
   let repos = null;
@@ -84,61 +87,19 @@
     );
   }
 
-  async function runCommandLine(line, rEnv, callback, dir) {
-    //
-    // Get the environment to use.
-    //
-    console.log(line, rEnv, dir);
-
-    var resp = await fetch(`http://localhost:9978/api/scripts/env/Default`);
-    var nEnv = await resp.json();
-    console.table(nEnv);
-    if (typeof rEnv !== "undefined") {
-      nEnv = { ...nEnv, ...rEnv };
-    }
-
-    //
-    // Fix the environment from a map to an array of strings.
-    //
-    var penv = [];
-    for (const key in nEnv) {
-      penv.push(`${key}=${nEnv[key]}`);
-    }
-
-    //
-    // Make sure dir has a value.
-    //
-    if (typeof dir === "undefined") dir = ".";
-
-    //
-    // Run the command line in a shell. #TODO: make the shell configurable.
-    //
-    var args = ["/bin/zsh", "-c", line];
-    var cmd = "/bin/zsh";
-
-    //
-    // Run the command line.
-    //
-    var result = await window.go.main.App.RunCommandLine(cmd, args, penv, dir);
-    var err = await window.go.main.App.GetError();
-    //
-    // If callback is given, call it with the results.
-    //
-    if (typeof callback !== "undefined" || callback !== null) {
-      callback(err, result);
-    }
-  }
-
   async function installTheme(thm) {
     var thmDir = await window.go.main.App.AppendPath(
       config.configDir,
       "styles"
     );
+    if (!(await window.go.main.App.DirExists(thmDir))) {
+      await window.go.main.App.MakeDir(thmDir);
+    }
     thmDir = await window.go.main.App.AppendPath(thmDir, thm.name);
     if (!(await window.go.main.App.DirExists(thmDir))) {
       await window.go.main.App.MakeDir(thmDir);
     }
-    await runCommandLine(
+    await util.runCommandLine(
       `git clone '${thm.git_url}' '${thmDir}'`,
       [],
       () => {
@@ -205,15 +166,46 @@
       config.configDir,
       "scripts"
     );
+    if (!(await window.go.main.App.DirExists(extDir))) {
+      await window.go.main.App.MakeDir(extDir);
+    }
     extDir = await window.go.main.App.AppendPath(extDir, ext.name);
     if (!(await window.go.main.App.DirExists(extDir))) {
       await window.go.main.App.MakeDir(extDir);
     }
-    await runCommandLine(
+    await util.runCommandLine(
       `git clone '${ext.git_url}' '${extDir}'`,
       [],
-      () => {
-        addMsg(ext, "Restart the program to use this extension.");
+      async () => {
+        let cfgloc = await window.go.main.App.AppendPath(
+          extDir,
+          "package.json"
+        );
+        let cfg = await window.go.main.App.ReadFile(cfgloc);
+        cfg = JSON.parse(cfg);
+        let script = {
+          name: cfg.script.name,
+          script: cfg.script.script,
+          path: extDir,
+          env: cfg.script.env,
+          termscript: cfg.script.termscript,
+          description: cfg.script.description,
+          help: cfg.script.help,
+        };
+        await fetch(`http://localhost:9978/api/scripts/ext/${script.name}`, {
+          method: "PUT",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(script),
+        });
+        if (script.termscript) {
+          $termscripts.push(script);
+        } else {
+          script.insert = false;
+          $scripts.push(script);
+        }
+        addMsg(ext, `${ext.name} external script has been downloaded.`);
         loadRepoInfo();
       },
       "."
@@ -236,6 +228,9 @@
       "scripts"
     );
     let epath = await window.go.main.App.AppendPath(extDir, ext.name);
+    let cfgloc = await windwo.go.main.App.AppendPath(epath, "package.json");
+    let cfg = await window.go.main.App.ReadFile(cfgloc);
+    cfg = JSON.parse(cfg);
     await window.go.main.App.DeleteEntries(epath);
     repos = repos.map((item) => {
       if (item.name === ext.name) {
@@ -243,7 +238,21 @@
       }
       return item;
     });
-    addMsg(ext, "Rerun the application to remove the script from memory.");
+    //
+    // Remove from the external scripts list.
+    //
+    await fetch(`http://localhost:9978/api/scripts/ext/${ext.name}`, {
+      method: "DELETE",
+      headers: {
+        "Content-type": "application/json",
+      },
+    });
+    if (cfg.termscript) {
+      $termscripts = $termscripts.filter((item) => item.name !== ext.name);
+    } else {
+      $scripts = $scripts.filter((item) => item.name !== ext.name);
+    }
+    addMsg(ext, "This external script has been removed.");
   }
 
   function hasMsg(rp) {

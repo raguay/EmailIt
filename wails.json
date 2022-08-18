@@ -5,6 +5,7 @@
   "frontend:build": "npm run build",
   "frontend:dev:watcher": "npm run dev",
   "frontend:dev:serverUrl": "http://localhost:3000",
+  "bundle_id": "com.customct.wails.Emailit",
   "author": {
     "name": "Richard Guay",
     "email": "raguay@customct.com"

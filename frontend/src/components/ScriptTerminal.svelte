@@ -8,6 +8,7 @@
   import { state } from "../stores/state.js";
   import { termscripts } from "../stores/termscripts.js";
   import { aliases } from "../stores/aliases.js";
+  import util from "../modules/utils.js";
 
   let term = null;
   let commands = [];
@@ -572,12 +573,7 @@
     //
     // Run the open command on the file.
     //
-    await window.go.main.App.RunCommandLine(
-      "/usr/bin/open",
-      ["-t", text],
-      [],
-      ""
-    );
+    await util.runCommandLine(`/usr/bin/open -t ${text}`, [], () => {}, wd);
     lastData.valid = false;
   }
 
@@ -685,12 +681,7 @@
       //
       // They don't have this file setup. Open in the system's default editor.  TODO: Not usable on non-macOS systems.
       //
-      await runCommandLine(
-        `/usr/bin/open '${text}'`,
-        [],
-        (err, stdout) => {},
-        wd
-      );
+      await util.runCommandLine(`/usr/bin/open '${text}'`, [], () => {}, wd);
     } else {
       //
       // Get the user editor.
@@ -701,10 +692,10 @@
         //
         // Open the file with a program. TODO: Not usable on non-macOS systems.
         //
-        await runCommandLine(
+        await util.runCommandLine(
           `/usr/bin/open -a ${editor} '${text}'`,
           [],
-          (err, stdout) => {},
+          () => {},
           wd
         );
       } else {
@@ -715,7 +706,7 @@
           //
           // Open emacs.
           //
-          await runCommandLine(
+          await util.runCommandLine(
             'emacsclient -n -q "' + file + '"',
             [],
             (err, result) => {},
@@ -725,48 +716,6 @@
       }
     }
     lastData.valid = false;
-  }
-
-  async function runCommandLine(line, rEnv, callback, dir) {
-    //
-    // Get the environment to use.
-    //
-    var resp = await fetch(`http://localhost:9978/api/scripts/env/Default`);
-    var nEnv = await resp.json();
-    if (typeof rEnv !== "undefined") {
-      nEnv = { ...nEnv, ...rEnv };
-    }
-
-    //
-    // Fix the environment from a map to an array of strings.
-    //
-    var penv = [];
-    for (const key in nEnv) {
-      penv.push(`${key}=${nEnv[key]}`);
-    }
-
-    //
-    // Make sure dir has a value.
-    //
-    if (typeof dir === "undefined") dir = ".";
-
-    //
-    // Run the command line in a shell. #TODO: make the shell configurable.
-    //
-    var args = ["/bin/zsh", "-c", line];
-    var cmd = "/bin/zsh";
-
-    //
-    // Run the command line.
-    //
-    var result = await window.go.main.App.RunCommandLine(cmd, args, penv, dir);
-    var err = await window.go.main.App.GetError();
-    //
-    // If callback is given, call it with the results.
-    //
-    if (typeof callback !== "undefined" || callback !== null) {
-      callback(err, result);
-    }
   }
 
   async function aliasCommand(text) {

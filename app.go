@@ -61,23 +61,6 @@ func (b *App) startup(ctx context.Context) {
 		var ArgsArray [2]string
 		ArgsArray[1] = "&"
 		go b.RunCommandLine(serverLoc, ArgsArray[:], sar, exeParts.Dir)
-
-		//
-		// Launch the ScriptBar application.
-		//
-		time.Sleep(10 * time.Second)
-		ScriptBarLoc := b.AppendPath(exeParts.Dir, "ScriptBar.app")
-		if b.FileExists(ScriptBarLoc) {
-			b.SystemOpenFile(ScriptBarLoc)
-		}
-
-		//
-		// Launch the BullitenBoard application.
-		//
-		BBLoc := b.AppendPath(exeParts.Dir, "BullitenBoard.app")
-		if b.FileExists(BBLoc) {
-			b.SystemOpenFile(BBLoc)
-		}
 	}
 	fmt.Println("Everything is loaded...")
 }

@@ -99,6 +99,7 @@
       body: JSON.stringify({
         script: script.name,
         text: text,
+        info: script,
       }),
     })
       .then((resp) => {

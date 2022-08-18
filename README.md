@@ -69,6 +69,7 @@ I use this program everyday and is very helpful to my workflow. I hope you enjoy
   - [Node-Red](#node-red)
   - [External Scripts](#external-scripts)
   - [Environments](#environments)
+  - [GitHub](#github)
 - [EmailIt Server](#emailit-server)
 - [Change Log](#change-log)
 
@@ -427,25 +428,6 @@ The main screen shows the different environments defined already. If there isn't
 
 The environment editor has the name at the top just like in the Theme Editor. Changing the name allows you to create a new environment based on the currently selected one. You can delete rows by clinking the `X` or edit the row by clicking the pencil. The `Delete` button will delete the currently displayed environment. The `Return` button will save all changes and go back to the environment list.
 
-### EmailIt Server
-
-EmailIt has a web based API for interfacing with other applications, 
-command line tools, or whatever else would help. The base address for the 
-APIs is `http://localhost:9978/api`. Every endpoint in this table builds 
-on this base. These endpoints only allow access from requests on the same machine.
-
-| Endpoint | Description |
-| --- | ------ |
-| /note/<number>/(a or w) | A PUT request will assert the note value while the GET request will return the note. Both use a JSON structure with the element `note`. The `a` on the end will append to the note while a `w` will over write. |
-| /script/list | A GET request will return a list of scripts that can be ran on EmailIt. |
-| /script/run | A PUT request requires a JSON body with a `script` element and a `text` element. The `script` script will be ran with the `text` and returned in a JSON structure with a `text` element. |
-| /template/list | A GET request will return the name of all the templates in EmailIt. |
-| /template/run | A PUT request requires a JSON body with a 'template' element and a 'text' element. The `template` will be ran with the `text` as an input. The results are return in a JSON structure with the result in the 'text' element. |
-| /getip | A GET request will return the IP of the computer that is running EmailIt. |
-| /nodered/var/<name> | A GET request will return the current value of the Node-Red variable. A PUT request will set the Node-Red variable to the `text` element of the JSON structure in the body. |
-
-All the endpoints are used to make the plugins for Alfred, Keyboard Maestro, Dropzone, PopClip, and Launchpad. Also, the ScriptBar program uses these endpoints as well. I'm planning to add serving pages on the user's computer and other functionality as well. I have lots of ideas.
-
 ### GitHub
 
 ![GitHub Importer Screen](/images/github.png)
@@ -477,6 +459,25 @@ In order to load the theme properly, the `package.json` file for the theme's rep
         "main": <the json file for the theme>,
     }
 ```
+
+### EmailIt Server
+
+EmailIt has a web based API for interfacing with other applications, 
+command line tools, or whatever else would help. The base address for the 
+APIs is `http://localhost:9978/api`. Every endpoint in this table builds 
+on this base. These endpoints only allow access from requests on the same machine.
+
+| Endpoint | Description |
+| --- | ------ |
+| /note/<number>/(a or w) | A PUT request will assert the note value while the GET request will return the note. Both use a JSON structure with the element `note`. The `a` on the end will append to the note while a `w` will over write. |
+| /script/list | A GET request will return a list of scripts that can be ran on EmailIt. |
+| /script/run | A PUT request requires a JSON body with a `script` element and a `text` element. The `script` script will be ran with the `text` and returned in a JSON structure with a `text` element. |
+| /template/list | A GET request will return the name of all the templates in EmailIt. |
+| /template/run | A PUT request requires a JSON body with a 'template' element and a 'text' element. The `template` will be ran with the `text` as an input. The results are return in a JSON structure with the result in the 'text' element. |
+| /getip | A GET request will return the IP of the computer that is running EmailIt. |
+| /nodered/var/<name> | A GET request will return the current value of the Node-Red variable. A PUT request will set the Node-Red variable to the `text` element of the JSON structure in the body. |
+
+All the endpoints are used to make the plugins for Alfred, Keyboard Maestro, Dropzone, PopClip, and Launchpad. Also, the ScriptBar program uses these endpoints as well. I'm planning to add serving pages on the user's computer and other functionality as well. I have lots of ideas.
 
 ## Change Log
 

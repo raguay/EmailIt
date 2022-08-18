@@ -107,6 +107,12 @@
         // The clone should be there. Let's load the new theme.
         //
         loadTheme(thm);
+        themes = themes.map((item) => {
+          if (item.name === thm.name) {
+            item.loaded = true;
+          }
+          return item;
+        });
         loadRepoInfo();
       },
       "."
@@ -159,6 +165,7 @@
       }
       return item;
     });
+    loadRepoInfo();
   }
 
   async function installExtension(ext) {
@@ -205,6 +212,12 @@
           script.insert = false;
           $scripts.push(script);
         }
+        repos = repos.map((item) => {
+          if (item.name === ext.name) {
+            item.loaded = true;
+          }
+          return item;
+        });
         addMsg(ext, `${ext.name} external script has been downloaded.`);
         loadRepoInfo();
       },
@@ -228,7 +241,7 @@
       "scripts"
     );
     let epath = await window.go.main.App.AppendPath(extDir, ext.name);
-    let cfgloc = await windwo.go.main.App.AppendPath(epath, "package.json");
+    let cfgloc = await window.go.main.App.AppendPath(epath, "package.json");
     let cfg = await window.go.main.App.ReadFile(cfgloc);
     cfg = JSON.parse(cfg);
     await window.go.main.App.DeleteEntries(epath);
@@ -238,6 +251,8 @@
       }
       return item;
     });
+    loadRepoInfo();
+
     //
     // Remove from the external scripts list.
     //
@@ -343,7 +358,7 @@
           <div class="repobuttons">
             {#if repo.loaded}
               <button
-                on:click={(e) => {
+                on:click={() => {
                   deleteExtension(repo);
                 }}
                 style="background-color: {$theme.Red};"
@@ -352,7 +367,7 @@
               </button>
             {:else}
               <button
-                on:click={(e) => {
+                on:click={() => {
                   installExtension(repo);
                 }}
                 style="background-color: {$theme.Green};"
@@ -386,7 +401,7 @@
           <div class="repobuttons">
             {#if thm.loaded}
               <button
-                on:click={(e) => {
+                on:click={() => {
                   loadTheme(thm);
                 }}
                 style="background-color: {$theme.Green};"
@@ -394,7 +409,7 @@
                 Load
               </button>
               <button
-                on:click={(e) => {
+                on:click={() => {
                   deleteTheme(thm);
                 }}
                 style="background-color: {$theme.Red};"
@@ -403,7 +418,7 @@
               </button>
             {:else}
               <button
-                on:click={(e) => {
+                on:click={() => {
                   installTheme(thm);
                 }}
                 style="background-color: {$theme.Green};"

@@ -4,9 +4,9 @@ import {main} from '../models';
 
 export function AppendPath(arg1:string,arg2:string):Promise<string>;
 
-export function CopyEntries(arg1:string,arg2:string):void;
+export function CopyEntries(arg1:string,arg2:string):Promise<void>;
 
-export function DeleteEntries(arg1:string):void;
+export function DeleteEntries(arg1:string):Promise<void>;
 
 export function DirExists(arg1:string):Promise<boolean>;
 
@@ -26,26 +26,26 @@ export function GetOSName():Promise<string>;
 
 export function Getwd():Promise<string>;
 
-export function MakeDir(arg1:string):void;
+export function MakeDir(arg1:string):Promise<void>;
 
-export function MakeFile(arg1:string):void;
+export function MakeFile(arg1:string):Promise<void>;
 
-export function MoveEntries(arg1:string,arg2:string):void;
+export function MoveEntries(arg1:string,arg2:string):Promise<void>;
 
-export function Quit():void;
+export function Quit():Promise<void>;
 
 export function ReadDir(arg1:string):Promise<Array<main.FileInfo>>;
 
 export function ReadFile(arg1:string):Promise<string>;
 
-export function RenameEntry(arg1:string,arg2:string):void;
+export function RenameEntry(arg1:string,arg2:string):Promise<void>;
 
 export function RunCommandLine(arg1:string,arg2:Array<string>,arg3:Array<string>,arg4:string):Promise<string>;
 
-export function SetClip(arg1:string):void;
+export function SetClip(arg1:string):Promise<void>;
 
 export function SplitFile(arg1:string):Promise<main.FileParts>;
 
-export function SystemOpenFile(arg1:string):void;
+export function SystemOpenFile(arg1:string):Promise<void>;
 
-export function WriteFile(arg1:string,arg2:string):void;
+export function WriteFile(arg1:string,arg2:string):Promise<void>;

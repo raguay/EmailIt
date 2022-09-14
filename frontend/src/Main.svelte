@@ -199,7 +199,7 @@
 </script>
 
 <svelte:window on:keydown={keyDownProcessor} />
-<div id="dragbar" data-wails-drag />
+<div id="dragbar" />
 
 {#if $state === "emailit"}
   <EmailIt />
@@ -239,5 +239,6 @@
   #dragbar {
     height: 30px;
     width: 100%;
+    --wails-draggable: drag;
   }
 </style>

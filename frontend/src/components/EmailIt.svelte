@@ -12,6 +12,7 @@
   import { commandLineEmail } from "../stores/commandLineEmail.js";
   import { showScripts } from "../stores/showScripts.js";
   import { showTemplates } from "../stores/showTemplates.js";
+  import * as App from '../../wailsjs/go/main/App.js';
 
   let receiver = "";
   let subject = "";

@@ -1,6 +1,5 @@
 <script>
-  import { afterUpdate, onMount, tick } from "svelte";
-  import SimpleAutoComplete from "../components/SimpleAutocomplete.svelte";
+  import { afterUpdate, onMount } from "svelte";
   import CodeMirror from "../components/CodeMirror.svelte";
   import AddressBook from "../components/AddressBook.svelte";
   import showdown from "showdown";
@@ -12,6 +11,7 @@
   import { commandLineEmail } from "../stores/commandLineEmail.js";
   import { showScripts } from "../stores/showScripts.js";
   import { showTemplates } from "../stores/showTemplates.js";
+  import { config } from "../stores/config.js";
   import * as App from '../../wailsjs/go/main/App.js';
 
   let receiver = "";
@@ -53,9 +53,9 @@
   let showAddressB = false;
   let receiverDOM;
 
-  onMount(() => {
-    getEmails();
-    getAccounts();
+  onMount(async () => {
+    await getEmails();
+    await getAccounts();
     emailState = "edit";
     oldState = "edit";
     initFinished = true;
@@ -86,7 +86,7 @@
   function generateEmailList(e) {
     if (e !== undefined && (e.key === "Escape" || e.key === "Tab")) {
       showEmailList = false;
-      if (e.key !== "Tab") e.preventDefault();
+      if (e.key !== "Tab" && e.key !== "Escape") e.preventDefault();
     } else {
       var fullLine = receiver.toString().toLowerCase();
       var currentPart = "";
@@ -129,29 +129,22 @@
     bodyValue = textCursor.value;
   }
 
-  function getEmails(callback) {
+  async function getEmails() {
     //
-    // Get the emails from the server.
+    // Get the emails from the system.
     //
-    fetch("http://localhost:9978/api/emailit/emails", {
-      method: "GET",
-      headers: {
-        "Content-type": "application/json",
-      },
-    })
-      .then((resp) => {
-        return resp.json();
-      })
-      .then((data) => {
-        emails = data.emails.map((item) => {
-          if (item.name === "") {
-            return item.email;
-          } else {
-            return `${item.name.trim()} <${item.email.trim()}>`;
-          }
-        });
-        if (typeof callback !== "undefined") callback();
+    let emailfileloc = await App.AppendPath($config.configDir,"emails.json");
+    if(await App.FileExists(emailfileloc)) {
+      let emailfilejson = await App.ReadFile(emailfileloc);
+      emails = JSON.parse(emailfilejson);
+      emails = emails.map((item) => {
+       if (item.name === "") {
+         return item.email;
+       } else {
+         return `${item.name.trim()} <${item.email.trim()}>`;
+       }
       });
+    }
   }
 
   function changeAccount() {
@@ -194,26 +187,18 @@
     showChangeAccount = false;
   }
 
-  function getAccounts(callback) {
+  async function getAccounts() {
     //
-    // Get the accounts from the server.
+    // Get the accounts from the system.
     //
-    fetch("http://localhost:9978/api/emailit/accounts", {
-      method: "GET",
-      headers: {
-        "Content-type": "application/json",
-      },
-    })
-      .then((resp) => {
-        return resp.json();
-      })
-      .then((accs) => {
-        accounts = accs;
-        if (accounts.length > 0 && $account === undefined) {
-          $account = accounts.find((item) => item.default);
-        }
-        if (typeof callback !== "undefined") callback();
-      });
+    let accountfileloc = await App.AppendPath($config.configDir,"emailaccounts.json");
+    if(await App.FileExists(accountfileloc)) {
+      accounts = await App.ReadFile(accountfileloc);
+      accounts = JSON.parse(accounts);
+      if (accounts.length > 0) {
+       $account = accounts.find((item) => item.default);
+      }
+    }
   }
 
   function changeActiveAccount(acc) {
@@ -283,9 +268,6 @@
   }
 
   async function sendEmail() {
-    //
-    // This will tell the server to send the email.
-    //
     var toAddress;
     if (typeof $email.to !== "undefined") {
       toAddress = $email.to;
@@ -298,20 +280,18 @@
       var bodyText = bodyValue + cleanTags($account.signiture);
       showPreview = false;
       emailState = "edit";
-      fetch("http://localhost:9978/api/emailit/send", {
-        method: "PUT",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
+
+      // 
+      // Send the email. TODO: implement in go.
+      //
+      let email = {
           acc: $account,
           to: toAddress,
           from: $account.from,
           subject: subject.value,
           text: bodyText,
           html: previewHTML,
-        }),
-      });
+      };
     } else {
       showInvalidEmails();
     }
@@ -388,24 +368,6 @@
       email: email,
     });
     emails = emails;
-    fetch("http://localhost:9978/api/emailit/addEmail", {
-      method: "PUT",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({
-        name: name,
-        email: email,
-      }),
-    });
-  }
-
-  function cancelEmail() {
-    clearEmail();
-
-    //
-    // TODO: hide the window.
-    //
   }
 
   function clearEmail() {
@@ -436,7 +398,6 @@
       headerHTML: accountHeaderHTML,
       footerHTML: accountFooterHTML,
     };
-    saveNewAccountServer(acc);
 
     //
     // If this is to be the default account, make sure all the others
@@ -455,6 +416,7 @@
     }
     $account = acc;
     accounts = accounts;
+    saveAccounts();
     if (emailState === "preview") makeHtml();
     clearFormData();
     showNewAccount = false;
@@ -472,33 +434,15 @@
       $account = undefined;
       origAccount = undefined;
     }
-    deleteAccountServer(acc);
+    saveAccounts();
   }
 
-  function saveNewAccountServer(acc) {
+  async function saveAccounts() {
     //
-    // This will save the new account to the server.
+    // This will save the accounts to the harddrive.
     //
-    fetch("http://localhost:9978/api/emailit/accounts", {
-      method: "PUT",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify(acc),
-    });
-  }
-
-  function deleteAccountServer(acc) {
-    //
-    // This will remove an account from the server.
-    //
-    fetch("http://localhost:9978/api/emailit/accounts", {
-      method: "DELETE",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: acc,
-    });
+    let accountfileloc = await App.AppendPath($config.configDir,"emailaccounts.json");
+    await App.WriteFile(accountfileloc, JSON.stringify(accounts));
   }
 
   function cancelNewAccount() {
@@ -556,10 +500,6 @@
     };
   }
 
-  function inputBlur() {
-    $email.to = receiver;
-  }
-
   function showAddressBook() {
     showAddressB = !showAddressB;
   }
@@ -572,12 +512,13 @@
   {#if showNewAccount}
     <div
       id="newAccountDialog"
-      style="background-color: {$theme.backgroundColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
+      style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; border-color: {$theme.borderColor}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
     >
       <label for="accountDefaultInput" class="newAccountLabel">
         Default:
       </label>
       <input
+        style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountDefaultInput"
         type="checkbox"
         bind:checked={accountDefault}
@@ -586,71 +527,71 @@
         Name of Account:
       </label>
       <input
+        style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountNameInput"
         bind:value={accountName}
-        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
       />
       <label for="accountFromInput" class="newAccountLabel">
         From Email:
       </label>
       <input
+        style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; border-color: {$theme.borderColor}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
         id="accountFromInput"
         bind:value={accountFrom}
-        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
       />
       <label for="accountSmptServerInput" class="newAccountLabel">
         Address of SMPT Server:
       </label>
       <input
+        style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountSmptServerInput"
         bind:value={accountSmptServer}
-        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
       />
       <label for="accountPortInput" class="newAccountLabel">
         SMPT Server Port:
       </label>
       <input
+        style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; border-color: {$theme.borderColor}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
         id="accountPortInput"
         bind:value={accountPort}
-        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
       />
       <label for="accountUsernameInput" class="newAccountLabel">
         User Name:
       </label>
       <input
+        style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountUsernameInput"
         bind:value={accountUsername}
-        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
       />
       <label for="accountPasswordInput" class="newAccountLabel">
         Password:
       </label>
       <input
+        style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountPasswordInput"
         bind:value={accountPassword}
-        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
       />
       <label for="accountSigInput" class="newAccountLabel"> Signiture: </label>
       <textarea
+        style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountSigInput"
         bind:value={accountSig}
-        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
       />
       <label for="accountHeaderHTMLInput" class="newAccountLabel">
         Header HTML:
       </label>
       <textarea
+        style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountHeaderHTMLInput"
         bind:value={accountHeaderHTML}
-        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
       />
       <label for="accountFooterHTMLInput" class="newAccountLabel">
         Footer HTML:
       </label>
       <textarea
+        style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountFooterHTMLInput"
         bind:value={accountFooterHTML}
-        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
       />
       <div id="buttonrow" style="grid-column: 1 / span 2;">
         <button
@@ -737,12 +678,14 @@
     <div class="headerRow">
       <label for="receiverInput"> To: </label>
       <input
+        style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; border-color: {$theme.borderColor}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
         id="receiverInput"
         class="receiverInput"
         bind:value={receiver}
         bind:this={receiverDOM}
         on:blur={() => {
-          inputBlur();
+          $email.to = receiver;
+          //showEmailList = false;
         }}
         on:focus={() => {
           showEmailList = true;
@@ -758,7 +701,6 @@
         on:change={() => {
           generateEmailList();
         }}
-        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
       />
       {#if showEmailList && elist.length > 0}
         <div
@@ -789,7 +731,10 @@
         id="subject"
         bind:this={subject}
         on:blur={saveEmailState}
-        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
+        style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
+        on:focus={()=>{
+          showEmailList = false;
+        }}
       />
     </div>
   </div>
@@ -805,10 +750,15 @@
       {initFinished}
       styling="position: relative; margin-bottom: 20px; border: solid 1px transparent; border-radius: 20px; overflow: hidden;"
       on:textChange={(event) => {
+        showEmailList = false;
         textChanged(event.detail.data);
       }}
       on:editorChange={(event) => {
+        showEmailList = false;
         editorChange(event.detail.data);
+      }}
+      on:focus={() => {
+        showEmailList = false;
       }}
     />
   {/if}
@@ -1025,16 +975,16 @@
     display: grid;
     grid-template-columns: 1fr 2fr;
     grid-gap: 20px;
-    width: 80%;
+    width: 93%;
     z-index: 200;
     position: absolute;
-    top: 10px;
-    left: 10%;
-    background: aliceblue;
+    top: 30px;
+    left: 20px;
     border-radius: 10px;
     padding: 20px;
-    height: 85%;
+    height: 90%;
     overflow-y: auto;
+    overflow-x: hidden;
   }
 
   #newAccountDialog textarea {

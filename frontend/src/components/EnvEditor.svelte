@@ -4,13 +4,13 @@
   import { theme } from "../stores/theme.js";
 
   let view = "lists";
-  let config = {
+  let confg = {
     env: "Default",
   };
 
   function changeView(newView) {
     view = newView.detail.view;
-    config = newView.detail.config;
+    confg = newView.detail.config;
   }
 </script>
 
@@ -23,7 +23,7 @@
       <EnvList on:changeView={changeView} />
     </div>
   {:else if view === "env"}
-    <Env {config} on:changeView={changeView} />
+    <Env {confg} on:changeView={changeView} />
   {/if}
 </div>
 

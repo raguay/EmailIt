@@ -9,7 +9,7 @@ import (
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
 	"io/ioutil"
-	"net/http"
+	//"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -39,6 +39,12 @@ type FileInfo struct {
 	Modtime   string
 }
 
+type Environment struct {
+  Name    string    `json:"name" binding:"required"`
+  EnvVar  []string  `json:"envVar" binding:"required"`
+}
+
+
 // NewApp creates a new App application struct
 func NewApp() *App {
 	return &App{}
@@ -46,23 +52,6 @@ func NewApp() *App {
 
 // startup is called at application startup
 func (b *App) startup(ctx context.Context) {
-	//
-	// Launch the server.
-	//
-	exeLoc := b.GetExecutable()
-	exeParts := b.SplitFile(exeLoc)
-	serverLoc := b.AppendPath(exeParts.Dir, "EmailItServer")
-	fmt.Println(serverLoc)
-	if b.FileExists(serverLoc) {
-		//
-		// There is the server file. Launch it.
-		//
-		var sar []string
-		var ArgsArray [2]string
-		ArgsArray[1] = "&"
-		go b.RunCommandLine(serverLoc, ArgsArray[:], sar, exeParts.Dir)
-	}
-	fmt.Println("Everything is loaded...")
 }
 
 // domReady is called after the front-end dom has been loaded
@@ -71,14 +60,6 @@ func (b *App) domReady(ctx context.Context) {
 
 // shutdown is called at application termination
 func (b *App) shutdown(ctx context.Context) {
-	//
-	// Close the server.
-	//
-	req, err := http.NewRequest("DELETE", "http://localhost:9978/api/quit", nil)
-	_, err = http.DefaultClient.Do(req)
-	if err != nil {
-		b.err = err.Error()
-	}
 }
 
 func (b *App) SystemOpenFile(prog string) {
@@ -316,3 +297,4 @@ func (b *App) GetOSName() string {
 	}
 	return result
 }
+

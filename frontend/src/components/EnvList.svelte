@@ -1,8 +1,11 @@
 <script>
-  import { createEventDispatcher, onMount } from "svelte";
+  import { createEventDispatcher, onMount, tick } from "svelte";
   import { theme } from "../stores/theme.js";
+  import { config } from "../stores/config.js";
+  import * as App from '../../wailsjs/go/main/App.js';
 
   let envs = [];
+  let envlist = null;
   let createDefault = false;
 
   const dispatch = createEventDispatcher();
@@ -16,30 +19,32 @@
     //
     // See if the default has been created or not.
     //
-    var def = envs.filter((item) => {
-      return item == "Default";
+    var def = envs.find((item) => {
+      return item.name === "Default";
     });
-    if (Array.isArray(def) && def.length === 0) {
+    if (typeof def === 'undefined') {
       createDefault = true;
     }
+    return(()=>{
+      envlist = null;
+    })
   });
 
   async function getEnvList() {
     //
     // Get the list of environment names from the server.
     //
-    var resp = await fetch("http://localhost:9978/api/scripts/env/list");
-    envs = await resp.json();
+    if(envlist === null) {
+      let envlistloc = await App.AppendPath($config.configDir, "environments.json");
+      envlist = await App.ReadFile(envlistloc);
+      envlist = JSON.parse(envlist);
+    }
+    envs = envlist;
   }
 
-  async function addEnv(env) {
-    //
-    // Add the new environment.
-    //
-    await fetch(`http://localhost:9978/api/scripts/env/${env.name}`, {
-      method: "PUT",
-      body: JSON.stringify(env),
-    });
+  async function saveEnvironments() {
+    let envlistloc = await App.AppendPath($config.configDir, "environments.json");
+    await App.WriteFile(envlistloc, JSON.stringify(envs));
   }
 
   async function addNew() {
@@ -57,7 +62,7 @@
     dispatch("changeView", {
       view: "env",
       config: {
-        env: nm,
+        env: nm.name,
       },
     });
   }
@@ -66,18 +71,22 @@
     //
     // Get the default environment
     //
-
-    await fetch("http://localhost:9978/api/scripts/env/Default", {
-      method: "PUT",
+    let defenv = await App.GetEnvironment();
+    let newArray = {};
+    for(let i=0; i<defenv.length; i++){
+      let parts = defenv[i].split('=');
+      newArray[parts[0]] = parts[1];
+    }
+    envs.push({
+      name: "Default",
+      envVar: newArray
     });
-    //
-    // Switch to the editing of the default environment.
-    //
-    dispatch("changeView", {
-      view: "env",
-      config: {
-        env: "Default",
-      },
+    saveEnvironments();
+    envlist = null;
+    await tick();
+    openEnv({
+      name: "Default",
+      envVar: [],
     });
   }
 </script>
@@ -91,7 +100,7 @@
           class="envName"
           on:click={() => {
             openEnv(env);
-          }}>{env}</span
+          }}>{env.name}</span
         >
       </li>
     {/each}

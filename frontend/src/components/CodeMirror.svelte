@@ -354,6 +354,7 @@
     if (typeof edView !== "undefined") {
       edView.focus();
     }
+    fire('focus',{});
   }
 
   function getEdView() {
@@ -369,6 +370,9 @@
   name="editor"
   id="CMeditor"
   bind:this={CodeMirrorEditor}
+  on:focus={()=>{
+    fire('focus',{});
+  }}
   style="height: {height}; width: {width}; {styling}"
 />
 

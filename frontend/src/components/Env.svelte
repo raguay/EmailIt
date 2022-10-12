@@ -1,14 +1,20 @@
 <script>
-  import { createEventDispatcher, onMount, tick } from "svelte";
+  import { createEventDispatcher, onMount } from "svelte";
   import EnvTableRow from "./EnvTableRow.svelte";
   import { theme } from "../stores/theme.js";
+  import { config } from "../stores/config.js";
+  import * as App from '../../wailsjs/go/main/App.js';
 
-  export let config;
+  export let confg;
 
-  let env;
+  let env = {
+    name: "new",
+    envVar: [],
+  };
   let addNew = false;
   let KVname = "";
   let KVvalue = "";
+  let envList = null;
 
   const dispatch = createEventDispatcher();
 
@@ -21,12 +27,12 @@
     //    envVar  - key,value array of environment variables
     //}
     //
-    if (typeof config.env !== "undefined") {
-      if (config.env !== "new" && config.env !== null) {
-        if (config.env === "default") {
-          config.env = "Default";
+    if (typeof confg.env !== "undefined") {
+      if (confg.env !== "new" && confg.env !== null) {
+        if (confg.env === "default") {
+          confg.env = "Default";
         }
-        env = await getEnv(config.env);
+        env = await getEnv(confg.env);
       } else {
         //
         // Create a new one for the user to change.
@@ -37,15 +43,33 @@
         };
       }
     }
+    return(() => {
+      addNew = false;
+      KVname = "";
+      KVvalue = "";
+      envList = null;
+      env = {
+        name: "new",
+        envVar: {}
+      };
+    })
   });
 
   async function getEnv(name) {
     //
     // get the environment from the server.
     //
-    var resp = await fetch(`http://localhost:9978/api/scripts/env/${name}`);
-    var list = await resp.json();
-    return list;
+    if(envList === null) {
+      let envlistloc = await App.AppendPath($config.configDir, "environments.json");
+      envList = await App.ReadFile(envlistloc);
+      envList = JSON.parse(envList);
+    }
+    return envList.find(item => item.name === name);
+  }
+
+  async function saveEnvironments() {
+    let envlistloc = await App.AppendPath($config.configDir, "environments.json");
+    await App.WriteFile(envlistloc, JSON.stringify(envList));
   }
 
   async function changeEnv() {
@@ -64,13 +88,14 @@
     //
     // Add the new environment.
     //
-    await fetch(`http://localhost:9978/api/scripts/env/${ev.name}`, {
-      method: "PUT",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify(ev),
-    });
+    if(envList == null) {
+      let envlistloc = await App.AppendPath($config.configDir, "environments.json");
+      envList = await App.ReadFile(envlistloc);
+      envList = JSON.parse(envList);
+    }
+    envList = envList.filter(item => item.name !== ev.name);
+    envList.push(ev);
+    saveEnvironments();
   }
 
   async function deleteEnv() {
@@ -81,7 +106,6 @@
       env.name !== ""
     ) {
       await removeEnv(env.name);
-      tick();
       goback();
     }
   }
@@ -90,9 +114,13 @@
     //
     // Remove environment name.
     //
-    await fetch(`http://localhost:9978/api/scripts/env/${envName}`, {
-      method: "DELETE",
-    });
+    if(envList === null) {
+      let envlistloc = await App.AppendPath($config.configDir, "environments.json");
+      let envList = await App.ReadFile(envlistloc);
+      envList = JSON.parse(envList);
+    }
+    envList = envList.filter(item => item.name !== envName);
+    await saveEnvironments();
   }
 
   function goback() {
@@ -113,7 +141,7 @@
   async function deleteRow(kv) {
     delete env.envVar[kv[0]];
     await changeEnv();
-    env = await getEnv(config.env);
+    env = await getEnv(confg.env);
   }
 </script>
 
@@ -132,7 +160,7 @@
         bind:value={env.name}
       />
     </div>
-    {#if env.envVar !== "undefined"}
+    {#if typeof env.envVar !== "undefined"}
       <div id="EnvTable">
         <table>
           <thead>
@@ -160,12 +188,12 @@
               {/each}
             {/if}
             {#if addNew}
-              <tr>
+              <tr><td> </td><td> </td>
                 <td>
                   <input
                     class="inputKV"
                     type="text"
-                    style="background-color: {$theme.textAreaColor}; text= {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
+                    style="padding-left: 10px; border-radius: 10px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-family: {$theme.font}; font-size: {$theme.fontSize};"
                     bind:value={KVname}
                   />
                 </td>
@@ -173,7 +201,7 @@
                   <input
                     class="inputKV"
                     type="text"
-                    style="background-color: {$theme.textAreaColor}; text= {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
+                    style="padding-left: 10px; border-radius: 10px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-family: {$theme.font}; font-size: {$theme.fontSize};"
                     bind:value={KVvalue}
                     on:blur={addKV}
                   />

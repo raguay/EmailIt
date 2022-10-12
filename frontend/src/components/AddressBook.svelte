@@ -1,6 +1,8 @@
 <script>
   import { onMount } from "svelte";
   import { theme } from "../stores/theme.js";
+  import { config } from "../stores/config.js";
+  import * as App from '../../wailsjs/go/main/App.js';
 
   export let show;
 
@@ -9,27 +11,24 @@
   let name = "";
   let email = "";
 
-  onMount(() => {
-    getEmails();
+  onMount(async () => {
+    await getEmails();
   });
 
-  function getEmails(callback) {
+  async function saveEmails() {
+    let emailfileloc = await App.AppendPath($config.configDir,"emails.json");
+    await App.WriteFile(emailfileloc, JSON.stringify(emails));
+  }
+
+  async function getEmails() {
     //
-    // Get the emails from the server.
+    // Get the emails from the system.
     //
-    fetch("http://localhost:9978/api/emailit/emails", {
-      method: "GET",
-      headers: {
-        "Content-type": "application/json",
-      },
-    })
-      .then((resp) => {
-        return resp.json();
-      })
-      .then((data) => {
-        emails = data.emails;
-        if (typeof callback !== "undefined") callback();
-      });
+    let emailfileloc = await App.AppendPath($config.configDir,"emails.json");
+    if(await App.FileExists(emailfileloc)) {
+      let emailfilejson = await App.ReadFile(emailfileloc);
+      emails = JSON.parse(emailfilejson);
+    }
   }
 
   function newAddress() {
@@ -42,7 +41,7 @@
     show = false;
   }
 
-  function addNew() {
+  async function addNew() {
     email = email.trim();
     name = name.trim();
     emails = emails.filter((item) => item.email !== email);
@@ -51,38 +50,19 @@
       email: email,
     });
     emails = emails;
-    fetch("http://localhost:9978/api/emailit/addEmail", {
-      method: "PUT",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({
-        name: name,
-        email: email,
-      }),
-    });
+    await saveEmails();
     addedit = false;
   }
 
   function editEmail(eemail) {
-    console.log(eemail);
     name = eemail.name;
     email = eemail.email;
   }
 
-  function deleteEmail(dem) {
+  async function deleteEmail(dem) {
     dem.email = dem.email.trim();
     emails = emails.filter((item) => item.email !== dem.email);
-    fetch("http://localhost:9978/api/emailit/addEmail", {
-      method: "DELETE",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: {
-        name: "",
-        email: dem.email,
-      },
-    });
+    await saveEmails();
   }
 </script>
 

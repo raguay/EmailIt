@@ -9,6 +9,8 @@
   import { noteEditor } from "../stores/noteEditor.js";
   import { showScripts } from "../stores/showScripts.js";
   import { showTemplates } from "../stores/showTemplates.js";
+  import { notes } from "../stores/notes.js";
+  import * as App from '../../wailsjs/go/main/App.js';
 
   let editorConfig = {
     language: "markdown",
@@ -18,62 +20,28 @@
   };
   let initFinished = false;
 
-  onMount(() => {
+  onMount(async () => {
     //
     // Load everything for working with the notes:
     //
-    loadNotes();
+    await loadNotes();
   });
 
-  function loadNotes() {
-    getNote(0);
-    getNote(1);
-    getNote(2);
-    getNote(3);
-    getNote(4);
-    getNote(5);
-    getNote(6);
-    getNote(7);
-    getNote(8);
-    getNote(9, async () => {
-      //
-      // When last note is loaded, setup for displaying the
-      // proper note.
-      //
-      initFinished = true;
-      await tick();
-      openNote($currentNote);
-      focus();
-    });
+  async function loadNotes() {
+    //
+    // When last note is loaded, setup for displaying the
+    // proper note.
+    //
+    await $notes.loadNotes();
+    $storedText = $notes.notes;
+    initFinished = true;
+    await tick();
+    openNote($currentNote);
+    focus();
   }
 
-  function getNote(id, callback) {
-    fetch(`http://localhost:9978/api/note/${id}/w`, {
-      method: "GET",
-      headers: {
-        "Content-type": "application/json",
-      },
-    })
-      .then((resp) => {
-        return resp.json();
-      })
-      .then((data) => {
-        $storedText[id] = data.note;
-        if (typeof callback !== "undefined") callback();
-      });
-  }
-
-  function saveNote(id) {
-    var text = $storedText[id];
-    fetch(`http://localhost:9978/api/note/${id}/w`, {
-      method: "PUT",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({
-        note: text,
-      }),
-    });
+  async function saveNote(id) {
+    await $notes.putNote(id, $storedText[id]);
   }
 
   function editorChange(e) {

@@ -22,9 +22,39 @@
   import { userScripts } from "./stores/userScripts.js";
   import { userTemplates } from "./stores/userTemplates.js";
   import { systemTemplates } from "./stores/systemTemplates.js";
+  import { notes } from "./stores/notes.js";
   import * as App from '../wailsjs/go/main/App.js';
 
   let starting = true;
+  let notestruct = {
+    notes: ["","","","","","","","","",""],
+    loadNotes: async function() {
+      //
+      // Load the notes.json file.
+      //
+      let notejsonloc = await App.AppendPath($config.configDir, "notes.json");
+      if(await App.FileExists(notejsonloc)) {
+        notestruct.notes = await App.ReadFile(notejsonloc);
+        notestruct.notes = JSON.parse(this.notes);
+      } else {
+        notestruct.saveNotes();
+      }
+    },
+    saveNotes: async function() {
+      //
+      // Save the notes.json file.
+      //
+      let notejsonloc = await App.AppendPath($config.configDir, "notes.json");
+      await App.WriteFile(notejsonloc, JSON.stringify(notestruct.notes));
+    },
+    getNote: function(noteid) {
+      return notestruct.notes[noteid];
+    },
+    putNote: async function(noteid, note) {
+      notestruct.notes[noteid] = note;
+      await notestruct.saveNotes();
+    }
+  }
 
   onMount(async () => {
     //
@@ -40,6 +70,7 @@
     getTermScriptsList();
     await getTemplatesList();
     await getTheme();
+    await getNotes();
 
     //
     // Set the state to emailit.
@@ -60,6 +91,11 @@
       starting = false;
     }
   });
+
+  async function getNotes() {
+    $notes = notestruct;
+    await $notes.loadNotes();
+  }
 
   async function getConfig() {
     //
@@ -109,11 +145,11 @@
     //
     // Create the default Theme.
     //
-    let defaultThemeDir = await App.AppendPath(themedir,"Default");
+    let defaultThemeDir = await App.AppendPath($config.themeDir,"Default");
     if(!await App.DirExists(defaultThemeDir)) {
       await App.MakeDir(defaultThemeDir)
     }
-    defaultThemefile = await App.AppendPath(defaultThemeDir,"Default.json");
+    let defaultThemefile = await App.AppendPath(defaultThemeDir,"Default.json");
     await App.WriteFile(defaultThemefile, JSON.stringify({
       name: "Default",
       font: "Fira Code, Menlo",
@@ -178,7 +214,7 @@
         },
       ]
     }));
-    themecnfg = await App.AppendPath(defaultThemedir,"package.json");
+    let themecnfg = await App.AppendPath(defaultThemeDir,"package.json");
     await App.WriteFile(themecnfg,JSON.stringify(
       {
         "name": "Default",

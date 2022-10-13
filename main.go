@@ -10,7 +10,7 @@ import (
 	"log"
 )
 
-//go:embed frontend/public
+//go:embed frontend/dist
 var assets embed.FS
 
 //go:embed build/appicon.png

@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/atotto/clipboard v0.1.4
 	github.com/otiai10/copy v1.7.0
-	github.com/wailsapp/wails/v2 v2.0.0-rc.1.1
+	github.com/wailsapp/wails/v2 v2.0.0
 )
 
 require (
@@ -32,5 +32,3 @@ require (
 	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
 	golang.org/x/text v0.3.7 // indirect
 )
-
-// replace github.com/wailsapp/wails/v2 v2.0.0-beta.35 => /Users/raguay/go/pkg/mod/github.com/wailsapp/wails/v2@v2.0.0-beta.35

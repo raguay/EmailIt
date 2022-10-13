@@ -1,11 +1,23 @@
 <script>
   import { createEventDispatcher, onMount, tick } from "svelte";
   import { theme } from "../stores/theme.js";
+  import { config } from "../stores/config.js";
+  import { extScripts } from "../stores/extScripts.js";
+  import * as App from '../../wailsjs/go/main/App.js';
 
-  export let config;
+  export let cfg;
 
-  let script;
-  let envs;
+  let script = {
+    name: "",
+    script: "",
+    path: "",
+    env: "",
+    description: "",
+    help: "",
+    termscript: false,
+  };
+  let envs = [];
+  let envlist = null;
 
   const dispatch = createEventDispatcher();
 
@@ -23,8 +35,8 @@
     //    termscript   - True if it's a termianl script. Otherwise, it's false.
     // }
     //
-    if (config.script !== "new") {
-      script = await getExtScript(config.script);
+    if (cfg.script !== "new") {
+      script = $extScripts.find(item => item.name === cfg.script);
     } else {
       script = {
         name: "new",
@@ -36,48 +48,25 @@
         help: "",
       };
     }
-    envs = await getEnvNames();
-  });
 
-  async function getExtScript(name) {
-    //
-    // Get the named external script and return it.
-    //
-    let resp = await fetch(`http://localhost:9978/api/scripts/ext/${name}`, {
-      headers: {
-        "Content-type": "application/json",
-      },
-    });
-    let scpt = await resp.json();
-    return scpt;
-  }
-
-  async function getEnvNames() {
     //
     // Get the list of environments from the server.
     //
-    let resp = await fetch(`http://localhost:9978/api/scripts/env/list`, {
-      headers: {
-        "Content-type": "application/json",
-      },
-    });
-    let scpt = await resp.json();
-
-    return scpt;
-  }
+    let envlistloc = await App.AppendPath($config.configDir, "environments.json");
+    envlist = await App.ReadFile(envlistloc);
+    envlist = JSON.parse(envlist);
+    envs = envlist.map(item => item.name);
+  });
 
   async function changeScript() {
     if (script.name !== "" && script.name !== null && script.name !== "new") {
       //
       // Add/Update the script
       //
-      await fetch(`http://localhost:9978/api/scripts/ext/${script.name}`, {
-        method: "PUT",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify(script),
-      });
+      $extScripts = $extScripts.filter(item => item.name !== script.name);
+      $extScripts.push(script);
+      let extScriptsLoc = await App.AppendPath($config.configDir,"extscripts.json");
+      await App.WriteFile(extScriptsLoc, JSON.stringify($extScripts));
     }
   }
 
@@ -85,12 +74,9 @@
     //
     // Remove the script
     //
-    await fetch(`http://localhost:9978/api/scripts/ext/${script.name}`, {
-      method: "DELETE",
-      headers: {
-        "Content-type": "application/json",
-      },
-    });
+    $extScripts = $extScripts.filter(item => item.name !== script.name);
+    let extScriptsLoc = await App.AppendPath($config.configDir,"extscripts.json");
+    await App.WriteFile(extScriptsLoc, JSON.stringify($extScripts));
     tick();
     goback();
   }
@@ -106,21 +92,20 @@
 <div
   id="script"
   style="color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
->
-  {#if typeof script !== "undefined" && typeof envs !== "undefined"}
-    <label id="scriptNameLab" for="scriptName"> Name of Script </label>
+  >
+    <label id="scrptNameLab" for="scrptName"> Name of Script </label>
     <input
-      id="scriptName"
-      name="scriptName"
-      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
-      on:blur={changeScript}
+      id="scrptName"
+      name="scrptName"
       bind:value={script.name}
+      style="border-radius: 5px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
+      on:blur={changeScript}
     />
-    <label id="scriptDesLab" for="scriptDes">Description</label>
+    <label id="scrptDesLab" for="scrptDes">Description</label>
     <input
-      id="scriptDes"
-      name="scriptDes"
-      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
+      id="scrptDes"
+      name="scrptDes"
+      style="border-radius: 5px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       bind:value={script.description}
       on:blur={changeScript}
     />
@@ -128,7 +113,7 @@
     <input
       id="help"
       name="help"
-      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
+      style="border-radius: 5px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       bind:value={script.help}
       on:blur={changeScript}
     />
@@ -138,9 +123,9 @@
     <input
       id="scriptScript"
       name="scriptScript"
-      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
-      on:blur={changeScript}
+      style="border-radius: 5px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       bind:value={script.script}
+      on:blur={changeScript}
     />
     <label id="scriptPath" for="scriptPath">
       What is the directory for the script?
@@ -148,9 +133,9 @@
     <input
       id="scriptPath"
       name="scriptPath"
-      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
-      on:blur={changeScript}
+      style="border-radius: 5px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       bind:value={script.path}
+      on:blur={changeScript}
     />
     <label id="scriptEnv" for="scriptEnv">
       What is the environment for the script?
@@ -158,9 +143,9 @@
     <select
       id="scriptEnv"
       name="scriptEnv"
-      style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
-      on:blur={changeScript}
+      style="border-radius: 5px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       bind:value={script.env}
+      on:blur={changeScript}
     >
       {#each envs as env}
         <option value={env}>{env}</option>
@@ -171,15 +156,15 @@
       id="termScriptChk"
       name="termScriptChk"
       type="checkbox"
-      bind:value={script.termscript}
+      bind:checked={script.termscript}
+      on:blur={changeScript}
     />
-  {/if}
 </div>
 <div id="buttonRow">
   <button
     class="buttonStyle"
     type="button"
-    style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
+    style="border-radius: 5px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
     on:click={() => {
       changeScript();
       goback();
@@ -190,7 +175,7 @@
   <button
     class="buttonStyle"
     type="button"
-    style="border-radius: 5px; border-color: ${$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
+    style="border-radius: 5px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
     on:click={deleteScript}
   >
     Delete
@@ -216,7 +201,7 @@
     margin: 20px auto 0px auto;
   }
 
-  #scriptNameLab {
+  #scrptNameLab {
     padding-top: 0px;
     margin-top: 0px;
   }

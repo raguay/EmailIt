@@ -1,6 +1,7 @@
 <script>
   import { createEventDispatcher, onMount } from "svelte";
   import { theme } from "../stores/theme.js";
+  import { extScripts } from "../stores/extScripts.js";
 
   let scripts = [];
 
@@ -17,13 +18,7 @@
     //
     // Get the list of external scripts from the server.
     //
-    let resp = await fetch("http://localhost:9978/api/scripts/ext/list", {
-      headers: {
-        "Content-type": "application/json",
-      },
-    });
-    let scrpt = await resp.json();
-    return scrpt;
+    return $extScripts;
   }
 
   function openScript(snm) {

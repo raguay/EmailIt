@@ -21,7 +21,7 @@
       <ExtScriptList on:changeView={changeView} />
     </div>
   {:else if view === "script"}
-    <ExtScript {config} on:changeView={changeView} />
+    <ExtScript cfg={config} on:changeView={changeView} />
   {/if}
 </div>
 

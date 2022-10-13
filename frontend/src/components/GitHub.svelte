@@ -1,12 +1,13 @@
 <script>
   import { onMount, afterUpdate } from "svelte";
   import { theme } from "../stores/theme.js";
-  import { Octokit } from "@octokit/rest";
   import { termscripts } from "../stores/termscripts.js";
   import { scripts } from "../stores/scripts.js";
   import util from "../modules/utils.js";
+  import GitHub from 'github-api';
+  import * as App from '../../wailsjs/go/main/App.js';
 
-  let octok;
+  let gh;
   let repos = null;
   let themes = null;
   let msgs = [];
@@ -19,12 +20,12 @@
   };
 
   onMount(async () => {
-    let hdir = await window.go.main.App.GetHomeDir();
-    config.configDir = await window.go.main.App.AppendPath(
+    let hdir = await App.GetHomeDir();
+    config.configDir = await App.AppendPath(
       hdir,
       ".config/scriptserver"
     );
-    octok = new Octokit();
+    gh = new GitHub();
     await loadRepoInfo();
     timeOut = setTimeout(focusInput, 1000);
     return () => {
@@ -53,7 +54,7 @@
       if (typeof themes !== "undefined") {
         themes = {};
       }
-      var repost = await octok.search.repos({
+      var repost = await gh.search.repos({
         q: "topic:emailit+topic:script",
       });
       if (check(repost)) {
@@ -63,7 +64,7 @@
         }
         repos = repost;
       }
-      var themest = await octok.search.repos({
+      var themest = await gh.search.repos({
         q: "topic:emailit+topic:theme",
       });
       if (check(themest)) {
@@ -88,16 +89,16 @@
   }
 
   async function installTheme(thm) {
-    var thmDir = await window.go.main.App.AppendPath(
+    var thmDir = await App.AppendPath(
       config.configDir,
       "styles"
     );
-    if (!(await window.go.main.App.DirExists(thmDir))) {
-      await window.go.main.App.MakeDir(thmDir);
+    if (!(await App.DirExists(thmDir))) {
+      await App.MakeDir(thmDir);
     }
-    thmDir = await window.go.main.App.AppendPath(thmDir, thm.name);
-    if (!(await window.go.main.App.DirExists(thmDir))) {
-      await window.go.main.App.MakeDir(thmDir);
+    thmDir = await App.AppendPath(thmDir, thm.name);
+    if (!(await App.DirExists(thmDir))) {
+      await App.MakeDir(thmDir);
     }
     await util.runCommandLine(
       `git clone '${thm.git_url}' '${thmDir}'`,
@@ -120,20 +121,20 @@
   }
 
   async function loadTheme(thm) {
-    var thmDir = await window.go.main.App.AppendPath(
+    var thmDir = await App.AppendPath(
       config.configDir,
       "styles"
     );
-    thmDir = await window.go.main.App.AppendPath(thmDir, thm.name);
-    const pfile = await window.go.main.App.AppendPath(thmDir, "package.json");
-    if (await window.go.main.App.FileExists(pfile)) {
-      var manifest = await window.go.main.App.ReadFile(pfile);
+    thmDir = await App.AppendPath(thmDir, thm.name);
+    const pfile = await App.AppendPath(thmDir, "package.json");
+    if (await App.FileExists(pfile)) {
+      var manifest = await App.ReadFile(pfile);
       manifest = JSON.parse(manifest);
-      const mfile = await window.go.main.App.AppendPath(
+      const mfile = await App.AppendPath(
         thmDir,
         manifest.theme.main
       );
-      var newTheme = await window.go.main.App.ReadFile(mfile);
+      var newTheme = await App.ReadFile(mfile);
       newTheme = JSON.parse(newTheme);
       $theme = newTheme;
       addMsg(thm, "This theme is now being used.");
@@ -143,22 +144,22 @@
   }
 
   async function themeExists(thm) {
-    var thmDir = await window.go.main.App.AppendPath(
+    var thmDir = await App.AppendPath(
       config.configDir,
       "styles"
     );
-    thmDir = await window.go.main.App.AppendPath(thmDir, thm.name);
-    var result = await window.go.main.App.DirExists(thmDir);
+    thmDir = await App.AppendPath(thmDir, thm.name);
+    var result = await App.DirExists(thmDir);
     return result;
   }
 
   async function deleteTheme(thm) {
-    var thmDir = await window.go.main.App.AppendPath(
+    var thmDir = await App.AppendPath(
       config.configDir,
       "styles"
     );
-    var tpath = await window.go.main.App.AppendPath(thmDir, thm.name);
-    await window.go.main.App.DeleteEntries(tpath);
+    var tpath = await App.AppendPath(thmDir, thm.name);
+    await App.DeleteEntries(tpath);
     themes = themes.map((item) => {
       if (item.name === thm.name) {
         item.loaded = false;
@@ -169,26 +170,26 @@
   }
 
   async function installExtension(ext) {
-    var extDir = await window.go.main.App.AppendPath(
+    var extDir = await App.AppendPath(
       config.configDir,
       "scripts"
     );
-    if (!(await window.go.main.App.DirExists(extDir))) {
-      await window.go.main.App.MakeDir(extDir);
+    if (!(await App.DirExists(extDir))) {
+      await App.MakeDir(extDir);
     }
-    extDir = await window.go.main.App.AppendPath(extDir, ext.name);
-    if (!(await window.go.main.App.DirExists(extDir))) {
-      await window.go.main.App.MakeDir(extDir);
+    extDir = await App.AppendPath(extDir, ext.name);
+    if (!(await App.DirExists(extDir))) {
+      await App.MakeDir(extDir);
     }
     await util.runCommandLine(
       `git clone '${ext.git_url}' '${extDir}'`,
       [],
       async () => {
-        let cfgloc = await window.go.main.App.AppendPath(
+        let cfgloc = await App.AppendPath(
           extDir,
           "package.json"
         );
-        let cfg = await window.go.main.App.ReadFile(cfgloc);
+        let cfg = await App.ReadFile(cfgloc);
         cfg = JSON.parse(cfg);
         let script = {
           name: cfg.script.name,
@@ -226,25 +227,25 @@
   }
 
   async function extExists(ext) {
-    var extDir = await window.go.main.App.AppendPath(
+    var extDir = await App.AppendPath(
       config.configDir,
       "scripts"
     );
-    extDir = await window.go.main.App.AppendPath(extDir, ext.name);
-    var flag = await window.go.main.App.DirExists(extDir);
+    extDir = await App.AppendPath(extDir, ext.name);
+    var flag = await App.DirExists(extDir);
     return flag;
   }
 
   async function deleteExtension(ext) {
-    var extDir = await window.go.main.App.AppendPath(
+    var extDir = await App.AppendPath(
       config.configDir,
       "scripts"
     );
-    let epath = await window.go.main.App.AppendPath(extDir, ext.name);
-    let cfgloc = await window.go.main.App.AppendPath(epath, "package.json");
-    let cfg = await window.go.main.App.ReadFile(cfgloc);
+    let epath = await App.AppendPath(extDir, ext.name);
+    let cfgloc = await App.AppendPath(epath, "package.json");
+    let cfg = await App.ReadFile(cfgloc);
     cfg = JSON.parse(cfg);
-    await window.go.main.App.DeleteEntries(epath);
+    await App.DeleteEntries(epath);
     repos = repos.map((item) => {
       if (item.name === ext.name) {
         item.loaded = false;

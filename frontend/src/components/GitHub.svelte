@@ -3,7 +3,6 @@
   import { theme } from "../stores/theme.js";
   import { termscripts } from "../stores/termscripts.js";
   import { scripts } from "../stores/scripts.js";
-  import util from "../modules/utils.js";
   import GitHub from 'github-api';
   import * as App from '../../wailsjs/go/main/App.js';
 
@@ -15,13 +14,13 @@
   let hiddenInput;
   let timeOut;
   let loading = true;
-  let config = {
+  let cfg = {
     configDir: "",
   };
 
   onMount(async () => {
     let hdir = await App.GetHomeDir();
-    config.configDir = await App.AppendPath(
+    cfg.configDir = await App.AppendPath(
       hdir,
       ".config/scriptserver"
     );
@@ -90,7 +89,7 @@
 
   async function installTheme(thm) {
     var thmDir = await App.AppendPath(
-      config.configDir,
+      cfg.configDir,
       "styles"
     );
     if (!(await App.DirExists(thmDir))) {
@@ -100,7 +99,7 @@
     if (!(await App.DirExists(thmDir))) {
       await App.MakeDir(thmDir);
     }
-    await util.runCommandLine(
+    await runCommandLine(
       `git clone '${thm.git_url}' '${thmDir}'`,
       [],
       () => {
@@ -122,7 +121,7 @@
 
   async function loadTheme(thm) {
     var thmDir = await App.AppendPath(
-      config.configDir,
+      cfg.configDir,
       "styles"
     );
     thmDir = await App.AppendPath(thmDir, thm.name);
@@ -145,7 +144,7 @@
 
   async function themeExists(thm) {
     var thmDir = await App.AppendPath(
-      config.configDir,
+      cfg.configDir,
       "styles"
     );
     thmDir = await App.AppendPath(thmDir, thm.name);
@@ -155,7 +154,7 @@
 
   async function deleteTheme(thm) {
     var thmDir = await App.AppendPath(
-      config.configDir,
+      cfg.configDir,
       "styles"
     );
     var tpath = await App.AppendPath(thmDir, thm.name);
@@ -171,7 +170,7 @@
 
   async function installExtension(ext) {
     var extDir = await App.AppendPath(
-      config.configDir,
+      cfg.configDir,
       "scripts"
     );
     if (!(await App.DirExists(extDir))) {
@@ -181,7 +180,7 @@
     if (!(await App.DirExists(extDir))) {
       await App.MakeDir(extDir);
     }
-    await util.runCommandLine(
+    await runCommandLine(
       `git clone '${ext.git_url}' '${extDir}'`,
       [],
       async () => {
@@ -228,7 +227,7 @@
 
   async function extExists(ext) {
     var extDir = await App.AppendPath(
-      config.configDir,
+      cfg.configDir,
       "scripts"
     );
     extDir = await App.AppendPath(extDir, ext.name);
@@ -238,7 +237,7 @@
 
   async function deleteExtension(ext) {
     var extDir = await App.AppendPath(
-      config.configDir,
+      cfg.configDir,
       "scripts"
     );
     let epath = await App.AppendPath(extDir, ext.name);
@@ -321,6 +320,53 @@
       if (pickerDOM.scrollTop < 0) pickerDOM.scrollTop = 0;
     }
   }
+
+	async function runCommandLine(line, rEnv, callback, dir) {
+	  //
+	  // Get the environment to use.
+    //
+    let envlistloc = await App.AppendPath($config.configDir, "environments.json");
+    let envlist = await App.ReadFile(envlistloc);
+    envlist = JSON.parse(envlist);
+    nEnv = envlist.map(item => 'Default');
+ 
+	  var resp = await fetch(`http://localhost:9978/api/scripts/env/Default`);
+	  var nEnv = await resp.json();
+	  if (typeof rEnv !== "undefined") {
+	    nEnv = { ...nEnv, ...rEnv };
+	  }
+	
+	  //
+	  // Fix the environment from a map to an array of strings.
+	  //
+	  var penv = [];
+	  for (const key in nEnv) {
+	    penv.push(`${key}=${nEnv[key]}`);
+	  }
+	
+	  //
+	  // Make sure dir has a value.
+	  //
+	  if (typeof dir === "undefined") dir = ".";
+	
+	  //
+	  // Run the command line in a shell. #TODO: make the shell configurable.
+	  //
+	  var args = ["/bin/zsh", "-c", line];
+	  var cmd = "/bin/zsh";
+	
+	  //
+	  // Run the command line.
+	  //
+	  var result = await App.RunCommandLine(cmd, args, penv, dir);
+	  var err = await App.GetError();
+	  //
+	  // If callback is given, call it with the results.
+	  //
+	  if (typeof callback !== "undefined" || callback !== null) {
+	    callback(err, result);
+	  }
+	}
 </script>
 
 <div

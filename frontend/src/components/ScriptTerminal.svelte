@@ -7,8 +7,10 @@
   import { theme } from "../stores/theme.js";
   import { state } from "../stores/state.js";
   import { termscripts } from "../stores/termscripts.js";
+  import { runscript } from "../stores/runscript.js";
   import { aliases } from "../stores/aliases.js";
-  import util from "../modules/utils.js";
+  import { config } from "../stores/config.js";
+  import * as App from '../../wailsjs/go/main/App.js';
 
   let term = null;
   let commands = [];
@@ -74,17 +76,16 @@
     right: `${esc}[C`,
   };
   let homeDir = "";
-  let exd = "";
 
   onMount(async () => {
-    homeDir = await window.go.main.App.GetHomeDir();
+    homeDir = await App.GetHomeDir();
     wd = homeDir;
-    exd = await window.go.main.App.GetExecutable();
     term = new Terminal({
       rendererType: "canvas",
       convertEol: true,
       cursorBlink: true,
       cursorStyle: "bar",
+      allowProposedApi: true,
       theme: {
         background: $theme.textAreaColor,
         black: $theme.backgroundColor,
@@ -310,25 +311,10 @@
 
   async function runCommandLineScripts(scrpt, args) {
     //
-    // Command found. Run it!
+    // Command found. Run it! This is the script command running.
     //
-    await fetch("http://localhost:9978/api/script/run", {
-      method: "PUT",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({
-        script: scrpt.name,
-        text: args,
-        envVar: { SCRIPTTERMCWD: wd },
-      }),
-    })
-      .then((resp) => {
-        return resp.json();
-      })
-      .then((data) => {
-        ProcessScriptReturn(data.text);
-      });
+    let result = await $runscript(scrpt.name, args);
+    ProcessScriptReturn(result);
   }
 
   function ProcessScriptReturn(data) {
@@ -418,9 +404,9 @@
       if (text[0] !== "/") {
         let ndir = new String(text);
         let nwd = new String(wd);
-        path = await window.go.main.App.AppendPath(nwd, ndir);
+        path = await App.AppendPath(nwd, ndir);
       }
-      let exists = await window.go.main.App.DirExists(path);
+      let exists = await App.DirExists(path);
       if (exists) {
         wd = path;
       } else {
@@ -507,20 +493,20 @@
       if (text[0] === "/") {
         path = text;
       } else {
-        path = await window.go.main.App.AppendPath(path, text);
+        path = await App.AppendPath(path, text);
       }
     }
-    var dirReal = await window.go.main.App.DirExists(path);
+    var dirReal = await App.DirExists(path);
     if (dirReal) {
-      var result = await window.go.main.App.ReadDir(path);
+      var result = await App.ReadDir(path);
       var lines = [];
       for (let i = 0; i < result.length; i++) {
         //
         // Rewrite lastData.lines to have a tcommand for each entry printed.
         //
         let item = result[i];
-        let npath = await window.go.main.App.AppendPath(item.Dir, item.Name);
-        dirReal = await window.go.main.App.DirExists(npath);
+        let npath = await App.AppendPath(item.Dir, item.Name);
+        dirReal = await App.DirExists(npath);
         if (dirReal) {
           lines.push({
             name: item.Name,
@@ -541,7 +527,7 @@
       lastData.data = lines;
       lastData.valid = true;
     } else {
-      let fileReal = await window.go.main.App.FileExists(path);
+      let fileReal = await App.FileExists(path);
       if (fileReal) {
         term.write(`    ${text}\n\r`);
         lastData.data = [
@@ -566,14 +552,14 @@
       text = text.slice(1, text.length - 1);
     }
     if (text[0] !== "/") {
-      text = await window.go.main.App.AppendPath(wd, text);
+      text = await App.AppendPath(wd, text);
     }
     text = new String(text.trim());
 
     //
     // Run the open command on the file.
     //
-    await util.runCommandLine(`/usr/bin/open -t ${text}`, [], () => {}, wd);
+    await runCommandLine(`/usr/bin/open -t ${text}`, [], () => {}, wd);
     lastData.valid = false;
   }
 
@@ -601,59 +587,17 @@
       var isText = false;
       if (text[0] === '"' || text[0] === "'") {
         text = text.slice(1, text.length - 1);
-        isText = true;
       }
       if (text[0] !== "/" && !isText) {
-        text = await window.go.main.App.AppendPath(wd, text);
-        isText = false;
+        text = await App.AppendPath(wd, text);
       }
       text = new String(text.trim());
 
       //
       // Process the text based on what it is.
       //
-      if (isText) {
-        //
-        // Send the text to run the script on.
-        //
-        await fetch("http://localhost:9978/api/script/run", {
-          method: "PUT",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({
-            script: scriptName,
-            text: text,
-          }),
-        })
-          .then((resp) => {
-            return resp.json();
-          })
-          .then((data) => {
-            term.write(`\n\r     ${data.text}\n\r`);
-          });
-      } else {
-        //
-        // It is a file to run the script on.
-        //
-        await fetch("http://localhost:9978/api/script/run", {
-          method: "PUT",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify({
-            script: scriptName,
-            text: "",
-            file: text,
-          }),
-        })
-          .then((resp) => {
-            return resp.json();
-          })
-          .then((data) => {
-            term.write(`\n\r     ${data.text}\n\r`);
-          });
-      }
+      let newText = await $runscript(scriptName,text);
+      term.write(`\n\r     ${newText}\n\r`);
     }
     lastData.valid = false;
   }
@@ -666,33 +610,33 @@
       text = text.slice(1, text.length - 1);
     }
     if (text[0] !== "/") {
-      text = await window.go.main.App.AppendPath(wd, text);
+      text = await App.AppendPath(wd, text);
     }
     text = new String(text.trim());
 
     //
     // Setup the user editor data file.
     //
-    let userEditor = await window.go.main.App.AppendPath(
+    let userEditor = await App.AppendPath(
       homeDir,
       ".myeditorchoice"
     );
-    if (!(await window.go.main.App.FileExists(userEditor))) {
+    if (!(await App.FileExists(userEditor))) {
       //
       // They don't have this file setup. Open in the system's default editor.  TODO: Not usable on non-macOS systems.
       //
-      await util.runCommandLine(`/usr/bin/open '${text}'`, [], () => {}, wd);
+      await runCommandLine(`/usr/bin/open '${text}'`, [], () => {}, wd);
     } else {
       //
       // Get the user editor.
       //
-      var editor = await window.go.main.App.ReadFile(userEditor);
+      var editor = await App.ReadFile(userEditor);
       editor = editor.toString().trim();
       if (editor.endsWith(".app")) {
         //
         // Open the file with a program. TODO: Not usable on non-macOS systems.
         //
-        await util.runCommandLine(
+        await runCommandLine(
           `/usr/bin/open -a ${editor} '${text}'`,
           [],
           () => {},
@@ -706,7 +650,7 @@
           //
           // Open emacs.
           //
-          await util.runCommandLine(
+          await runCommandLine(
             'emacsclient -n -q "' + file + '"',
             [],
             (err, result) => {},
@@ -757,22 +701,22 @@
   }
 
   async function loadAliases() {
-    let userAliases = await window.go.main.App.AppendPath(
+    let userAliases = await App.AppendPath(
       homeDir,
       ".myaliases"
     );
-    if (await window.go.main.App.FileExists(userAliases)) {
-      let tmp = await window.go.main.App.ReadFile(userAliases);
+    if (await App.FileExists(userAliases)) {
+      let tmp = await App.ReadFile(userAliases);
       $aliases = JSON.parse(tmp);
     }
   }
 
   async function saveAliases() {
-    let userAliases = await window.go.main.App.AppendPath(
+    let userAliases = await App.AppendPath(
       homeDir,
       ".myaliases"
     );
-    window.go.main.App.WriteFile(userAliases, JSON.stringify($aliases));
+    App.WriteFile(userAliases, JSON.stringify($aliases));
   }
 
   async function histCommand(text) {
@@ -825,21 +769,21 @@
       if (text[0] === "/") {
         path = text;
       } else {
-        path = await window.go.main.App.AppendPath(path, text);
+        path = await App.AppendPath(path, text);
       }
     } else {
       textblank = true;
     }
-    var dirReal = await window.go.main.App.DirExists(path);
+    var dirReal = await App.DirExists(path);
     if (dirReal && textblank) {
-      var result = await window.go.main.App.ReadDir(path);
+      var result = await App.ReadDir(path);
       var lines = [];
       for (let i = 0; i < result.length; i++) {
         //
         // Rewrite lastData.lines to have a tcommand for each entry printed.
         //
         let item = result[i];
-        let npath = await window.go.main.App.AppendPath(item.Dir, item.Name);
+        let npath = await App.AppendPath(item.Dir, item.Name);
         lines.push({
           name: item.Name,
           command: `rm '${npath}'`,
@@ -853,12 +797,12 @@
       lastData.data = lines;
       lastData.valid = true;
     } else {
-      let fileReal = await window.go.main.App.FileExists(path);
+      let fileReal = await App.FileExists(path);
       if (fileReal || dirReal) {
         //
         // Remove the file or directory.
         //
-        await window.go.main.App.DeleteEntries(path);
+        await App.DeleteEntries(path);
       } else {
         term.write(
           `\n\r    ${termAtb.red}<Error>${termAtb.default} ${path} is an invalid Directory.\n\r`
@@ -880,17 +824,17 @@
       if (text[0] === "/") {
         path = text;
       } else {
-        path = await window.go.main.App.AppendPath(path, text);
+        path = await App.AppendPath(path, text);
       }
     } else {
       textblank = true;
     }
-    var dirReal = await window.go.main.App.DirExists(path);
+    var dirReal = await App.DirExists(path);
     if (!dirReal && !textblank) {
       //
       // Create the directory.
       //
-      await window.go.main.App.MakeDir(path);
+      await App.MakeDir(path);
     } else {
       //
       // It already exists.
@@ -915,17 +859,17 @@
       if (text[0] === "/") {
         path = text;
       } else {
-        path = await window.go.main.App.AppendPath(path, text);
+        path = await App.AppendPath(path, text);
       }
     } else {
       textblank = true;
     }
-    var fileReal = await window.go.main.App.FileExists(path);
+    var fileReal = await App.FileExists(path);
     if (!fileReal && !textblank) {
       //
       // Create the file.
       //
-      await window.go.main.App.MakeFile(path);
+      await App.MakeFile(path);
     } else {
       //
       // It already exists.
@@ -952,6 +896,50 @@
   function viewScriptEditor() {
     $state = "scripts";
   }
+
+	async function runCommandLine(line, rEnv, callback, dir) {
+	  //
+	  // Get the environment to use.
+    //
+    let envlistloc = await App.AppendPath($config.configDir, "environments.json");
+    let envlist = await App.ReadFile(envlistloc);
+    envlist = JSON.parse(envlist);
+    let nEnv = envlist.map(item => 'Default');
+	  if (typeof rEnv !== "undefined") {
+	    nEnv = { ...nEnv, ...rEnv };
+	  }
+	
+	  //
+	  // Fix the environment from a map to an array of strings.
+	  //
+	  var penv = [];
+	  for (const key in nEnv) {
+	    penv.push(`${key}=${nEnv[key]}`);
+	  }
+	
+	  //
+	  // Make sure dir has a value.
+	  //
+	  if (typeof dir === "undefined") dir = ".";
+	
+	  //
+	  // Run the command line in a shell. #TODO: make the shell configurable.
+	  //
+	  var args = ["/bin/zsh", "-c", line];
+	  var cmd = "/bin/zsh";
+	
+	  //
+	  // Run the command line.
+	  //
+	  var result = await App.RunCommandLine(cmd, args, penv, dir);
+	  var err = await App.GetError();
+	  //
+	  // If callback is given, call it with the results.
+	  //
+	  if (typeof callback !== "undefined" || callback !== null) {
+	    callback(err, result);
+	  }
+	}
 </script>
 
 <div

@@ -22,8 +22,12 @@
   import { userScripts } from "./stores/userScripts.js";
   import { userTemplates } from "./stores/userTemplates.js";
   import { systemTemplates } from "./stores/systemTemplates.js";
+  import { runscript } from "./stores/runscript.js";
   import { notes } from "./stores/notes.js";
   import * as App from '../wailsjs/go/main/App.js';
+  import { DateTime } from "luxon";
+  import { create, all } from 'mathjs';
+  import Handlebars from "handlebars";
 
   let starting = true;
   let notestruct = {
@@ -55,6 +59,76 @@
       await notestruct.saveNotes();
     }
   }
+  const mathconfig = {
+    epsilon: 1e-12,
+    matrix: 'Matrix',
+    number: 'number',
+    precision: 64,
+    predictable: false,
+    randomSeed: null
+  };
+  const mathjs = create(all, mathconfig);
+  var SP = {
+      text: '',
+      luxon: DateTime,
+      mathjs: mathjs,
+      mathParser: mathjs.parser(),
+      that: {},
+      Handlebars: Handlebars,
+      ProcessMathSelection: function(txt) {
+        var result = this.mathParser.evaluate(txt)
+        return result
+      },
+      ProcessMathNotes: function(Note) {
+        var result = ''
+        this.mathParser.clear()
+        let lines = Note.match(/^.*((\\r\\n|\\n|\\r)|$)/gm)
+        let numLines = lines.length
+        for (let i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          var lineResult = ''
+          line = line.trim()
+          if (line.indexOf('>') === 0) {
+            line = line.substr(2)
+            var inx = line.indexOf('|')
+            if (inx !== -1) {
+              line = line.substr(0, inx - 1)
+              line = line.trim()
+            }
+            lineResult = this.mathParser.evaluate(line)
+            if ((typeof lineResult) === 'function') {
+              lineResult = 'Definition'
+            }
+            var whiteSP = 32 - (line.length + 3);
+            if (whiteSP < 1) {
+              whiteSP = 1;
+            }
+            result += '> ' + line + this.insertCharacters(whiteSP, ' ') + ' | ' + lineResult
+          } else {
+            result += line
+          }
+          if (--numLines !== 0) result += '\n'
+        }
+        return result
+      },
+      runScript: function(script, text) {
+        return that.runJavaScriptScripts(that.getJavaScriptScript(script), text)
+      },
+      returnNote: function(id) {
+        var result = '';
+        if ((id >= 0) && (id <= 9)) result = that.NOTES[id];
+        return result;
+      },
+      insertCharacters: function(num, ichar) {
+        var result = ''
+        if (num < 0) return result
+        for (var i = 0; i < num; i++) {
+          result += ichar
+        }
+        return result
+      }
+    };
+
 
   onMount(async () => {
     //
@@ -71,6 +145,8 @@
     await getTemplatesList();
     await getTheme();
     await getNotes();
+
+    $runscript = runScript;
 
     //
     // Set the state to emailit.
@@ -286,13 +362,9 @@
   }
 
   function getTermScriptsList() {
-    $termscripts = $userScripts.filter(value => value.termscript === true).map(value => {
-        return { name: value.name, insert: value.insert }
-      }).concat($systemScripts.filter(value => value.termscript === true).map(value => {
-        return { name: value.name, insert: value.insert }
-      })).concat($extScripts.filter(value => value.termscript === true).map(value => {
-        return { name: value.name, insert: false }
-      }));
+    $termscripts = $userScripts.filter(value => value.termscript === true)
+      .concat($systemScripts.filter(value => value.termscript === true))
+      .concat($extScripts.filter(value => value.termscript === true));
   }
 
   async function getTemplatesList() {
@@ -307,6 +379,133 @@
     }
   }
 
+  //
+  // Function:         runJavaScriptScriptsFile
+  //
+  // Description:      This will run the JavaScript function on the contents of a file.
+  //
+  // Inputs:
+  //                   script          The script.
+  //                   text            The text to process.
+  //
+  async function runJavaScriptFile(script, file) {
+    let result = "Invalid File";
+    if (await App.FileExists(file)) {
+      result = await App.ReadFile(file);
+      result = runJavaScript(script, result);
+      let parts = await App.SplitFile(file);
+      let nfile = await App.AppendPath(parts.Dir, `${parts.Name}-processed${parts.Extension}`);
+      await App.WriteFile(nfile, result);
+      result = `${parts.Name}-processed${parts.Extension} was created!`;
+    }
+    return (result);
+  }
+
+  //
+  // Function:         runJavaScript
+  //
+  // Description:      This will run some given text with a script.
+  //
+  // Inputs:
+  //                   script          The script.
+  //                   text            The text to process.
+  //
+  function runJavaScript(script, text) {
+    var originalText = text;
+    SP.that = SP;
+    SP.text = originalText;
+
+    //
+    // Try to evaluate the expression.
+    //
+    try {
+      var scriptFunction = new Function('SP', `${script} ; return SP;`);
+      SP = scriptFunction(SP);
+    } catch (error) {
+      console.error(error);
+      SP.text = originalText;
+    }
+    //
+    // Make sure we have a string and not an array or object.
+    //
+    if (typeof SP.text != 'string') {
+      SP.text = SP.text.toString();
+    }
+    return (SP.text);
+  }
+
+  async function runExtScript(extScrpt, text) {
+    //
+    // extScript.name     - File name of the script
+    // extScript.script   - User name for the script
+    // extScript.path     - directory of the script
+    // extScript.env      - name of the environment
+    // extScript.termscript - Boolean true if a script terminal script.
+    // extScript.description - Description of what the script does.
+    // extScript.help     - A help message for the script
+    //
+    var result = '';
+    var env = {};
+
+    //
+    // Get the environment.
+    //
+    if (extScrpt.env !== '') {
+      let envlistloc = await App.AppendPath($config.configDir, "environments.json");
+      let envlist = await App.ReadFile(envlistloc);
+      envlist = JSON.parse(envlist);
+      env = envlist.find(item => item.name === extScrpt.env);
+      if (env !== 'undefined') {
+        env = env.envVar;
+      } else {
+        env = {};
+      }
+    }
+    try {
+      let args = [];
+      args.push(text);
+      result = await App.RunCommandLine('./' + extScrpt.script, args, env, extScrpt.path); 
+      if (result !== null && typeof result === 'object') result = result.toString();
+    } catch (e) {
+      result = "Error: " + e.message;
+    }
+    return (result);
+  }
+
+  async function runScript(script, text) {
+    var result = "Script not found!";
+    var scriptIndex = $userScripts.find((ele) => { return ele.name === script })
+    if (typeof scriptIndex !== 'undefined') {
+      script = scriptIndex.script;
+      let isfile = await App.FileExists(text);
+      if (isfile) {
+        result = await runJavaScriptFile(script, text);
+      } else {
+        result = runJavaScript(script, text);
+      }
+    } else {
+      scriptIndex = $systemScripts.find(ele => { return ele.name === script});
+      if(typeof scriptIndex !== 'undefined') {
+        script = scriptIndex.script;
+        let isfile = await App.FileExists(text);
+        if (isfile && text !== '..' && text !== '.') {
+          result = await runJavaScriptFile(script, text);
+        } else {
+          result = runJavaScript(script, text);
+        }
+      } else {
+        scriptIndex = $extScripts.find(ele => { return ele.name === script});
+        if (typeof scriptIndex !== 'undefined') {
+          //
+          // It's an external script.
+          //
+          result = await runExtScript(scriptIndex, text);
+        }
+      } 
+    }
+    return(result);
+  }
+  
   function keyDownProcessor(e) {
     if (e.metaKey && e.key === ",") {
       e.preventDefault();

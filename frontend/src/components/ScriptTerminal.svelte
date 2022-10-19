@@ -49,6 +49,9 @@
     mkdir: {
       command: mkdirCommand,
     },
+    rmalias: {
+      command: removeAliasCommand,
+    }
   };
   let mode = "insert";
   let wd = "~";
@@ -396,7 +399,7 @@
     //
     // Remove inclosing quotes
     //
-    if (text[0] === '"' || text[0] === "'") {
+    while (text[0] === '"' || text[0] === "'") {
       text = text.slice(1, text.length - 1);
     }
     if (text.length > 0) {
@@ -584,19 +587,20 @@
       //
       // Fix up the file path given to the open command.
       //
-      var isText = false;
       if (text[0] === '"' || text[0] === "'") {
         text = text.slice(1, text.length - 1);
       }
-      if (text[0] !== "/" && !isText) {
-        text = await App.AppendPath(wd, text);
+
+      let textfile = await App.AppendPath(wd, text);
+      if(await App.FileExists(textfile)){
+        text = textfile;
       }
       text = new String(text.trim());
 
       //
       // Process the text based on what it is.
       //
-      let newText = await $runscript(scriptName,text);
+      let newText = await $runscript(scriptName, text);
       term.write(`\n\r     ${newText}\n\r`);
     }
     lastData.valid = false;
@@ -675,15 +679,17 @@
       if (ln[0] === '"' || ln[0] === "'") {
         ln = text.slice(1, ln.length - 1);
       }
+      let aliasname = parts[0].trim();
+      $aliases = $aliases.filter(item => item.name !== aliasname);
       $aliases.push({
-        name: parts[0],
+        name: aliasname,
         line: ln,
       });
 
       //
       // Save the new alias.
       //
-      saveAliases();
+      await saveAliases();
     } else if (text.trim() === "") {
       //
       // List the aliases.
@@ -711,12 +717,17 @@
     }
   }
 
+  async function removeAliasCommand(name) {
+    $aliases = $aliases.filter(item => item.name !== name);
+    await saveAliases();
+  }
+
   async function saveAliases() {
     let userAliases = await App.AppendPath(
       homeDir,
       ".myaliases"
     );
-    App.WriteFile(userAliases, JSON.stringify($aliases));
+    await App.WriteFile(userAliases, JSON.stringify($aliases));
   }
 
   async function histCommand(text) {
@@ -889,10 +900,6 @@
     $state = "notes";
   }
 
-  function viewLog() {
-    $state = "viewlog";
-  }
-
   function viewScriptEditor() {
     $state = "scripts";
   }
@@ -976,12 +983,6 @@
       style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
     >
       Notes
-    </button>
-    <button
-      on:click={viewLog}
-      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
-    >
-      Log
     </button>
     <button
       on:click={viewScriptEditor}

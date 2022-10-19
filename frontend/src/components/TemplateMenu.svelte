@@ -8,6 +8,7 @@
   import { emailEditor } from "../stores/emailEditor.js";
   import { templateEditor } from "../stores/templateEditor.js";
   import { scriptEditor } from "../stores/scriptEditor.js";
+  import { runtemplate } from "../stores/runtemplate.js";
 
   let search = "";
   let list = [];
@@ -44,12 +45,12 @@
       text = text.toLowerCase();
       tmp = $templates.filter((item) => {
         if (item !== undefined && item !== null) {
-          return item.toLowerCase().includes(text);
+          return item.name.toLowerCase().includes(text);
         }
         return false;
       });
     }
-    tmp = tmp.sort((a, b) => a.toLowerCase() > b.toLowerCase());
+    tmp = tmp.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase());
     return tmp;
   }
 
@@ -91,58 +92,44 @@
         text = $templateEditor.getValue();
       }
     }
-    fetch("http://localhost:9978/api/template/run", {
-      method: "PUT",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({
-        template: template,
-        text: text,
-      }),
-    })
-      .then((resp) => {
-        return resp.json();
-      })
-      .then((data) => {
-        if ($state === "emailit") {
-          //
-          // Paste the template in the body of the email.
-          //
-          if (selection) {
-            $emailEditor.replaceSelection(data.text);
-          } else {
-            $emailEditor.setValue(data.text);
-          }
-          $emailEditor.focus();
-        } else if ($state === "notes") {
-          //
-          // Paste the template in the current note at the location.
-          //
-          if (selection) {
-            $noteEditor.replaceSelection(data.text);
-          } else {
-            $noteEditor.setValue(data.text);
-          }
-          $noteEditor.focus();
-        } else if ($state === "scripts") {
-          if (selection) {
-            $scriptEditor.replaceSelection(data.text);
-          } else {
-            $scriptEditor.setValue(data.text);
-          }
-          $scriptEditor.focus();
-        } else if ($state === "templates") {
-          if (selection) {
-            $templateEditor.replaceSelection(data.text);
-          } else {
-            $templateEditor.setValue(data.text);
-          }
-          $templateEditor.focus();
-        }
-        $showTemplates = false;
-        search = "";
-      });
+    let datatext = $runtemplate(template, text);
+    if ($state === "emailit") {
+      //
+      // Paste the template in the body of the email.
+      //
+      if (selection) {
+        $emailEditor.replaceSelection(datatext);
+      } else {
+        $emailEditor.setValue(datatext);
+      }
+      $emailEditor.focus();
+    } else if ($state === "notes") {
+      //
+      // Paste the template in the current note at the location.
+      //
+      if (selection) {
+        $noteEditor.replaceSelection(datatext);
+      } else {
+        $noteEditor.setValue(datatext);
+      }
+      $noteEditor.focus();
+    } else if ($state === "scripts") {
+      if (selection) {
+        $scriptEditor.replaceSelection(datatext);
+      } else {
+        $scriptEditor.setValue(datatext);
+      }
+      $scriptEditor.focus();
+    } else if ($state === "templates") {
+      if (selection) {
+        $templateEditor.replaceSelection(datatext);
+      } else {
+        $templateEditor.setValue(datatext);
+      }
+      $templateEditor.focus();
+    }
+    $showTemplates = false;
+    search = "";
   }
 
   function keyDownProcessor(e) {
@@ -190,14 +177,14 @@
         {#each list as template, key}
           <li
             on:click={() => {
-              runTemplate(template);
+              runTemplate(template.name);
             }}
             style="background-color: {cursor === key
               ? $theme.Purple
               : 'transparent'};"
             data-key={key}
           >
-            {template}
+            {template.name}
           </li>
         {/each}
       {/if}

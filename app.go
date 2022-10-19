@@ -273,6 +273,10 @@ func (b *App) GetEnvironment() []string {
 	return os.Environ()
 }
 
+func (b *App) GetEnv(name string) string {
+  return os.Getenv(name)
+}
+
 func (b *App) AppendPath(dir string, name string) string {
 	return filepath.Join(dir, name)
 }
@@ -298,3 +302,10 @@ func (b *App) GetOSName() string {
 	return result
 }
 
+func (b *App) GetCopyClip(name string) string {
+  return "Not Implemented Yet"
+}
+
+func (b *App) GetFeedback(question string, defans string) string {
+  return "Not Implemented Yet"
+}

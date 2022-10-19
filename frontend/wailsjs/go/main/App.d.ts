@@ -14,11 +14,17 @@ export function FileExists(arg1:string):Promise<boolean>;
 
 export function GetClip():Promise<string>;
 
+export function GetCopyClip(arg1:string):Promise<string>;
+
+export function GetEnv(arg1:string):Promise<string>;
+
 export function GetEnvironment():Promise<Array<string>>;
 
 export function GetError():Promise<string>;
 
 export function GetExecutable():Promise<string>;
+
+export function GetFeedback(arg1:string,arg2:string):Promise<string>;
 
 export function GetHomeDir():Promise<string>;
 

@@ -1,7 +1,6 @@
 <script>
-  import { onMount, afterUpdate } from "svelte";
+  import { onMount } from "svelte";
   import EmailIt from "./components/EmailIt.svelte";
-  import ViewLog from "./components/ViewLog.svelte";
   import Notes from "./components/Notes.svelte";
   import ScriptMenu from "./components/ScriptMenu.svelte";
   import TemplateMenu from "./components/TemplateMenu.svelte";
@@ -24,14 +23,15 @@
   import { systemTemplates } from "./stores/systemTemplates.js";
   import { runscript } from "./stores/runscript.js";
   import { notes } from "./stores/notes.js";
+  import { runhandlebars } from "./stores/runhandlebars.js";
+  import { runtemplate } from "./stores/runtemplate.js";
   import * as App from '../wailsjs/go/main/App.js';
   import { DateTime } from "luxon";
   import { create, all } from 'mathjs';
   import Handlebars from "handlebars";
 
-  let starting = true;
   let notestruct = {
-    notes: ["","","","","","","","","",""],
+  notes: ["","","","","","","","","",""],
     loadNotes: async function() {
       //
       // Load the notes.json file.
@@ -70,11 +70,11 @@
   const mathjs = create(all, mathconfig);
   var SP = {
       text: '',
-      luxon: DateTime,
+      DateTime: DateTime,
       mathjs: mathjs,
       mathParser: mathjs.parser(),
-      that: {},
-      Handlebars: Handlebars,
+      that: SP,
+      Handlebars: $runhandlebars,
       ProcessMathSelection: function(txt) {
         var result = this.mathParser.evaluate(txt)
         return result
@@ -112,11 +112,11 @@
         return result
       },
       runScript: function(script, text) {
-        return that.runJavaScriptScripts(that.getJavaScriptScript(script), text)
+        return runJavaScript(script, text)
       },
       returnNote: function(id) {
         var result = '';
-        if ((id >= 0) && (id <= 9)) result = that.NOTES[id];
+        if ((id >= 0) && (id <= 9)) result = $notes.getNote(id);
         return result;
       },
       insertCharacters: function(num, ichar) {
@@ -128,7 +128,6 @@
         return result
       }
     };
-
 
   onMount(async () => {
     //
@@ -145,14 +144,151 @@
     await getTemplatesList();
     await getTheme();
     await getNotes();
+    setupHandlebarHelpers();
 
     $runscript = runScript;
+    $runhandlebars = Handlebars;
+    SP.Handlebars = Handlebars;
+    $runtemplate = runTemplate;
+
+    //
+    // Run the StartUp script if one exists.
+    //
+    let startup = $scripts.find(item => item.name === "StartUp");
+    if(typeof startup !== 'undefined') {
+      //
+      // A StartUp script is defined. Run it!
+      //
+      $runscript(startup,"");
+    }
 
     //
     // Set the state to emailit.
     //
     $state = "emailit";
   });
+
+  function setupHandlebarHelpers() {
+    //
+    // Create the helpers functions for Handlebars.
+    //
+    Handlebars.registerHelper('save', function(name, text) {
+      Handlebars.registerHelper(name, function() {
+        return text;
+      });
+      return text;
+    });
+
+    Handlebars.registerHelper('clipboard', async function() {
+      return await App.GetClip();
+    });
+
+    Handlebars.registerHelper('date', function(dFormat) {
+      return DateTime.now().toFormat(dFormat);
+    });
+
+    Handlebars.registerHelper('cdate', function(cTime, dFormat) {
+      return DateTime.fromISO(cTime).toFormat(dFormat);
+    });
+
+    Handlebars.registerHelper('last', function(weeks, fmat) {
+      return DateTime.now().minus({ weeks: weeks}).toFormat(fmat);
+    });
+
+    Handlebars.registerHelper('next', function(weeks, fmat) {
+      return DateTime.now().plus({weeks: weeks}).toFormat(fmat);
+    });
+  }
+
+  function runTemplate(template, text) {
+    //
+    // process the template.
+    //
+    let result = '';
+    try {
+      //
+      // Create various default targets for the templater. These have
+      // to be created since they are various types of time/date stamps.
+      //
+      var data = [];
+      data["cDateMDY"] = DateTime.now().toFormat("LLLL dd, yyyy");
+      data["cDateDMY"] = DateTime.now().toFormat("dd LLLL yyyy");
+      data["cDateDOWDMY"] = DateTime.now().toFormat("cccc, dd LLLL yyyy");
+      data["cDateDOWMDY"] = DateTime.now().toFormat("cccc LLLL dd, yyyy");
+      data["cDay"] = DateTime.now().toFormat("dd");
+      data["cMonth"] = DateTime.now().toFormat("LLLL");
+      data["cYear"] = DateTime.now().toFormat("yyyy");
+      data["cMonthShort"] = DateTime.now().toFormat("LLL");
+      data["cYearShort"] = DateTime.now().toFormat("yy");
+      data["cDOW"] = DateTime.now().toFormat("cccc");
+      data["cMDthYShort"] = DateTime.now().toFormat("LLL d yy");
+      data["cMDthY"] = DateTime.now().toFormat("LLLL d yyyy");
+      data["cHMSampm"] = DateTime.now().toFormat("h:mm:ss a");
+      data["cHMampm"] = DateTime.now().toFormat("h:mm a");
+      data["cHMS24"] = DateTime.now().toFormat("H:mm:ss");
+      data["cHM24"] = DateTime.now().toFormat("H:mm");
+      data["Templatename"] = template.name;
+      data["text"] = text;
+
+      //
+      // Get the User's default data.
+      //
+      var defaultData = $templates.find(item => item.name === "Defaults");
+      template = $templates.find(item => item.name === template);
+      if(typeof template !== 'undefined') {
+        template = template.template;
+      }
+      if (defaultData !== undefined) {
+        data = MergeRecursive(data, JSON.parse(defaultData.template));
+      }
+      //
+      // Parse the Template
+      //
+      var tpTemplate = $runhandlebars.compile(template);
+
+      //
+      // Run the template with the data.
+      //
+      result = tpTemplate(data);
+
+      //
+      // Make sure we have a string and not an array or object.
+      //
+      if (typeof result != 'string') {
+        result = result.toString();
+      }
+    } catch (error) {
+      console.error("Handlebars Error: " + error);
+      result = "There was an error.";
+    }
+    return(result);
+  }
+
+  //
+  //  Function:        MergeRecursive
+  //
+  //  Description:     Recursively merge properties of two objects
+  //
+  //  Inputs:
+  //                   obj1    The first object to merge
+  //                   obj2    The second object to merge
+  //
+  function MergeRecursive(obj1, obj2) {
+    for (var p in obj2) {
+      try {
+        // Property in destination object set; update its value.
+        if (obj2[p].constructor == Object) {
+          obj1[p] = MergeRecursive(obj1[p], obj2[p]);
+        } else {
+          obj1[p] = obj2[p];
+        }
+      } catch (e) {
+        // Property in destination object not set; create it and set its value.
+        obj1[p] = obj2[p];
+      }
+    }
+    return obj1;
+  }
 
   function wait(ms) {
     return new Promise((resolve, reject) => {
@@ -161,12 +297,6 @@
       }, ms);
     });
   }
-
-  afterUpdate(() => {
-    if (starting) {
-      starting = false;
-    }
-  });
 
   async function getNotes() {
     $notes = notestruct;
@@ -372,15 +502,15 @@
     if(await App.FileExists(templateloc)) {
       let templatefile = await App.ReadFile(templateloc);
       $userTemplates = JSON.parse(templatefile);
-      $templates = $systemTemplates.map(item => item.name).concat($userTemplates.map(item => item.name));
+      $templates = $systemTemplates.concat($userTemplates);
     } else {
       $userTemplates = [];
-      $templates = $systemTemplates.map(item => item.name);
+      $templates = $systemTemplates;
     }
   }
 
   //
-  // Function:         runJavaScriptScriptsFile
+  // Function:         runJavaScriptScriptFile
   //
   // Description:      This will run the JavaScript function on the contents of a file.
   //
@@ -413,8 +543,7 @@
   function runJavaScript(script, text) {
     var originalText = text;
     SP.that = SP;
-    SP.text = originalText;
-
+    SP.text = text;
     //
     // Try to evaluate the expression.
     //
@@ -474,11 +603,18 @@
 
   async function runScript(script, text) {
     var result = "Script not found!";
+    if(typeof script === 'object') {
+      if(typeof script.name !== 'undefined') {
+        script = script.name;
+      }
+    }
     var scriptIndex = $userScripts.find((ele) => { return ele.name === script })
     if (typeof scriptIndex !== 'undefined') {
       script = scriptIndex.script;
-      let isfile = await App.FileExists(text);
-      if (isfile) {
+      let tmptext = text;
+      let isfile = await App.FileExists(tmptext);
+      let isDir = await App.DirExists(tmptext);
+      if (isfile && !isDir) {
         result = await runJavaScriptFile(script, text);
       } else {
         result = runJavaScript(script, text);
@@ -487,8 +623,10 @@
       scriptIndex = $systemScripts.find(ele => { return ele.name === script});
       if(typeof scriptIndex !== 'undefined') {
         script = scriptIndex.script;
-        let isfile = await App.FileExists(text);
-        if (isfile && text !== '..' && text !== '.') {
+        let tmptext = text;
+        let isfile = await App.FileExists(tmptext);
+        let isDir = await App.DirExists(tmptext);
+        if (isfile && !isDir) {
           result = await runJavaScriptFile(script, text);
         } else {
           result = runJavaScript(script, text);
@@ -555,8 +693,6 @@
 
 {#if $state === "emailit"}
   <EmailIt />
-{:else if $state === "viewlog"}
-  <ViewLog />
 {:else if $state === "notes"}
   <Notes />
 {:else if $state === "scripts"}

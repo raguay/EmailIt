@@ -7,6 +7,8 @@
   import { showScripts } from "../stores/showScripts.js";
   import { showTemplates } from "../stores/showTemplates.js";
   import { templates } from "../stores/templates.js";
+  import { userTemplates } from "../stores/userTemplates.js";
+  import { systemTemplates } from "../stores/systemTemplates.js";
   import { templateEditor } from "../stores/templateEditor.js";
 
   let editorConfig = {
@@ -32,99 +34,48 @@
   });
 
   function getUserTemplates(callback) {
-    fetch("http://localhost:9978/api/template/user", {
-      method: "GET",
-      headers: {
-        "Content-type": "application/json",
-      },
-    })
-      .then((resp) => {
-        return resp.json();
-      })
-      .then((data) => {
-        list = data.templates.sort();
-        if (typeof callback !== "undefined") callback();
-      });
+    list = $userTemplates.map(item => item.name).sort();
+    if (typeof callback !== "undefined") callback();
   }
 
   function getTemplate(name, callback) {
     if (name !== undefined && name !== "") {
-      fetch(`http://localhost:9978/api/template/${name}`, {
-        method: "GET",
-        headers: {
-          "Content-type": "application/json",
-        },
-      })
-        .then((resp) => {
-          return resp.json();
-        })
-        .then((data) => {
-          template = data.text.template;
-          $templateEditor.setValue(template);
-          templateDescription = data.text.description;
-          if (typeof callback !== "undefined") callback();
-        });
+      template = $userTemplates.find(item => item.name === name);
+      $templateEditor.setValue(template.template);
+      templateDescription = template.description;
+      if (typeof callback !== "undefined") callback();
     }
   }
 
   function saveTemplate() {
     if (templateName !== undefined && templateName !== "") {
-      fetch(`http://localhost:9978/api/template/${templateName}`, {
-        method: "PUT",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
-          template: {
-            name: templateName,
-            description: templateDescription,
-            template: template,
-          },
-        }),
-      }).then(() => {
-        template = "";
-        templateName = "";
-        templateDescription = "";
-        templateSel = "";
-        $templateEditor.setValue(template);
-        getTemplatesList();
-        getUserTemplates();
-      });
+      let templatedef = {
+        name: templateName,
+        description: templateDescription,
+        template: template,
+      }
+      $userTemplates = $userTemplates.filter(item => item.name != templateName);
+      $userTemplates.push(templatedef);
+      $templates = $systemTemplates.concat($userTemplates);
+      list = $userTemplates.map(item => item.name).sort();
+      template = "";
+      templateName = "";
+      templateDescription = "";
+      templateSel = "";
+      $templateEditor.setValue(template);
     }
-  }
-
-  function getTemplatesList(callback) {
-    fetch("http://localhost:9978/api/template/list", {
-      method: "GET",
-      headers: {
-        "Content-type": "application/json",
-      },
-    })
-      .then((resp) => {
-        return resp.json();
-      })
-      .then((data) => {
-        $templates = data.templates;
-        if (typeof callback !== "undefined") callback();
-      });
   }
 
   function deleteTemplate() {
     if (templateName !== undefined && templateName !== "") {
-      fetch(`http://localhost:9978/api/template/${templateName}`, {
-        method: "DELETE",
-        headers: {
-          "Content-type": "application/json",
-        },
-      }).then(() => {
-        template = "";
-        templateName = "";
-        templateDescription = "";
-        templateSel = "";
-        $templateEditor.setValue(template);
-        getTemplatesList();
-        getUserTemplates();
-      });
+      $userTemplates = $userTemplates.filter(item => item.name != templateName);
+      $templates = $systemTemplates.concat($userTemplates);
+      list = $userTemplates.map(item => item.name).sort();
+      template = "";
+      templateName = "";
+      templateDescription = "";
+      templateSel = "";
+      $templateEditor.setValue(template);
     }
   }
 

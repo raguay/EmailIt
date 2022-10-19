@@ -8,6 +8,7 @@
   import { emailEditor } from "../stores/emailEditor.js";
   import { templateEditor } from "../stores/templateEditor.js";
   import { scriptEditor } from "../stores/scriptEditor.js";
+  import { runscript } from "../stores/runscript.js";
 
   let searchIn = "";
   let list = [];
@@ -53,7 +54,7 @@
     return tmp;
   }
 
-  function runScript(script) {
+  async function runScript(script) {
     var text = "";
     var selection = false;
     if ($state === "emailit") {
@@ -91,32 +92,18 @@
         text = $templateEditor.getValue();
       }
     }
-    fetch("http://localhost:9978/api/script/run", {
-      method: "PUT",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({
-        script: script.name,
-        text: text,
-        info: script,
-      }),
-    })
-      .then((resp) => {
-        return resp.json();
-      })
-      .then((data) => {
-        if ($state === "emailit") {
+    let datatext = await $runscript(script,text);
+    if ($state === "emailit") {
           //
           // Paste the script in the body of the email.
           //
           if (selection) {
-            $emailEditor.replaceSelection(data.text);
+            $emailEditor.replaceSelection(datatext);
           } else {
             if (script.insert) {
-              $emailEditor.insertAtCursor(data.text);
+              $emailEditor.insertAtCursor(datatext);
             } else {
-              $emailEditor.setValue(data.text);
+              $emailEditor.setValue(datatext);
             }
           }
           $emailEditor.focus();
@@ -125,44 +112,43 @@
           // Paste the script in the current note at the location.
           //
           if (selection) {
-            $noteEditor.replaceSelection(data.text);
+            $noteEditor.replaceSelection(datatext);
           } else {
             if (script.insert) {
-              $noteEditor.insertAtCursor(data.text);
+              $noteEditor.insertAtCursor(datatext);
             } else {
-              $noteEditor.setValue(data.text);
+              $noteEditor.setValue(datatext);
             }
           }
           $noteEditor.focus();
         } else if ($state === "scripts") {
           if (selection) {
-            $scriptEditor.replaceSelection(data.text);
+            $scriptEditor.replaceSelection(datatext);
           } else {
             if (script.insert) {
-              $scriptEditor.insertAtCursor(data.text);
+              $scriptEditor.insertAtCursor(datatext);
             } else {
-              $scriptEditor.setValue(data.text);
+              $scriptEditor.setValue(datatext);
             }
           }
           $scriptEditor.focus();
         } else if ($state === "templates") {
           if (selection) {
-            $templateEditor.replaceSelection(data.text);
+            $templateEditor.replaceSelection(datatext);
           } else {
             if (script.insert) {
-              $templateEditor.insertAtCursor(data.text);
+              $templateEditor.insertAtCursor(datatext);
             } else {
-              $templateEditor.setValue(data.text);
+              $templateEditor.setValue(datatext);
             }
           }
           $templateEditor.focus();
         }
         $showScripts = false;
         searchIn = "";
-      });
   }
 
-  function keyDownProcessor(e) {
+  async function keyDownProcessor(e) {
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
@@ -178,7 +164,7 @@
 
       case "Enter":
         e.preventDefault();
-        runScript(list[cursor]);
+        await runScript(list[cursor]);
         break;
 
       case "Escape":
@@ -206,8 +192,8 @@
       {#if typeof $scripts === "object"}
         {#each list as script, key}
           <li
-            on:click={() => {
-              runScript(script);
+            on:click={async () => {
+              await runScript(script);
             }}
             style="background-color: {cursor === key
               ? $theme.Purple

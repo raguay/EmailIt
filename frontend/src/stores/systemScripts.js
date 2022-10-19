@@ -169,7 +169,7 @@ export const systemScripts = writable(
     "insert": true,
     "description": "Inserts the current date and time at the cursor point.",
     "help": '',
-    "script": "SP.text = SP.moment().format('MMMM DD, YYYY, h:mm:ss a');",
+    "script": "SP.text = SP.DateTime.now().toFormat('LLLL dd, yyyy, h:mm:ss a');",
     "termscript": false,
     "system": true
   },
@@ -178,7 +178,7 @@ export const systemScripts = writable(
     "insert": true,
     "description": "Inserts the current date at the cursor point.",
     "help": '',
-    "script": "SP.text = SP.moment().format('MMMM DD, YYYY');",
+    "script": "SP.text = SP.DateTime.now().toFormat('LLLL dd, yyyy');",
     "termscript": false,
     "system": true
   },
@@ -187,7 +187,7 @@ export const systemScripts = writable(
     "insert": true,
     "description": "Inserts the current time at the cursor point.",
     "help": '',
-    "script": "SP.text = SP.moment().format('h:mm:ss a');",
+    "script": "SP.text = SP.DateTime.now().toFormat('h:mm:ss a');",
     "termscript": false,
     "system": true
   },
@@ -196,7 +196,7 @@ export const systemScripts = writable(
     "insert": true,
     "description": "Inserts the current name of the day of the week at the cursor point.",
     "help": '',
-    "script": "SP.text = SP.moment().format('dddd');",
+    "script": "SP.text = SP.DateTime.now().toFormat('cccc');",
     "termscript": false,
     "system": true
   },
@@ -205,7 +205,7 @@ export const systemScripts = writable(
     "insert": false,
     "description": "Takes the selected text as formatting for the date/time function.",
     "help": '',
-    "script": "SP.text = SP.moment().format(SP.text);",
+    "script": "SP.text = SP.DateTime.now().toFormat(SP.text);",
     "termscript": false,
     "system": true
   },
@@ -214,7 +214,7 @@ export const systemScripts = writable(
     "insert": false,
     "description": "Takes the selected number and gives the date that many days in the future.",
     "help": '',
-    "script": "SP.text = SP.moment().add(SP.text,'days').format('MMMM DD, YYYY');",
+    "script": "SP.text = SP.DateTime.now().plus({ days: SP.text}).toFormat('LLLL dd, yyyy');",
     "termscript": false,
     "system": true
   },
@@ -223,7 +223,7 @@ export const systemScripts = writable(
     "insert": false,
     "description": "Takes the selected number and gives the date that many days in the past.",
     "help": '',
-    "script": "SP.text = SP.moment().subtract(SP.text,'days').format('MMMM DD, YYYY');",
+    "script": "SP.text = SP.DateTime.now().minus({ days: SP.text}).toFormat('LLLL dd, yyyy');",
     "termscript": false,
     "system": true
   },
@@ -347,7 +347,7 @@ export const systemScripts = writable(
     "insert": false,
     "description": "  A terminal script for changing directories.",
     "help": 'cd <directory>\n\r    directory = The directory to change to.',
-    "script": "SP.text = JSON.stringify({\n  tcommand: `cd ${SP.text}`,\n  lines: []\n});",
+    "script": "SP.text = JSON.stringify({\n  tcommand: `cd '${SP.text}'`,\n  lines: []\n});",
     "termscript": true
   },
   {
@@ -412,6 +412,14 @@ export const systemScripts = writable(
     "description": "The mkfile command makes the given file if it doesn't already exist.",
     "help": "mkfile <file>\n\r     Create the given file if it doesn't already exist.",
     "script": "SP.text = JSON.stringify({\n  tcommand: `mkfile ${SP.text}`,\n  lines: []\n});",
+    "termscript": true
+    },
+  {
+    "name": "rmalias",
+    "insert": false,
+    "description": "The rmalias command removes the alias from the list of aliases.",
+    "help": "rmalias <name>\n\r     Remove the alias given.",
+    "script": "SP.text = JSON.stringify({\n  tcommand: `rmalias ${SP.text}`,\n  lines: []\n});",
     "termscript": true
   }
 ]

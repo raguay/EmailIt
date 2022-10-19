@@ -26,6 +26,14 @@ export function GetClip() {
   return window['go']['main']['App']['GetClip']();
 }
 
+export function GetCopyClip(arg1) {
+  return window['go']['main']['App']['GetCopyClip'](arg1);
+}
+
+export function GetEnv(arg1) {
+  return window['go']['main']['App']['GetEnv'](arg1);
+}
+
 export function GetEnvironment() {
   return window['go']['main']['App']['GetEnvironment']();
 }
@@ -36,6 +44,10 @@ export function GetError() {
 
 export function GetExecutable() {
   return window['go']['main']['App']['GetExecutable']();
+}
+
+export function GetFeedback(arg1, arg2) {
+  return window['go']['main']['App']['GetFeedback'](arg1, arg2);
 }
 
 export function GetHomeDir() {

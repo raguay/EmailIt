@@ -60,11 +60,6 @@
     }
   }
 
-  function viewLogs() {
-    storeCurrentCursor();
-    $state = "viewlog";
-  }
-
   function viewEmailIt() {
     storeCurrentCursor();
     $state = "emailit";
@@ -141,12 +136,6 @@
       style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
     >
       EmailIt
-    </button>
-    <button
-      on:click={viewLogs}
-      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
-    >
-      Logs
     </button>
     <button
       on:click={viewScriptTerm}

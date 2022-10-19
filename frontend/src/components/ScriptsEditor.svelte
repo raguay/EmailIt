@@ -7,8 +7,13 @@
   import { showScripts } from "../stores/showScripts.js";
   import { showTemplates } from "../stores/showTemplates.js";
   import { scriptEditor } from "../stores/scriptEditor.js";
+  import { config } from "../stores/config.js";
   import { scripts } from "../stores/scripts.js";
+  import { userScripts } from "../stores/userScripts.js";
+  import { extScripts } from "../stores/extScripts.js";
+  import { systemScripts } from "../stores/systemScripts.js";
   import { termscripts } from "../stores/termscripts.js";
+  import * as App from '../../wailsjs/go/main/App.js';
 
   let editorConfig = {
     language: "javascript",
@@ -29,139 +34,85 @@
     //
     // Load everything for working with the scripts
     //
-    getUserScripts(() => {});
+    getUserScripts();
     initFinished = true;
   });
 
   function getUserScripts(callback) {
-    fetch("http://localhost:9978/api/scripts/user", {
-      method: "GET",
-      headers: {
-        "Content-type": "application/json",
-      },
-    })
-      .then((resp) => {
-        return resp.json();
-      })
-      .then((data) => {
-        list = data.scripts.sort();
-        if (typeof callback !== "undefined") callback();
-      });
+    list = $userScripts.map(item=>item.name).sort();
+    if (typeof callback !== "undefined") callback();
   }
 
   function getScript(name, callback) {
     if (name !== undefined && name !== "") {
-      fetch(`http://localhost:9978/api/scripts/${name}`, {
-        method: "GET",
-        headers: {
-          "Content-type": "application/json",
-        },
-      })
-        .then((resp) => {
-          return resp.json();
-        })
-        .then((data) => {
-          scriptName = data.script.name;
-          script = data.script.script;
-          description = data.script.description;
-          insert = data.script.insert == "true" ? true : false;
-          if (typeof data.script.termscript === "undefined") {
-            termscript = false;
-          } else {
-            termscript = data.script.termscript;
-          }
-          $scriptEditor.setValue(script);
-          if (typeof callback !== "undefined") callback();
-        });
-    }
-  }
-
-  function saveScript() {
-    if (scriptName !== undefined && scriptName !== "") {
-      fetch(`http://localhost:9978/api/scripts/${scriptName}`, {
-        method: "PUT",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify({
-          script: {
-            name: scriptName,
-            insert: insert,
-            description: description,
-            script: script,
-            termscript: termscript,
-            help: description,
-          },
-        }),
-      }).then(() => {
-        scriptSel = "";
-        scriptName = "";
-        insert = false;
-        description = "";
-        script = "";
-        termscript = false;
+      let data = $userScripts.find(item => item.name === name);
+      if(typeof data !== 'undefined') {
+        scriptName = data.name;
+        script = data.script;
+        description = data.description;
+        insert = data.insert == "true" ? true : false;
+        if (typeof data.termscript === "undefined") {
+          termscript = false;
+        } else {
+          termscript = data.termscript;
+        }
         $scriptEditor.setValue(script);
-        getScriptsList();
-        getUserScripts();
-        getTermScriptsList();
-      });
+      }
+      if (typeof callback !== "undefined") callback();
     }
   }
 
-  function getScriptsList(callback) {
-    fetch("http://localhost:9978/api/scripts/list", {
-      method: "GET",
-      headers: {
-        "Content-type": "application/json",
-      },
-    })
-      .then((resp) => {
-        return resp.json();
-      })
-      .then((data) => {
-        $scripts = data.data;
-        if (typeof callback !== "undefined") callback();
-      });
-  }
-
-  function getTermScriptsList(callback) {
-    fetch("http://localhost:9978/api/scripts/term/list", {
-      method: "GET",
-      headers: {
-        "Content-type": "application/json",
-      },
-    })
-      .then((resp) => {
-        return resp.json();
-      })
-      .then((data) => {
-        $termscripts = data.data;
-        if (typeof callback !== "undefined") callback();
-      });
-  }
-
-  function deleteScript() {
+  async function saveScript() {
     if (scriptName !== undefined && scriptName !== "") {
-      fetch(`http://localhost:9978/api/scripts/${scriptName}`, {
-        method: "DELETE",
-        headers: {
-          "Content-type": "application/json",
-        },
-      }).then(() => {
-        scriptName = "";
-        scriptSel = "";
-        insert = true;
-        description = "";
-        script = "";
-        $scriptEditor.setValue(script);
-        getScriptsList();
-        getUserScripts();
-        getTermScriptsList();
-      });
+      let scriptstruct = {
+        name: scriptName,
+        insert: insert,
+        description: description,
+        script: script,
+        termscript: termscript,
+        help: description,
+      };
+      $userScripts = $userScripts.filter(item => item.name !== scriptName);
+      $userScripts.push(scriptstruct);
+      await saveUserScripts();
+      getUserScripts();
     }
   }
 
-  function editorChange(e) {
+  async function deleteScript() {
+    $userScripts = $userScripts.filter(item => item.name !== scriptName);
+    scriptName = "";
+    scriptSel = "";
+    insert = true;
+    description = "";
+    script = "";
+    scriptSel = "";
+    $scriptEditor.setValue(script);
+    getUserScripts();
+    await saveUserScripts();
+  }
+
+  async function saveUserScripts() {
+    let userScriptsLoc = await App.AppendPath($config.configDir,"scripts.json");
+    await App.WriteFile(userScriptsLoc, JSON.stringify($userScripts));
+    $scripts = $userScripts.filter(value => value.termscript === false).map(value => {
+      return { name: value.name, insert: value.insert }
+    }).concat($systemScripts.filter(value => value.termscript === false).map(value => {
+      return { name: value.name, insert: value.insert }
+    })).concat($extScripts.filter(value => value.termscript === false).map(value => {
+      return { name: value.name, insert: false }
+    }));
+    getUserScripts();
+    getTermScriptsList();
+  }
+
+  function getTermScriptsList() {
+    $termscripts = $userScripts.filter(value => value.termscript === true)
+      .concat($systemScripts.filter(value => value.termscript === true))
+      .concat($extScripts.filter(value => value.termscript === true));
+  }
+  
+   function editorChange(e) {
     $scriptEditor = e;
   }
 

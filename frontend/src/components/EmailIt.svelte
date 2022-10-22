@@ -282,16 +282,14 @@
       emailState = "edit";
 
       // 
-      // Send the email. TODO: implement in go.
+      // Send the email.
       //
-      let email = {
-          acc: $account,
-          to: toAddress,
-          from: $account.from,
-          subject: subject.value,
-          text: bodyText,
-          html: previewHTML,
-      };
+      let result = await App.SendEmail($account.username, $account.from, $account.password, $account.smtpserver, $account.port, toAddress, previewHTML, bodyText, subject.value);
+      if(result !== "Success") {
+        alertTitle = "Sending Email Failed";
+        alertMsg = result;
+        showAlert = true;
+      }
     } else {
       showInvalidEmails();
     }

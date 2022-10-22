@@ -31,7 +31,7 @@
   import Handlebars from "handlebars";
 
   let notestruct = {
-  notes: ["","","","","","","","","",""],
+    notes: ["","","","","","","","","",""],
     loadNotes: async function() {
       //
       // Load the notes.json file.

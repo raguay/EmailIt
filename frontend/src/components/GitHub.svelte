@@ -199,13 +199,9 @@
           description: cfg.script.description,
           help: cfg.script.help,
         };
-        await fetch(`http://localhost:9978/api/scripts/ext/${script.name}`, {
-          method: "PUT",
-          headers: {
-            "Content-type": "application/json",
-          },
-          body: JSON.stringify(script),
-        });
+        //
+        // Save the script #TODO
+        //
         if (script.termscript) {
           $termscripts.push(script);
         } else {
@@ -256,12 +252,6 @@
     //
     // Remove from the external scripts list.
     //
-    await fetch(`http://localhost:9978/api/scripts/ext/${ext.name}`, {
-      method: "DELETE",
-      headers: {
-        "Content-type": "application/json",
-      },
-    });
     if (cfg.termscript) {
       $termscripts = $termscripts.filter((item) => item.name !== ext.name);
     } else {
@@ -328,10 +318,11 @@
     let envlistloc = await App.AppendPath($config.configDir, "environments.json");
     let envlist = await App.ReadFile(envlistloc);
     envlist = JSON.parse(envlist);
-    nEnv = envlist.map(item => 'Default');
- 
-	  var resp = await fetch(`http://localhost:9978/api/scripts/env/Default`);
-	  var nEnv = await resp.json();
+    let nEnv = envlist.map(item => 'Default');
+
+    //
+    // Get the default environment.
+    //
 	  if (typeof rEnv !== "undefined") {
 	    nEnv = { ...nEnv, ...rEnv };
 	  }

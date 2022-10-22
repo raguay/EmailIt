@@ -1,5 +1,4 @@
 <script>
-  import PrefNodeRed from "./PrefNodeRed.svelte";
   import GenPrefs from "./GenPrefs.svelte";
   import ThemePrefs from "./ThemePrefs.svelte";
   import ExtScriptEditor from "./ExtScriptEditor.svelte";
@@ -15,9 +14,6 @@
     },
     {
       name: "Theme",
-    },
-    {
-      name: "Node-Red",
     },
     {
       name: "External Scripts",
@@ -78,8 +74,6 @@
       <GenPrefs />
     {:else if currentPref === "Theme"}
       <ThemePrefs />
-    {:else if currentPref === "Node-Red"}
-      <PrefNodeRed />
     {:else if currentPref === "External Scripts"}
       <ExtScriptEditor />
     {:else if currentPref === "Environments"}

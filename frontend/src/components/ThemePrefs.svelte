@@ -29,26 +29,17 @@
   }
 
   async function getStyle(nm) {
-    let resp = await fetch(`http://localhost:9978/api/theme/${nm}`, {
-      method: "GET",
-      headers: {
-        "Content-type": "application/json",
-      },
-    });
-    let result = await resp.json();
-    result.theme.name = nm;
-    return result.theme;
+    let theme = {};
+    //
+    // Load in the themes.
+    //
+    return theme;
   }
 
   async function getStyleList() {
-    let resp = await fetch(`http://localhost:9978/api/theme/list`, {
-      method: "GET",
-      headers: {
-        "Content-type": "application/json",
-      },
-    });
-    let result = await resp.json();
-    return result.themes;
+    //
+    // get the list of themes.
+    //
   }
 
   function setColor(id, color) {
@@ -154,25 +145,16 @@
   }
 
   async function updateTheme() {
-    $theme.name = style;
-    await fetch(`http://localhost:9978/api/theme/${style}`, {
-      method: "PUT",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify($theme),
-    });
+    //
+    // Save the theme.
+    //
     themeList = await getStyleList();
   }
 
   async function deleteStyle() {
-    await fetch(`http://localhost:9978/api/theme/${style}`, {
-      method: "DELETE",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify($theme),
-    });
+    //
+    // Delete the theme.
+    //
     themeList = await getStyleList();
     style = themeList[0];
     $theme = await getStyle(style);

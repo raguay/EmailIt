@@ -10,11 +10,15 @@ import (
 	"io"
 	"io/ioutil"
 	//"net/http"
+  //"github.com/google/go-github/v48/github"
 	"os"
 	"os/exec"
 	"path/filepath"
 	goruntime "runtime"
 	"time"
+  "crypto/tls"
+	mail "gopkg.in/mail.v2"
+  "strconv"
 )
 
 // App application struct and other structs
@@ -308,4 +312,27 @@ func (b *App) GetCopyClip(name string) string {
 
 func (b *App) GetFeedback(question string, defans string) string {
   return "Not Implemented Yet"
+}
+
+func (b *App) GetGitHubThemes() []string {
+  var result []string
+  return result
+}
+
+func (b *App) SendEmail(username string, from string, password string, host string, port string, toList string, msg string, msgText string, subject string) string {
+  m := mail.NewMessage()
+  m.SetHeader("From", from)
+  m.SetHeader("To", toList)
+  m.SetHeader("Subject", subject)
+  m.SetBody("text/html", msg)
+  m.AddAlternative("text/plain", msgText)
+  iport, _ := strconv.Atoi(port)
+ 	d := mail.NewDialer(host, iport, username, password)
+	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+  if err := d.DialAndSend(m); err != nil {
+    b.err = err.Error();
+    return b.err
+  }
+
+  return "Success" 
 }

@@ -88,8 +88,8 @@
     script = "";
     scriptSel = "";
     $scriptEditor.setValue(script);
-    getUserScripts();
     await saveUserScripts();
+    getUserScripts();
   }
 
   async function saveUserScripts() {

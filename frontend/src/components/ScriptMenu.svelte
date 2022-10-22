@@ -55,6 +55,7 @@
   }
 
   async function runScript(script) {
+    console.log(script);
     var text = "";
     var selection = false;
     if ($state === "emailit") {

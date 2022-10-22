@@ -50,6 +50,10 @@ export function GetFeedback(arg1, arg2) {
   return window['go']['main']['App']['GetFeedback'](arg1, arg2);
 }
 
+export function GetGitHubThemes() {
+  return window['go']['main']['App']['GetGitHubThemes']();
+}
+
 export function GetHomeDir() {
   return window['go']['main']['App']['GetHomeDir']();
 }
@@ -92,6 +96,10 @@ export function RenameEntry(arg1, arg2) {
 
 export function RunCommandLine(arg1, arg2, arg3, arg4) {
   return window['go']['main']['App']['RunCommandLine'](arg1, arg2, arg3, arg4);
+}
+
+export function SendEmail(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9) {
+  return window['go']['main']['App']['SendEmail'](arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9);
 }
 
 export function SetClip(arg1) {

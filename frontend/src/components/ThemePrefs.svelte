@@ -1,7 +1,9 @@
 <script>
   import { onMount } from "svelte";
   import ColorPicker from "./ColorPicker.svelte";
+  import { config } from "../stores/config.js";
   import { theme } from "../stores/theme.js";
+  import * as App from '../../wailsjs/go/main/App.js';
 
   let colorchange = "";
   let colorID = 0;
@@ -33,6 +35,15 @@
     //
     // Load in the themes.
     //
+    let thmdir = await App.AppendPath($config.themeDir,nm);
+    let thmprojfile = await App.AppendPath(thmdir,"package.json");
+    thmprojfile = await App.ReadFile(thmprojfile);
+    thmprojfile = JSON.parse(thmprojfile);
+    console.log(thmprojfile);
+    let thmfile = await App.AppendPath(thmdir, thmprojfile.theme.main);
+    console.log(thmfile);
+    theme = await App.ReadFile(thmfile);
+    theme = JSON.parse(theme);
     return theme;
   }
 
@@ -40,6 +51,9 @@
     //
     // get the list of themes.
     //
+    let list = await App.ReadDir($config.themeDir);
+    list = list.filter(item => item.IsDir).map(item => item.Name);
+    return list;
   }
 
   function setColor(id, color) {
@@ -148,6 +162,48 @@
     //
     // Save the theme.
     //
+    let thmdir = await App.AppendPath($config.themeDir, style);
+    if(await App.DirExists(thmdir)) {
+      //
+      // This is updating an existing theme.
+      //
+      let thmprojfile = await App.AppendPath(thmdir,"package.json");
+      thmprojfile = await App.ReadFile(thmprojfile);
+      thmprojfile = JSON.parse(thmprojfile);
+      let thmfile = await App.AppendPath(thmdir, thmprojfile.theme.main);
+      await App.WriteFile(thmfile, JSON.stringify($theme));
+      let basethmfile = await App.AppendPath($config.configDir,"theme.json");
+      await App.WriteFile(basethmfile, JSON.stringify($theme));
+    } else {
+      //
+      // Here, we are actually creating a new theme.
+      //
+      await App.MakeDir(thmdir);
+      let thmprojfile = await App.AppendPath(thmdir,"package.json");
+      await App.WriteFile(thmprojfile, `
+{
+  "name": "${style}",
+  "version": "1.0.0",
+  "description": "",
+  "keywords": [
+    "modalfilemanager", "theme"
+  ],
+  "author": "",
+  "license": "MIT",
+  "theme": {
+    "name": "${style}",
+    "description": "",
+    "type": 0,
+    "github": "",
+    "main": "${style}.json"
+  }
+}
+      `);
+      let thmfile = await App.AppendPath(thmdir,`${style}.json`);
+      await App.WriteFile(thmfile,JSON.stringify($theme));
+      let basethmfile = await App.AppendPath($config.configDir,"theme.json");
+      await App.WriteFile(basethmfile, JSON.stringify($theme));
+    }     
     themeList = await getStyleList();
   }
 
@@ -155,9 +211,13 @@
     //
     // Delete the theme.
     //
+    let thmdir = await App.AppendPath($config.themeDir, style);
+    await App.DeleteEntries(thmdir);
     themeList = await getStyleList();
     style = themeList[0];
     $theme = await getStyle(style);
+    let basethmfile = await App.AppendPath($config.configDir,"theme.json");
+    await App.WriteFile(basethmfile, JSON.stringify($theme));
   }
 </script>
 

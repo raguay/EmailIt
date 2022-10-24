@@ -3,6 +3,7 @@
   import { theme } from "../stores/theme.js";
   import { termscripts } from "../stores/termscripts.js";
   import { scripts } from "../stores/scripts.js";
+  import { config } from "../stores/config.js";
   import GitHub from 'github-api';
   import * as App from '../../wailsjs/go/main/App.js';
 

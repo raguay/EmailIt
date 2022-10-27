@@ -4,7 +4,9 @@
 
 # EmailIt
 
-A simple program for sending emails quickly through the EmailItServer. It also has notes, scripts to act on the text, and templates. I'm still actively developing this program, but the basics are functional. I've only built it as a macOS universal build. I'll be adding other builds in the future. This program is built with [Wails](https://wails.io/) and [Svelte](https://svelte.dev/).
+A simple program for sending markdown formatted emails quickly. It also has notes, scripts to act on the text, and templates. I'm still actively developing this program, but the basics are functional. I've only built it as a macOS universal build. I'll be adding other builds in the future. This program is built with [Wails](https://wails.io/) and [Svelte](https://svelte.dev/).
+
+I just launched the V2.0.0 release candidate that has no outside requirements to run. It is now completely a Wails 2.0 program that stands on it's own. Many more features to come.
 
 If you have questions, you can ask them in the [Discussions](https://github.com/raguay/EmailIt/discussions). If you have a bug, please create an [Issue](https://github.com/raguay/EmailIt/issues) for it. Thanks.
 
@@ -38,9 +40,7 @@ If you want to develop the program, you can run developer mode with:
 wails dev
 ```
 
-This requires the [EmailItServer](https://github.com/raguay/EmailItServer.git) for the back-end logic if you are making it yourself or running the dev version.
-
-EmailIt automatically launches the EmailItServer and [ScriptBar](https://github.com/raguay/ScriptBarApp) if you are using the latest download. To build the same, you have to have [mask]() installed and the EmailItServer and the ScriptBarApp copied in directory that contains the EmailIt code. The maskfile.md script can then be ran using:
+The maskfile supplied will compile the universal build on macOS. You can invoke it with:
 
 ```sh
 mask build
@@ -50,7 +50,7 @@ You can look at the maskfile.md file to see what the build command does if you d
 
 ## Documentation
 
-EmailIt came about when my favorite email sending program went vaporware on me (The Let.ter application for macOS). I still needed a way to send markdown based emails to people quickly. I then merged in the functionality of [ScriptPad](https://github.com/raguay/SvelteScriptPad) program I created to have multiple notes, text altering scripts, and templates. I often need to reference or copy something from a note to an email. I also have many email templates that I use in the Template interface. I've also integrated the [ScriptBar](https://github.com/raguay/ScriptBarApp) program since it needs the EmailIt server to run. The EmailItServer is a full web server that only allows localhost connections for security. It also contains a Node-Red server that I use for many automation tasks. The ScriptBarApp displays information from the Node-Red server and scripts that are ran that conform to the [TextBar](http://richsomerfield.com/apps/textbar/) or [xBar](https://xbarapp.com/) formats (xBar currently isn't working, but it is my goal.).
+EmailIt came about when my favorite email sending program went vaporware on me (The Let.ter application for macOS). I still needed a way to send markdown based emails to people quickly. I then merged in the functionality of [ScriptPad](https://github.com/raguay/SvelteScriptPad) program I created to have multiple notes, text altering scripts, and templates. I often need to reference or copy something from a note to an email. I also have many email templates that I use in the Template interface. 
 
 I use this program everyday and is very helpful to my workflow. I hope you enjoy it as well.
 
@@ -66,20 +66,14 @@ I use this program everyday and is very helpful to my workflow. I hope you enjoy
 - [Preferences](#preferences)
   - [General](#general)
   - [Theme](#theme)
-  - [Node-Red](#node-red)
   - [External Scripts](#external-scripts)
   - [Environments](#environments)
   - [GitHub](#github)
-- [EmailIt Server](#emailit-server)
 - [Change Log](#change-log)
 
 ## How to Use
 
-When you launch the program, it will first show the server loading screen:
-
-![Server Loading](/images/serverloading.png)
-
-After the server launches, the EmailIt main screen is shown:
+When you launch the program, the EmailIt main screen is shown:
 
 ![EmailIt Main Screen](/images/mainscreen.png)
 
@@ -95,7 +89,7 @@ I have several accounts setup, but for your first time, it will only have the bu
 
 ![EmailIt New Account Top](/images/newaccount1.png)
 
-The `Default` checkbox will make the new account the default account. All the other fields are fairly self explanitory. They are the different information needed to connect to most SMPT servers. I am using the [NodeMailer](https://nodemailer.com/about/) library to send the emails. You can read a great description of what to setup in their documentation. If you are using Google Gmail, make sure to see that section of the documentation to setup your Gmail account correctly.
+The `Default` checkbox will make the new account the default account. All the other fields are fairly self explanitory. They are the different information needed to connect to most SMPT servers.
 
 ![EmailIt New Account Bottom](/images/newaccount2.png)
 
@@ -353,12 +347,6 @@ The `lines` structure is an array of objects containing a `text` field with the 
 
 The valid colors are: red, black, green, orange, blue, magenta, cyan, gray, and default. These colors are controlled by the current theme for EmailIt. The default color is the text color.
 
-## Logs Screen
-
-![Logs Screen](/images/logs.png)
-
-The logs screen is used to see the output of the Node-Red server and anything sent to the `SPlogger` node. The `Node-Red` button will open the administrator screen for creating Node-Red flows. The `Node-Red Dashboard` will open the dashboard you setup for your Node-Red server. All the other buttons are already described in other sections.
-
 ## Preferences
 
 The preferences can be reached by pressing `<ctrl>-p` or `<cmd>-,` anywhere in the program. There are four sections currently: General, Theme, Node-Red, External Scripts, and Environments. I'm working on a GitHub download section, but it's not finished yet.
@@ -378,14 +366,6 @@ The Theme preference is where you can create and change your theme. By selecting
 ![Theme Preferences - Color Picker](/images/colorpicker.png)
 
 You can adjust the color by selecting an area in the color wheel. When you get the color you like, press the `Select` button. Pressing the `Cancel` button will go back to the original color.
-
-### Node-Red
-
-![Node-Red Preferences](/images/noderedpref.png)
-
-The Node-Red preferences allows you to set the launching of the Node-Red server. You can also select the Node-Red Dashboard is configured and the button to launch it in the Log screen will be shown.
-
-The Node-Red server has three special nodes for EmailIt: SPlogger, SPScripts, and SPVariables. The Splogger node will take what is passed to it and display it on the log screen. The SPScripts node allows you to run a script defined in EmailIt on the input and the result is passed to the output. The SPVarialbes node allows you to place whatever is fed into it into a variable on the server with the name you give. You can then query that name from the server. This is used by the ScriptBar application to display Node-Red results.
 
 ### External Scripts
 
@@ -460,7 +440,7 @@ In order to load the theme properly, the `package.json` file for the theme's rep
     }
 ```
 
-### EmailIt Server
+### Web API
 
 EmailIt has a web based API for interfacing with other applications, 
 command line tools, or whatever else would help. The base address for the 
@@ -474,8 +454,6 @@ on this base. These endpoints only allow access from requests on the same machin
 | /script/run | A PUT request requires a JSON body with a `script` element and a `text` element. The `script` script will be ran with the `text` and returned in a JSON structure with a `text` element. |
 | /template/list | A GET request will return the name of all the templates in EmailIt. |
 | /template/run | A PUT request requires a JSON body with a 'template' element and a 'text' element. The `template` will be ran with the `text` as an input. The results are return in a JSON structure with the result in the 'text' element. |
-| /getip | A GET request will return the IP of the computer that is running EmailIt. |
-| /nodered/var/<name> | A GET request will return the current value of the Node-Red variable. A PUT request will set the Node-Red variable to the `text` element of the JSON structure in the body. |
 
 All the endpoints are used to make the plugins for Alfred, Keyboard Maestro, Dropzone, PopClip, and Launchpad. Also, the ScriptBar program uses these endpoints as well. I'm planning to add serving pages on the user's computer and other functionality as well. I have lots of ideas.
 
@@ -484,22 +462,25 @@ All the endpoints are used to make the plugins for Alfred, Keyboard Maestro, Dro
 ### Features to add/fix - not in order
 
 - Finish and update existing Help pages.
-- Currently, if external program changes a note, EmailIt doesn't know about it.
 - Running a script from inside of a script isn't working.
 - Add the ability to get a web page from the server to launch scripts. ScriptServer in the works.
 - Add scripts from GitHub that are marked for EmailIt.
 - Add themes from GitHub that are marked for EmailIt.
 - Get it working on Linux and Windows.
-- BullitenBoard: A program to display messages and dialogs to the user. Currently a NW.js program. Move it to Wails.
 - Add in the regular expressions editor and runner.
-- Launching the adding of different workflows/extensions to other programs (Alfred, LaunchBar, Keyboard Maestro, etc.)
+- Launching the adding of different workflows/extensions to other programs
 - Test running on a new system.
 - User created handlebar helpers and macros.
 - Undo history working. 
-- Allow the EmailIt server to send web pages on the users system.
-
 
 ### Change Log:
+
+#### October 27, 2022 - Version 2.0.0 Release Candidate 1
+- Currently, if external program changes a note, EmailIt doesn't know about it. -- Fixed
+- BullitenBoard: A program to display messages and dialogs to the user. Currently a NW.js program. Move it to Wails. -- It's a separate project.
+- Removed the EmailIt Server. Everything is done in Go and Svelte.
+- Alfred workflow has been updated to work with the new version.
+
 
 #### August 18, 2022
 

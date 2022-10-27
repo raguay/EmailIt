@@ -2,23 +2,22 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"errors"
 	"fmt"
-	clip "github.com/atotto/clipboard"
-	cp "github.com/otiai10/copy"
-	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 	"io"
 	"io/ioutil"
-	//"net/http"
-  //"github.com/google/go-github/v48/github"
 	"os"
 	"os/exec"
 	"path/filepath"
 	goruntime "runtime"
+	"strconv"
 	"time"
-  "crypto/tls"
+
+	clip "github.com/atotto/clipboard"
+	cp "github.com/otiai10/copy"
+	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 	mail "gopkg.in/mail.v2"
-  "strconv"
 )
 
 // App application struct and other structs
@@ -44,10 +43,9 @@ type FileInfo struct {
 }
 
 type Environment struct {
-  Name    string    `json:"name" binding:"required"`
-  EnvVar  []string  `json:"envVar" binding:"required"`
+	Name   string   `json:"name" binding:"required"`
+	EnvVar []string `json:"envVar" binding:"required"`
 }
-
 
 // NewApp creates a new App application struct
 func NewApp() *App {
@@ -56,6 +54,15 @@ func NewApp() *App {
 
 // startup is called at application startup
 func (b *App) startup(ctx context.Context) {
+	//
+	// Save the context for other functions.
+	//
+	b.ctx = ctx
+
+	//
+	// We need to start the backend and setup the signaling.
+	//
+	go backend(b, ctx)
 }
 
 // domReady is called after the front-end dom has been loaded
@@ -278,7 +285,7 @@ func (b *App) GetEnvironment() []string {
 }
 
 func (b *App) GetEnv(name string) string {
-  return os.Getenv(name)
+	return os.Getenv(name)
 }
 
 func (b *App) AppendPath(dir string, name string) string {
@@ -307,32 +314,31 @@ func (b *App) GetOSName() string {
 }
 
 func (b *App) GetCopyClip(name string) string {
-  return "Not Implemented Yet"
+	return "Not Implemented Yet"
 }
 
 func (b *App) GetFeedback(question string, defans string) string {
-  return "Not Implemented Yet"
+	return "Not Implemented Yet"
 }
 
 func (b *App) GetGitHubThemes() []string {
-  var result []string
-  return result
+	var result []string
+	return result
 }
 
 func (b *App) SendEmail(username string, from string, password string, host string, port string, toList string, msg string, msgText string, subject string) string {
-  m := mail.NewMessage()
-  m.SetHeader("From", from)
-  m.SetHeader("To", toList)
-  m.SetHeader("Subject", subject)
-  m.SetBody("text/html", msg)
-  m.AddAlternative("text/plain", msgText)
-  iport, _ := strconv.Atoi(port)
- 	d := mail.NewDialer(host, iport, username, password)
+	m := mail.NewMessage()
+	m.SetHeader("From", from)
+	m.SetHeader("To", toList)
+	m.SetHeader("Subject", subject)
+	m.SetBody("text/html", msg)
+	m.AddAlternative("text/plain", msgText)
+	iport, _ := strconv.Atoi(port)
+	d := mail.NewDialer(host, iport, username, password)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-  if err := d.DialAndSend(m); err != nil {
-    b.err = err.Error();
-    return b.err
-  }
-
-  return "Success" 
+	if err := d.DialAndSend(m); err != nil {
+		b.err = err.Error()
+		return b.err
+	}
+	return "Success"
 }

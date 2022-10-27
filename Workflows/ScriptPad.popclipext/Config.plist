@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Actions</key>
+	<array>
+		<dict>
+			<key>After</key>
+			<string>show-status</string>
+            <key>Image File</key>
+            <string>ScriptPad.png</string>
+            <key>Script Interpreter</key>
+            <string>/usr/bin/ruby</string>
+            <key>Shell Script File</key>
+            <string>ScriptPad.rb</string>
+            <key>Title</key>
+            <string>ScriptPad</string>
+		</dict>
+	</array>
+   <key>Options</key>
+   <array>
+      <dict>
+         <key>Option Identifier</key>
+         <string>noteid</string>
+         <key>Option Type</key>
+         <string>string</string>
+         <key>Option Label</key>
+         <string>ScriptPad Note #: </string>
+         <key>Option Default Value</key>
+         <string>1</string>
+      </dict>
+      <dict>
+         <key>Option Identifier</key>
+         <string>append</string>
+         <key>Option Type</key>
+         <string>string</string>
+         <key>Option Label</key>
+         <string>(a)ppend or over(w)rite</string>
+         <key>Option Default Value</key>
+         <string>a</string>
+      </dict>
+   </array>
+	<key>Credits</key>
+	<array>
+	    <dict>
+	        <key>Name</key>
+	        <string>Richard Guay</string>
+	        <key>Link</key>
+	        <string>http://customct.com</string>
+	    </dict>
+	</array>
+	<key>Extension Description</key>
+	<string>Copy selection to a ScriptPad.</string>
+	<key>Extension Identifier</key>
+	<string>com.customct.popclip.scriptpad</string>
+	<key>Extension Name</key>
+	<string>ScriptPad</string>
+	<key>Required Software Version</key>
+	<integer>701</integer>
+</dict>
+</plist>

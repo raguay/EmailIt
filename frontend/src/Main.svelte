@@ -25,10 +25,15 @@
   import { notes } from "./stores/notes.js";
   import { runhandlebars } from "./stores/runhandlebars.js";
   import { runtemplate } from "./stores/runtemplate.js";
-  import * as App from '../wailsjs/go/main/App.js';
+  import { noteEditor } from "./stores/noteEditor.js";
+  import { currentNote } from "./stores/currentNote.js";
+  import { account } from "./stores/account.js";
+  import { emailaccounts } from "./stores/emailaccounts.js";
   import { DateTime } from "luxon";
   import { create, all } from 'mathjs';
   import Handlebars from "handlebars";
+  import * as App from '../wailsjs/go/main/App.js';
+  import * as rt from "../wailsjs/runtime/runtime.js"; // the runtime for Wails2
 
   let notestruct = {
     notes: ["","","","","","","","","",""],
@@ -131,9 +136,9 @@
 
   onMount(async () => {
     //
-    // Wait to give the server time to start.
+    // Set the state to emailit.
     //
-    $state = "notready";
+    $state = "emailit";
 
     //
     // Get stuff from the server.
@@ -142,6 +147,7 @@
     await getScriptsList();
     getTermScriptsList();
     await getTemplatesList();
+    await getAccounts();
     await getTheme();
     await getNotes();
     setupHandlebarHelpers();
@@ -163,10 +169,67 @@
     }
 
     //
-    // Set the state to emailit.
+    // Start the listeners from the Server.
     //
-    $state = "emailit";
+    rt.EventsOn("notechange", async (msg) => {
+      let nid = parseInt(msg.noteid);
+      let result = await $notes.getNote(nid);
+      if(msg.aw === 'w') {
+        result = msg.note;
+      } else {
+        result = `${result}\n${msg.note}`;
+      }
+      await $notes.putNote(nid, result);
+      if($noteEditor !== null && $currentNote === nid) {
+        $noteEditor.setValue(result);
+      }
+    });
+    rt.EventsOn("envList", async () => {
+      let envlistloc = await App.AppendPath($config.configDir, "environments.json");
+      let envlist = await App.ReadFile(envlistloc);
+      envlist = JSON.parse(envlist);
+      rt.EventsEmit('envListReturn', envlist.map(item => item.name));
+    });
+
+    rt.EventsOn("scriptList", async () => {
+      rt.EventsEmit('scriptListReturn', $scripts.map(item => item.name));
+    });
+
+    rt.EventsOn("scriptRun", async (msg) => {
+      let result = await $runscript(msg.script, msg.text);
+      rt.EventsEmit('scriptRunReturn', result)
+    });
+
+    rt.EventsOn("templateList", async () => {
+      rt.EventsEmit('templateListReturn',$templates.map(item => item.name));
+    });
+
+    rt.EventsOn("templateRun", async (msg) => {
+      let result = await $runtemplate(msg.template, msg.text);
+      rt.EventsEmit('templateRunReturn', result);
+    });
+
+    rt.EventsOn("emailSend", async (msg) => {
+      if(msg.account === "") {
+        let result = await App.SendEmail($account.username, $account.from, $account.password, $account.smtpserver, $account.port, msg.to, msg.body, msg.body, msg.subject)
+        rt.EventsEmit('emailSendReturn',result);
+      }
+    });
   });
+
+  async function getAccounts() {
+    //
+    // Get the accounts from the system.
+    //
+    let accountfileloc = await App.AppendPath($config.configDir,"emailaccounts.json");
+    if(await App.FileExists(accountfileloc)) {
+      $emailaccounts = await App.ReadFile(accountfileloc);
+      $emailaccounts = JSON.parse($emailaccounts);
+      if ($emailaccounts.length > 0) {
+       $account = $emailaccounts.find((item) => item.default);
+      }
+    }
+  }
 
   function setupHandlebarHelpers() {
     //

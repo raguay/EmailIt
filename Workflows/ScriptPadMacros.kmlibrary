@@ -1,0 +1,2030 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>Author</key>
+	<string>Richard Guay</string>
+	<key>AuthorURL</key>
+	<string>customct.com</string>
+	<key>CanDragToMacroGroup</key>
+	<true/>
+	<key>Category1</key>
+	<string>Application Control</string>
+	<key>Category2</key>
+	<string>Text</string>
+	<key>Description</key>
+	<string>This set of macros are used to interact with the ScriptPad program.</string>
+	<key>Items</key>
+	<array>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/1/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025019.38976395</real>
+					<key>Name</key>
+					<string>Add to ScriptPad 1</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>41</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>9719B87D-45BC-4DBC-94FF-FEFBA24E3B59</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/2/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025035.73519695</real>
+					<key>Name</key>
+					<string>Add to ScriptPad 2</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>41</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>A4D8E85A-DD34-4D33-B6D5-CEF3DC058AFE</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/3/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025042.813429</real>
+					<key>Name</key>
+					<string>Add to ScriptPad 3</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>41</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>2189DD27-D041-4A27-BB47-44C36EABE1C5</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/4/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025048.95377195</real>
+					<key>Name</key>
+					<string>Add to ScriptPad 4</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>41</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>AAABA1B4-E16E-4AD9-8E82-BB91AE64DE00</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/5/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025056.51821101</real>
+					<key>Name</key>
+					<string>Add to ScriptPad 5</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>41</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>3831D61B-0740-4789-BF78-49D27A382679</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/6/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025060.62147999</real>
+					<key>Name</key>
+					<string>Add to ScriptPad 6</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>41</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>73CB068E-8974-46BD-A6CA-6B292616F506</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/7/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025064.91837299</real>
+					<key>Name</key>
+					<string>Add to ScriptPad 7</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>41</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>0972927B-726A-4635-9BFA-2C66027F1B36</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/8/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025069.05332506</real>
+					<key>Name</key>
+					<string>Add to ScriptPad 8</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>41</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>7C3A6AFB-8A7B-43B3-A766-E63CE6817AAF</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/9/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025073.37203205</real>
+					<key>Name</key>
+					<string>Add to ScriptPad 9</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>41</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>ED8A4F32-C63F-4BA9-9305-8F6FF78123F7</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/1/w")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025078.21679401</real>
+					<key>Name</key>
+					<string>Overwrite to ScriptPad 1</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>39</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>6FA8E5B7-57D6-4F03-8F69-1C4F54621602</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/2/w")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025082.56624496</real>
+					<key>Name</key>
+					<string>Overwrite to ScriptPad 2</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>39</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>C5774218-8387-4F81-8AB0-A07B0ED7B1DD</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/3/w")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025086.61021304</real>
+					<key>Name</key>
+					<string>Overwrite to ScriptPad 3</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>39</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>8ACA995E-D0A6-4FC4-957F-1CE09EA053C9</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/4/w")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025090.56455302</real>
+					<key>Name</key>
+					<string>Overwrite to ScriptPad 4</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>39</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>8B0D76B7-FA79-40E2-99E5-204AD4A9C15E</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/5/w")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025094.252967</real>
+					<key>Name</key>
+					<string>Overwrite to ScriptPad 5</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>39</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>FA0B03F7-7703-40CB-9EF9-2E54666517FB</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/6/w")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025098.48764098</real>
+					<key>Name</key>
+					<string>Overwrite to ScriptPad 6</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>39</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>70A062CF-CBC4-4E14-B30C-78E9EF988052</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/7/w")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025103.14088905</real>
+					<key>Name</key>
+					<string>Overwrite to ScriptPad 7</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>39</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>08BE1DD3-E7CA-4B55-B5EB-48F98471A866</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/8/w")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025107.25743699</real>
+					<key>Name</key>
+					<string>Overwrite to ScriptPad 8</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>39</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>B1F3C949-F16B-468E-B14A-724C48CA7C30</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>None</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+note = `/usr/bin/pbpaste`
+uri = URI("http://localhost:9978/api/note/9/w")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Put.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = {note: "#{note}"}.to_json
+res = http.request(req)
+</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546861885.46065998</real>
+					<key>ModificationDate</key>
+					<real>559025111.69123495</real>
+					<key>Name</key>
+					<string>Overwrite to ScriptPad 9</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>39</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>9478F6BF-DF37-48A9-869E-018AB4CAE2D5</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>Pasting</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+require 'json'
+
+noteID = ARGV[0]
+
+uri = URI("http://localhost:9978/api/note/1/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Get.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = ''
+res = http.request(req)
+json = JSON.parse res.body
+puts "#{json['note']}"</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546862629.62573802</real>
+					<key>ModificationDate</key>
+					<real>559025119.32164097</real>
+					<key>Name</key>
+					<string>Paste from ScriptPad 1</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>43</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>AD755313-F285-46D7-B7BE-1302D5BB89EA</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>Pasting</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+require 'json'
+
+noteID = ARGV[0]
+
+uri = URI("http://localhost:9978/api/note/2/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Get.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = ''
+res = http.request(req)
+json = JSON.parse res.body
+puts "#{json['note']}"</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546862629.62573802</real>
+					<key>ModificationDate</key>
+					<real>559025123.57072997</real>
+					<key>Name</key>
+					<string>Paste from ScriptPad 2</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>43</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>0ECBDC39-61DC-43CA-A8A9-B84A30CE11A0</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>Pasting</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+require 'json'
+
+noteID = ARGV[0]
+
+uri = URI("http://localhost:9978/api/note/3/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Get.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = ''
+res = http.request(req)
+json = JSON.parse res.body
+puts "#{json['note']}"</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546862629.62573802</real>
+					<key>ModificationDate</key>
+					<real>559025127.76807499</real>
+					<key>Name</key>
+					<string>Paste from ScriptPad 3</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>43</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>DBBBC2B7-75B3-482C-9757-CB9E43678F5D</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>Pasting</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+require 'json'
+
+noteID = ARGV[0]
+
+uri = URI("http://localhost:9978/api/note/4/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Get.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = ''
+res = http.request(req)
+json = JSON.parse res.body
+puts "#{json['note']}"</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546862629.62573802</real>
+					<key>ModificationDate</key>
+					<real>559025131.93974996</real>
+					<key>Name</key>
+					<string>Paste from ScriptPad 4</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>43</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>35513CCC-C5F6-405A-819A-E30584C63B21</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>Pasting</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+require 'json'
+
+noteID = ARGV[0]
+
+uri = URI("http://localhost:9978/api/note/5/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Get.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = ''
+res = http.request(req)
+json = JSON.parse res.body
+puts "#{json['note']}"</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546862629.62573802</real>
+					<key>ModificationDate</key>
+					<real>559025136.82095301</real>
+					<key>Name</key>
+					<string>Paste from ScriptPad 5</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>43</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>77EE2715-BE13-4AC4-866A-4F595D3786CD</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>Pasting</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+require 'json'
+
+noteID = ARGV[0]
+
+uri = URI("http://localhost:9978/api/note/6/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Get.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = ''
+res = http.request(req)
+json = JSON.parse res.body
+puts "#{json['note']}"</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546862629.62573802</real>
+					<key>ModificationDate</key>
+					<real>559025141.38691902</real>
+					<key>Name</key>
+					<string>Paste from ScriptPad 6</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>43</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>DB0D2084-3F88-423D-901F-5D421D37B495</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>Pasting</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+require 'json'
+
+noteID = ARGV[0]
+
+uri = URI("http://localhost:9978/api/note/7/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Get.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = ''
+res = http.request(req)
+json = JSON.parse res.body
+puts "#{json['note']}"</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546862629.62573802</real>
+					<key>ModificationDate</key>
+					<real>559025145.56361198</real>
+					<key>Name</key>
+					<string>Paste from ScriptPad 7</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>43</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>72BE7868-3AF7-4CA3-BD8C-ED4010B1DA8D</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>Pasting</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+require 'json'
+
+noteID = ARGV[0]
+
+uri = URI("http://localhost:9978/api/note/8/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Get.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = ''
+res = http.request(req)
+json = JSON.parse res.body
+puts "#{json['note']}"</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546862629.62573802</real>
+					<key>ModificationDate</key>
+					<real>559025150.28370702</real>
+					<key>Name</key>
+					<string>Paste from ScriptPad 8</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>43</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>DA184BFD-C52D-4480-966B-A8CC5E26E3AD</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+		<dict>
+			<key>Activate</key>
+			<string>Normal</string>
+			<key>CreationDate</key>
+			<real>546861876.51359606</real>
+			<key>Macros</key>
+			<array>
+				<dict>
+					<key>Actions</key>
+					<array>
+						<dict>
+							<key>DisplayKind</key>
+							<string>Pasting</string>
+							<key>IncludeStdErr</key>
+							<false/>
+							<key>MacroActionType</key>
+							<string>ExecuteShellScript</string>
+							<key>Path</key>
+							<string></string>
+							<key>Source</key>
+							<string>Nothing</string>
+							<key>Text</key>
+							<string>#!/usr/bin/ruby
+
+require 'net/http'
+require 'json'
+require 'json'
+
+noteID = ARGV[0]
+
+uri = URI("http://localhost:9978/api/note/9/a")
+http = Net::HTTP.new(uri.host, uri.port)
+req = Net::HTTP::Get.new(uri.path, 'Content-Type' =&gt; 'application/json')
+req.body = ''
+res = http.request(req)
+json = JSON.parse res.body
+puts "#{json['note']}"</string>
+							<key>TimeOutAbortsMacro</key>
+							<true/>
+							<key>TrimResults</key>
+							<true/>
+							<key>TrimResultsNew</key>
+							<true/>
+							<key>UseText</key>
+							<true/>
+						</dict>
+					</array>
+					<key>CreationDate</key>
+					<real>546862629.62573802</real>
+					<key>ModificationDate</key>
+					<real>559025156.76980901</real>
+					<key>Name</key>
+					<string>Paste from ScriptPad 9</string>
+					<key>Triggers</key>
+					<array>
+						<dict>
+							<key>FireType</key>
+							<string>Pressed</string>
+							<key>KeyCode</key>
+							<integer>43</integer>
+							<key>MacroTriggerType</key>
+							<string>HotKey</string>
+							<key>Modifiers</key>
+							<integer>4608</integer>
+						</dict>
+					</array>
+					<key>UID</key>
+					<string>974B3D8C-0E4E-4DD9-8EB9-22DAE209D356</string>
+				</dict>
+			</array>
+			<key>Name</key>
+			<string>ScriptPad</string>
+			<key>ToggleMacroUID</key>
+			<string>3B99C37E-0A48-439D-AB0D-2EE19208C14F</string>
+			<key>UID</key>
+			<string>EEB32D0A-D914-4F7B-A1A4-2E3EA32B62F6</string>
+		</dict>
+	</array>
+	<key>UID</key>
+	<string>113765AD-8534-4A73-A3A4-D8CDDC3ED4BF</string>
+</dict>
+</plist>

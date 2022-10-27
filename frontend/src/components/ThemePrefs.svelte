@@ -39,9 +39,7 @@
     let thmprojfile = await App.AppendPath(thmdir,"package.json");
     thmprojfile = await App.ReadFile(thmprojfile);
     thmprojfile = JSON.parse(thmprojfile);
-    console.log(thmprojfile);
     let thmfile = await App.AppendPath(thmdir, thmprojfile.theme.main);
-    console.log(thmfile);
     theme = await App.ReadFile(thmfile);
     theme = JSON.parse(theme);
     return theme;

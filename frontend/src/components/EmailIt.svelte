@@ -6,6 +6,7 @@
   import { theme } from "../stores/theme.js";
   import { state } from "../stores/state.js";
   import { account } from "../stores/account.js";
+  import { emailaccounts } from "../stores/emailaccounts.js";
   import { email } from "../stores/email.js";
   import { emailEditor } from "../stores/emailEditor.js";
   import { commandLineEmail } from "../stores/commandLineEmail.js";
@@ -17,7 +18,6 @@
   let receiver = "";
   let subject = "";
   let emailState = "edit";
-  let accounts;
   let showChangeAccount = false;
   let showNewAccount = false;
   let showPreview = false;
@@ -55,7 +55,6 @@
 
   onMount(async () => {
     await getEmails();
-    await getAccounts();
     emailState = "edit";
     oldState = "edit";
     initFinished = true;
@@ -185,20 +184,6 @@
       makeHtml();
     }
     showChangeAccount = false;
-  }
-
-  async function getAccounts() {
-    //
-    // Get the accounts from the system.
-    //
-    let accountfileloc = await App.AppendPath($config.configDir,"emailaccounts.json");
-    if(await App.FileExists(accountfileloc)) {
-      accounts = await App.ReadFile(accountfileloc);
-      accounts = JSON.parse(accounts);
-      if (accounts.length > 0) {
-       $account = accounts.find((item) => item.default);
-      }
-    }
   }
 
   function changeActiveAccount(acc) {
@@ -402,18 +387,18 @@
     // are false.
     //
     if (accountDefault) {
-      accounts = accounts.map((item) => {
+      $emailaccounts = $emailaccounts.map((item) => {
         item.default = false;
         return item;
       });
     }
-    var orig = accounts.filter((item) => item.name === acc.name);
+    var orig = $emailaccounts.filter((item) => item.name === acc.name);
     if (orig.length > 0) {
-      accounts = accounts.filter((item) => item.name !== acc.name);
-      accounts.push(acc);
+      $emailaccounts = $emailaccounts.filter((item) => item.name !== acc.name);
+      $emailaccounts.push(acc);
     }
     $account = acc;
-    accounts = accounts;
+    $emailaccounts = $emailaccounts;
     saveAccounts();
     if (emailState === "preview") makeHtml();
     clearFormData();
@@ -422,10 +407,10 @@
 
   function deleteAccount() {
     var acc = $account;
-    accounts = accounts.filter((item) => item.name !== acc.name);
-    if (accounts.length > 0) {
-      $account = accounts[0];
-      origAccount = accounts[0];
+    $emailaccounts = $emailaccounts.filter((item) => item.name !== acc.name);
+    if ($emailaccounts.length > 0) {
+      $account = $emailaccounts[0];
+      origAccount = $emailaccounts[0];
       if (emailState === "preview") makeHtml();
     } else {
       showNewAccount = false;
@@ -440,7 +425,7 @@
     // This will save the accounts to the harddrive.
     //
     let accountfileloc = await App.AppendPath($config.configDir,"emailaccounts.json");
-    await App.WriteFile(accountfileloc, JSON.stringify(accounts));
+    await App.WriteFile(accountfileloc, JSON.stringify($emailaccounts));
   }
 
   function cancelNewAccount() {
@@ -621,7 +606,7 @@
         <h2>Current Account: Please Create an Account</h2>
       {/if}
       <div id="AccountsList">
-        {#each accounts as acc}
+        {#each $emailaccounts as acc}
           <button
             on:click={() => {
               changeActiveAccount(acc);

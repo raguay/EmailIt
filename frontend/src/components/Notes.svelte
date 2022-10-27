@@ -4,7 +4,6 @@
   import { state } from "../stores/state.js";
   import { theme } from "../stores/theme.js";
   import { currentNote } from "../stores/currentNote.js";
-  import { storedText } from "../stores/storedText.js";
   import { storedCursor } from "../stores/storedCursor.js";
   import { noteEditor } from "../stores/noteEditor.js";
   import { showScripts } from "../stores/showScripts.js";
@@ -25,6 +24,9 @@
     // Load everything for working with the notes:
     //
     await loadNotes();
+    return(()=>{
+      $noteEditor = null;
+    })
   });
 
   async function loadNotes() {
@@ -33,15 +35,10 @@
     // proper note.
     //
     await $notes.loadNotes();
-    $storedText = $notes.notes;
     initFinished = true;
     await tick();
     openNote($currentNote);
     focus();
-  }
-
-  async function saveNote(id) {
-    await $notes.putNote(id, $storedText[id]);
   }
 
   function editorChange(e) {
@@ -49,9 +46,9 @@
   }
 
   function textChanged(textCursor) {
-    $storedText[$currentNote] = textCursor.value;
+    $notes.notes[$currentNote] = textCursor.value;
     $storedCursor[$currentNote] = textCursor.cursor;
-    saveNote($currentNote);
+    $notes.saveNotes();
   }
 
   function focus() {
@@ -71,7 +68,7 @@
 
   function openNote(id) {
     $currentNote = id;
-    $noteEditor.setValue($storedText[$currentNote]);
+    $noteEditor.setValue($notes.notes[$currentNote]);
     var cur = parseInt($storedCursor[$currentNote]);
     if (!Number.isInteger(cur)) cur = 0;
     $noteEditor.setCursor(cur);

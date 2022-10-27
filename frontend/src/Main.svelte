@@ -1,5 +1,6 @@
 <script>
   import { onMount } from "svelte";
+  import showdown from "showdown";
   import EmailIt from "./components/EmailIt.svelte";
   import Notes from "./components/Notes.svelte";
   import ScriptMenu from "./components/ScriptMenu.svelte";
@@ -210,12 +211,43 @@
     });
 
     rt.EventsOn("emailSend", async (msg) => {
+      let result = "Sent successfully!";
+      let processText = $runtemplate("given", msg.body);
       if(msg.account === "") {
-        let result = await App.SendEmail($account.username, $account.from, $account.password, $account.smtpserver, $account.port, msg.to, msg.body, msg.body, msg.subject)
-        rt.EventsEmit('emailSendReturn',result);
+        //
+        // Use the current account to send it.
+        //
+        let processHTML = makeHtml($account, processText);
+        result = await App.SendEmail($account.username, $account.from, $account.password, $account.smtpserver, $account.port, msg.to, processHTML, processText, msg.subject)
+      } else {
+        //
+        // It has a different account to send by. Look it up and use it.
+        //
+        let acc = $emailaccounts.filter(item => item.name === msg.account);
+        if(acc.length > 0) {
+          acc = acc[0];
+          let processHTML = makeHtml(acc, processText);
+          result = await App.SendEmail(acc.username, acc.from, acc.password, acc.smtpserver, acc.port, msg.to, processHTML, processText, msg.subject)
+        } else {
+          result = "Account not found.";
+        }
       }
+      rt.EventsEmit('emailSendReturn',result);
     });
   });
+
+  function makeHtml(acc, text) {
+    let result = "";
+    var converter = new showdown.Converter({
+      extensions: [],
+    });
+    converter.setOption("tables", true);
+    result = converter.makeHtml(text + acc.signiture);
+    if (typeof acc.headerHTML !== "undefined") {
+      result = acc.headerHTML + result + acc.footerHTML;
+    }
+    return(result);
+  }
 
   async function getAccounts() {
     //
@@ -290,17 +322,22 @@
       data["cHMampm"] = DateTime.now().toFormat("h:mm a");
       data["cHMS24"] = DateTime.now().toFormat("H:mm:ss");
       data["cHM24"] = DateTime.now().toFormat("H:mm");
-      data["Templatename"] = template.name;
-      data["text"] = text;
 
       //
       // Get the User's default data.
       //
       var defaultData = $templates.find(item => item.name === "Defaults");
-      template = $templates.find(item => item.name === template);
-      if(typeof template !== 'undefined') {
-        template = template.template;
+      if(template === "given") {
+        template = text;
+        data["text"] = '';
+      } else {
+        template = $templates.find(item => item.name === template);
+        data["text"] = text;
+        if(typeof template !== 'undefined') {
+          template = template.template;
+        }
       }
+      console.log(template);
       if (defaultData !== undefined) {
         data = MergeRecursive(data, JSON.parse(defaultData.template));
       }

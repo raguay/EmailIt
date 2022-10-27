@@ -13,6 +13,7 @@
   import { showScripts } from "../stores/showScripts.js";
   import { showTemplates } from "../stores/showTemplates.js";
   import { config } from "../stores/config.js";
+  import { runtemplate } from "../stores/runtemplate.js";
   import * as App from '../../wailsjs/go/main/App.js';
 
   let receiver = "";
@@ -237,7 +238,8 @@
       extensions: [],
     });
     converter.setOption("tables", true);
-    previewHTML = converter.makeHtml(bodyValue + $account.signiture);
+    let newBody = $runtemplate("given", bodyValue);
+    previewHTML = converter.makeHtml(newBody + $account.signiture);
     if (typeof $account.headerHTML !== "undefined") {
       previewHTML = $account.headerHTML + previewHTML + $account.footerHTML;
     }

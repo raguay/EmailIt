@@ -10,6 +10,7 @@
   import { userTemplates } from "../stores/userTemplates.js";
   import { systemTemplates } from "../stores/systemTemplates.js";
   import { templateEditor } from "../stores/templateEditor.js";
+  import { config } from "../stores/config.js";
   import * as App from '../../wailsjs/go/main/App.js';
 
   let editorConfig = {
@@ -55,10 +56,12 @@
 
   function saveTemplate() {
     if (templateName !== undefined && templateName !== "") {
+      let newtemplate = $templateEditor.getValue();
+      console.log(newtemplate);
       let templatedef = {
         name: templateName,
         description: templateDescription,
-        template: template,
+        template: newtemplate,
       }
       $userTemplates = $userTemplates.filter(item => item.name != templateName);
       $userTemplates.push(templatedef);

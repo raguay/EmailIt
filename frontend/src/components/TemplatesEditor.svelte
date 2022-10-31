@@ -1,5 +1,5 @@
 <script>
-  import { onMount, tick } from "svelte";
+  import { onMount } from "svelte";
   import CodeMirror from "../components/CodeMirror.svelte";
   import SimpleAutoComplete from "../components/SimpleAutoComplete.svelte";
   import { state } from "../stores/state.js";
@@ -10,6 +10,7 @@
   import { userTemplates } from "../stores/userTemplates.js";
   import { systemTemplates } from "../stores/systemTemplates.js";
   import { templateEditor } from "../stores/templateEditor.js";
+  import * as App from '../../wailsjs/go/main/App.js';
 
   let editorConfig = {
     language: "javascript",
@@ -47,6 +48,11 @@
     }
   }
 
+  async function saveUserTemplates() {
+    let templateloc = await App.AppendPath($config.configDir,"templates.json");
+    await App.WriteFile(templateloc, JSON.stringify($userTemplates));
+  }
+
   function saveTemplate() {
     if (templateName !== undefined && templateName !== "") {
       let templatedef = {
@@ -63,6 +69,7 @@
       templateDescription = "";
       templateSel = "";
       $templateEditor.setValue(template);
+      saveUserTemplates();
     }
   }
 
@@ -76,6 +83,7 @@
       templateDescription = "";
       templateSel = "";
       $templateEditor.setValue(template);
+      saveUserTemplates();
     }
   }
 

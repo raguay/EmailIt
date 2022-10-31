@@ -33,9 +33,10 @@
   import { DateTime } from "luxon";
   import { create, all } from 'mathjs';
   import Handlebars from "handlebars";
-  import * as App from '../wailsjs/go/main/App.js';
   import * as rt from "../wailsjs/runtime/runtime.js"; // the runtime for Wails2
+  import * as App from '../wailsjs/go/main/App.js';
 
+  let savetext = "";
   let notestruct = {
     notes: ["","","","","","","","","",""],
     loadNotes: async function() {
@@ -267,17 +268,6 @@
     //
     // Create the helpers functions for Handlebars.
     //
-    Handlebars.registerHelper('save', function(name, text) {
-      Handlebars.registerHelper(name, function() {
-        return text;
-      });
-      return text;
-    });
-
-    Handlebars.registerHelper('clipboard', async function() {
-      return await App.GetClip();
-    });
-
     Handlebars.registerHelper('date', function(dFormat) {
       return DateTime.now().toFormat(dFormat);
     });
@@ -337,10 +327,34 @@
           template = template.template;
         }
       }
-      console.log(template);
-      if (defaultData !== undefined) {
-        data = MergeRecursive(data, JSON.parse(defaultData.template));
+      if (defaultData === undefined) {
+        defaultData = [];
+        defaultData.name = "Defaults";
+        defaultData.template = `{
+   "projectName": "This is a default test project",
+   "email": "Your Email",
+   "firstName": "Your Frist Name",
+   "lastName": "You Last Name",
+   "home": {
+      "address1": "",
+      "address2": "",
+      "city": "",
+      "state": "",
+      "zip": ""
+   },
+   "office": {
+      "address1": "",
+      "address2": "",
+      "city": "",
+      "state": "",
+      "zip": ""
+   }`;
+        $templates.push(defaultData);
+        $userTemplates.push(defaultData);
+        saveUserTemplates();
       }
+      data = MergeRecursive(data, JSON.parse(defaultData.template));
+      
       //
       // Parse the Template
       //
@@ -604,9 +618,38 @@
       $userTemplates = JSON.parse(templatefile);
       $templates = $systemTemplates.concat($userTemplates);
     } else {
+      var defaultData = [];
+      defaultData.name = "Defaults";
+      defaultData.template = `{
+   "projectName": "This is a default test project",
+   "email": "Your Email",
+   "firstName": "Your Frist Name",
+   "lastName": "You Last Name",
+   "home": {
+      "address1": "",
+      "address2": "",
+      "city": "",
+      "state": "",
+      "zip": ""
+   },
+   "office": {
+      "address1": "",
+      "address2": "",
+      "city": "",
+      "state": "",
+      "zip": ""
+   }`;
       $userTemplates = [];
+      $userTemplates.push(defaultData);
       $templates = $systemTemplates;
+      $templates.push(defaultData);
+      await saveUserTemplates();
     }
+  }
+
+  async function saveUserTemplates() {
+    let templateloc = await App.AppendPath($config.configDir,"templates.json");
+    await App.WriteFile(templateloc, JSON.stringify($userTemplates));
   }
 
   //

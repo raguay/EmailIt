@@ -77,7 +77,7 @@ When you launch the program, the EmailIt main screen is shown:
 
 ![EmailIt Main Screen](/images/mainscreen.png)
 
-Here, you can easily type in an email address, a subject line, and the text body. The text body is assumed to be markdown format and will be converted to html before sending. The buttons along the bottom show the different functions that can be accessed at this screen. Any email used is saved into the [Address Book](#address-book). When you enter the `To` field, a list of addresses from the Address Book will be displayed. As you type, the list will contract to the ones that match what you are typing.
+Here, you can easily type in an email address, a subject line, and the text body. The text body is assumed to be markdown format. It will be sent to the Handlebars macro expander and then converted to HTML and plain text email. The buttons along the bottom show the different functions that can be accessed at this screen. Any email address used is saved into the [Address Book](#address-book). When you enter the `To` field, a list of addresses from the Address Book will be displayed. As you type, the list will contract to the ones that match what you are typing.
 
 ![EmailIt Addresses Display](/images/addressdialog.png)
 
@@ -117,7 +117,7 @@ When you click `Notes` button on the main screen, you will see the notes you are
 
 ![Notes](/images/notes.png)
 
-The nine color circles to the right select the different notes. I use one as a scratch pad for running text altering scripts. The buttons on the bottom go to different parts of the program.
+The ten color circles to the right select the different notes. I use one as a scratch pad for running text altering scripts. The buttons on the bottom go to different parts of the program.
 
 ## Scripts
 
@@ -141,19 +141,15 @@ The `Description` field is for a brief description of what the script does. For 
 
 The text editor area is for writing your JavaScript routine. The `SP` object is how you get information and run different functions. 
 
-The variable `SP.text` contains either all the text in the note if there wasn't
-a selection, or just the selected text. You read this variable to get the text to
-process and write into the variable what you want to replace either the selection
-or all the text in the notepad.
+The variable `SP.text` contains either all the text in the note if there wasn't a selection, or just the selected text. You read this variable to get the text to process and write into the variable what you want to replace either the selection or all the text in the notepad.
 
-There are some predefined libraries in variables for your scripts to use. You
-can make use of the following:
+There are some predefined libraries in variables for your scripts to use. You can make use of the following:
 
 |  |  |
 | -- | ---- |
 | SP.mathjs | [Math.js library](http://mathjs.org/) |
 | SP.mathParser | The Math.js parser used to process text |
-| SP.moment | [moment.js library](https://momentjs.com) |
+| SP.DateTime | [luxon library](https://moment.github.io/luxon/#/) |
 | SP.Handlebars | [Handlebars library](https://handlebarsjs.com/) |
 
 The are some predefined function available as well:
@@ -168,8 +164,7 @@ The are some predefined function available as well:
 
 I have plans for creating more functions to be used. Stay tuned!
 
-You can create script in one note and use a different note for the input. 
-For example, in a note, place the following code:
+You can create script in one note and use a different note for the input.  For example, in a note, place the following code:
 
 ```js
 
@@ -188,19 +183,9 @@ try {
 ```
 
 Then go to a different note and place several lines of text. Run the
-script `Bullet lines with Numbers`. Every line will have the proper number at
-the front of it. Now, run the script `Evaluate Note # as Script` with `#` the
-number of the note where you put the script. The numbers at the beginning will now be
-removed! You can use the script editor to save this script and use it from the
-script menu.
+script `Bullet lines with Numbers`. Every line will have the proper number at the front of it. Now, run the script `Evaluate Note # as Script` with `#` the number of the note where you put the script. The numbers at the beginning will now be removed! You can use the script editor to save this script and use it from the script menu.
 
-There are scripts for processing math: the 'Basic Math' and 'Evaluate Page for
-Math' scripts. The 'Basic Math' script is for processing arbitrary pieces of math
-in a selection. The 'Evaluate Page for Math' script is for processing the entire
-note with a nice running result along the right. The 'Basic Math' script doesn't
-reset the state of the math library (ie: variable definitions and functions),
-but the 'Evaluate Page for Math' does each time invoked so as to not create
-multiple copies of function and variables.
+There are scripts for processing math: the 'Basic Math' and 'Evaluate Page for Math' scripts. The 'Basic Math' script is for processing arbitrary pieces of math in a selection. The 'Evaluate Page for Math' script is for processing the entire note with a nice running result along the right. The 'Basic Math' script doesn't reset the state of the math library (ie: variable definitions and functions), but the 'Evaluate Page for Math' does each time invoked so as to not create multiple copies of function and variables.
 
 Copy the following note to a notepad:
 
@@ -237,11 +222,7 @@ h expressions. The math library used is [mathjs 4.0](http://mathjs.org/).
 
 ```
 
-Then press `<ctrl>-m` and select the 'Evaluate Page for Math' script. Each
-line with the '>' as the front character now has the results to the right.
-When you change the text lines and re-run the script, the math lines are all 
-updated. All other lines are not effected by the script. You can change any
-equation or variable and it's effects will trickle down the page.
+Then press `<ctrl>-m` and select the 'Evaluate Page for Math' script. Each line with the '>' as the front character now has the results to the right.  When you change the text lines and re-run the script, the math lines are all updated. All other lines are not effected by the script. You can change any equation or variable and it's effects will trickle down the page.
 
 ## Templates
 
@@ -265,15 +246,10 @@ The text editor is where you create your template. Templates are processed using
 
 | | |
 |--|----|
-| `{{save <name> <text>}}` | This command creates a helper named `<name>` with the expanding text of `<text>`. It also places the given `<text>` at the point of definition. This allows you to create text snippets on the fly inside the template. Very handy. |
-| `{{clipboard}}` | This helper command places the current clipboard contents at the point in the template. |
 | `{{date <format>}}` | This will format the current date and time as per the format string given. See the help document that is loaded upon initialization. |
 | `{{cdate <date/time> <format>}}` | This takes the date/time string and formats it according to the format given. See the help document that is loaded upon initialization. |
-| `{{env <name>}}` | This will place the environment variable that matches `<name>` at that location |
 | `{{last <weeks> <dow> <format>}}` | This will print the date `<weeks>` ago in the `<format>` format for the `<dow>` day of week. |
 | `{{next <weeks> <dow> <format>}}` | This will print the date `<weeks>` in the future using the `<format>` format for the `<dow>` day of week. |
-| `{{userfillin <question> <default>}}` | This will prompt the user with `<question>` and put the `<default>` as a quick answer. The response will be put into the template. |
-| `{{copyclip <clipname>}}` | This will put the Alfred Copy Clip workflow's `<clipname>` into the template. |
 
 The following data expansions are defined as well:
 
@@ -443,9 +419,7 @@ In order to load the theme properly, the `package.json` file for the theme's rep
 ### Web API
 
 EmailIt has a web based API for interfacing with other applications, 
-command line tools, or whatever else would help. The base address for the 
-APIs is `http://localhost:9978/api`. Every endpoint in this table builds 
-on this base. These endpoints only allow access from requests on the same machine.
+command line tools, or whatever else would help. The base address for the APIs is `http://localhost:9978/api`. Every endpoint in this table builds on this base. These endpoints only allow access from requests on the same machine.
 
 | Endpoint | Description |
 | --- | ------ |
@@ -477,7 +451,7 @@ All the endpoints are used to make the plugins for Alfred, Keyboard Maestro, Dro
 
 #### October 27, 2022 - Version 2.0.0 Release Candidate 1
 - Currently, if external program changes a note, EmailIt doesn't know about it. -- Fixed
-- BullitenBoard: A program to display messages and dialogs to the user. Currently a NW.js program. Move it to Wails. -- It's a separate project.
+- BullitenBoard: A program to display messages and dialogs to the user. Currently a NW.js program. Move it to Wails. -- It's a separate project and is a full Wails project.
 - Removed the EmailIt Server. Everything is done in Go and Svelte.
 - Alfred workflow has been updated to work with the new version.
 

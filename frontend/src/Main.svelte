@@ -328,7 +328,7 @@
         }
       }
       if (defaultData === undefined) {
-        defaultData = [];
+        defaultData = {};
         defaultData.name = "Defaults";
         defaultData.template = `{
    "projectName": "This is a default test project",
@@ -348,8 +348,7 @@
       "city": "",
       "state": "",
       "zip": ""
-   }`;
-        $templates.push(defaultData);
+   }}`;
         $userTemplates.push(defaultData);
         saveUserTemplates();
       }
@@ -451,6 +450,12 @@
     let themedir = await App.AppendPath(configdir,"themes");
     let scriptsdir = await App.AppendPath(configdir,"scripts");
     let configloc = await App.AppendPath(configdir,"config.json");
+    let emailaccountloc = await App.AppendPath(configdir,"emailacounts.json");
+    let emailsloc = await App.AppendPath(configdir, "emails.json");
+    let envloc = await App.AppendPath(configdir, "environments.json");
+    let extscriptloc = await App.AppendPath(configdir,"extscripts.json");
+    let scriptsloc = await App.AppendPath(configdir,"scripts.json");
+    let currentthemeloc = await App.AppendPath(configdir,"theme.json");
     let systemdir = await App.GetExecutable();
     $config = {
       homeDir: homedir,
@@ -463,6 +468,22 @@
     await App.WriteFile(configloc, JSON.stringify($config));
 
     //
+    // Create the different default files that are empty.
+    //
+    await App.MakeDir(scriptsdir);
+    await App.WriteFile(emailaccountloc,JSON.stringify([]));
+    await App.WriteFile(emailsloc,JSON.stringify([]));
+    await App.WriteFile(envloc,JSON.stringify([]));
+    await App.WriteFile(extscriptloc,JSON.stringify([]));
+    await App.WriteFile(scriptsloc,JSON.stringify([]));
+
+    //
+    // Create the default Notes.
+    //
+    var notesloc = await App.AppendPath(configdir,"notes.json");
+    await App.WriteFile(notesloc, JSON.stringify(["","","","","","","","","",""]));
+ 
+    //
     // Create the default Theme.
     //
     let defaultThemeDir = await App.AppendPath($config.themeDir,"Default");
@@ -470,7 +491,7 @@
       await App.MakeDir(defaultThemeDir)
     }
     let defaultThemefile = await App.AppendPath(defaultThemeDir,"Default.json");
-    await App.WriteFile(defaultThemefile, JSON.stringify({
+    $theme = {
       name: "Default",
       font: "Fira Code, Menlo",
       fontSize: "16pt",
@@ -533,7 +554,9 @@
           id: 9
         },
       ]
-    }));
+    };
+    await App.WriteFile(defaultThemefile, JSON.stringify($theme));
+    await App.WriteFile(currentthemeloc, JSON.stringify($theme));
     let themecnfg = await App.AppendPath(defaultThemeDir,"package.json");
     await App.WriteFile(themecnfg,JSON.stringify(
       {
@@ -553,12 +576,6 @@
           "main": "Default.json"
         }
     }));
-
-    //
-    // Create the default Notes.
-    //
-    notesloc = await App.AppendPath(configdir,"notes.json");
-    await App.WriteFile(notesloc, JSON.stringify(["","","","","","","","","",""]));
   }
 
   async function getTheme() {
@@ -570,7 +587,6 @@
   async function getScriptsList() {
     let userScriptsLoc = await App.AppendPath($config.configDir,"scripts.json");
     let extScriptsLoc = await App.AppendPath($config.configDir,"extscripts.json");
-    let systemScriptsLoc = await App.AppendPath($config.systemDir,"../Resources/systemscripts.json")
     let userScriptFile = {};
     if(await App.FileExists(userScriptsLoc)) {
       //
@@ -603,6 +619,7 @@
       })).concat($extScripts.filter(value => value.termscript === false).map(value => {
         return { name: value.name, insert: false }
       }));
+    console.log($scripts);
   }
 
   function getTermScriptsList() {
@@ -618,7 +635,7 @@
       $userTemplates = JSON.parse(templatefile);
       $templates = $systemTemplates.concat($userTemplates);
     } else {
-      var defaultData = [];
+      var defaultData = {};
       defaultData.name = "Defaults";
       defaultData.template = `{
    "projectName": "This is a default test project",
@@ -638,11 +655,10 @@
       "city": "",
       "state": "",
       "zip": ""
-   }`;
+   }}`;
       $userTemplates = [];
       $userTemplates.push(defaultData);
-      $templates = $systemTemplates;
-      $templates.push(defaultData);
+      $templates = $systemTemplates.concat($userTemplates);
       await saveUserTemplates();
     }
   }

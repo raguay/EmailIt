@@ -40,10 +40,10 @@
   function searchTempaltes(text) {
     var tmp = [];
     if (text === "" || text === undefined) {
-      tmp = $templates;
+      tmp = $templates.filter(item => item.name !== "Defaults");
     } else {
       text = text.toLowerCase();
-      tmp = $templates.filter((item) => {
+      tmp = $templates.filter(item => item.name !== "Defaults").filter((item) => {
         if (item !== undefined && item !== null) {
           return item.name.toLowerCase().includes(text);
         }

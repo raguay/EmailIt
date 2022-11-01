@@ -265,6 +265,7 @@
     if (validate(toAddress)) {
       addToEmails(toAddress);
       var bodyText = bodyValue + cleanTags($account.signiture);
+      bodyText = $runtemplate('given',bodyText);
       showPreview = false;
       emailState = "edit";
 

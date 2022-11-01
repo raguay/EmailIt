@@ -331,8 +331,8 @@ func (b *App) SendEmail(username string, from string, password string, host stri
 	m.SetHeader("From", from)
 	m.SetHeader("To", toList)
 	m.SetHeader("Subject", subject)
-	m.SetBody("text/html", msg)
-	m.AddAlternative("text/plain", msgText)
+	m.SetBody("text/plain", msgText)
+	m.AddAlternative("text/html", msg)
 	iport, _ := strconv.Atoi(port)
 	d := mail.NewDialer(host, iport, username, password)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}

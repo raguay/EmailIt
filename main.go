@@ -2,12 +2,13 @@ package main
 
 import (
 	"embed"
+	"log"
+
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
 	"github.com/wailsapp/wails/v2/pkg/options/windows"
-	"log"
 )
 
 //go:embed frontend/dist
@@ -40,8 +41,8 @@ func main() {
 		OnStartup:         app.startup,
 		OnDomReady:        app.domReady,
 		OnShutdown:        app.shutdown,
-    CSSDragProperty:   "--wails-draggable",
-    CSSDragValue:      "drag",
+		CSSDragProperty:   "--wails-draggable",
+		CSSDragValue:      "drag",
 		Bind: []interface{}{
 			app,
 		},
@@ -58,12 +59,11 @@ func main() {
 			WindowIsTranslucent:  true,
 			About: &mac.AboutInfo{
 				Title:   "EmailIt",
-				Message: "© 2022 Richard Guay <raguay@customct.com>",
+				Message: "Version 2.0.0 © 2022 Richard Guay <raguay@customct.com>",
 				Icon:    icon,
 			},
 		},
 	})
-
 	if err != nil {
 		log.Fatal(err)
 	}

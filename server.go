@@ -167,6 +167,30 @@ func backend(app *App, ctx context.Context) {
 		}
 	})
 
+	r.GET("/api/emailit/mailto", func(c *gin.Context) {
+		to := c.DefaultQuery("to", "")
+		subject := c.DefaultQuery("subject", "")
+		body := c.DefaultQuery("body", "")
+		email := EmailMsg{
+			Account: "Default",
+			To:      to,
+			From:    "",
+			Subject: subject,
+			Body:    body,
+		}
+		rt.EventsEmit(ctx, "EditEmail", email)
+		running := true
+		rt.EventsOnce(ctx, "emailSendReturn", func(optionalData ...interface{}) {
+			c.JSON(http.StatusOK, optionalData[0])
+			running = false
+		})
+		for running {
+			time.Sleep(time.Millisecond)
+		}
+
+		// c.JSON(http.StatusOK, "sent")
+	})
+
 	r.PUT("/api/emailit/send", func(c *gin.Context) {
 		var json EmailMsg
 		if err := c.ShouldBindJSON(&json); err != nil {

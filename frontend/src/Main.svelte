@@ -10,6 +10,7 @@
   import Preferences from "./components/Preferences.svelte";
   import ScriptTerminal from "./components/ScriptTerminal.svelte";
   import { state } from "./stores/state.js";
+  import { email } from "./stores/email.js";
   import { scripts } from "./stores/scripts.js";
   import { termscripts } from "./stores/termscripts.js";
   import { showScripts } from "./stores/showScripts.js";
@@ -234,6 +235,16 @@
         }
       }
       rt.EventsEmit('emailSendReturn',result);
+    });
+    rt.EventsOn("EditEmail", (msg) => {
+      $email = {
+        to: msg.to,
+        subject: msg.subject,
+        body: msg.body,
+        new: true
+      };
+      $state = "emailit";
+      rt.EventsEmit('emailSendReturn',"Okay");
     });
   });
 
@@ -619,7 +630,6 @@
       })).concat($extScripts.filter(value => value.termscript === false).map(value => {
         return { name: value.name, insert: false }
       }));
-    console.log($scripts);
   }
 
   function getTermScriptsList() {

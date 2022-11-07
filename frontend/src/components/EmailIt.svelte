@@ -15,6 +15,7 @@
   import { config } from "../stores/config.js";
   import { runtemplate } from "../stores/runtemplate.js";
   import * as App from '../../wailsjs/go/main/App.js';
+  import * as rt from "../../wailsjs/runtime/runtime.js"; // the runtime for Wails2
 
   let receiver = "";
   let subject = "";
@@ -67,13 +68,21 @@
       $email.to = $commandLineEmail;
       $commandLineEmail = undefined;
     }
-    if (starting) {
+    if (starting || $email.new) {
       receiver = $email.to;
       var rec = document.getElementById("receiverInput");
       rec.value = $email.to;
       subject.value = $email.subject;
       starting = false;
       $emailEditor.setValue($email.body);
+      rt.WindowShow();
+      $email = {
+        account: 'Default',
+        to: '',
+        from: '',
+        subject: '',
+        new: false
+      };
     }
     if ($emailEditor !== null) {
       if (emailState === "edit" && oldState === "preview") {

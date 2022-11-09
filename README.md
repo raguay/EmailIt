@@ -56,20 +56,65 @@ I use this program everyday and is very helpful to my workflow. I hope you enjoy
 
 ### Table of Contents
 
+- [Setup as Mailto Protocal Handler](#setup-as-mailto-protocal-handler)
 - [How To Use](#how-to-use)
-- [Address Book](#address-book)
-- [Notes](#notes)
-- [Scripts](#scripts)
-- [Templates](#templates)
-- [Script Terminal](#script-terminal)
-- [Logs Screen](#logs-screen)
-- [Preferences](#preferences)
-  - [General](#general)
-  - [Theme](#theme)
-  - [External Scripts](#external-scripts)
-  - [Environments](#environments)
-  - [GitHub](#github)
-- [Change Log](#change-log)
+	- [Address Book](#address-book)
+	- [Notes](#notes)
+	- [Scripts](#scripts)
+	- [Templates](#templates)
+	- [Script Terminal](#script-terminal)
+	- [Logs Screen](#logs-screen)
+	- [Preferences](#preferences)
+	  - [General](#general)
+	  - [Theme](#theme)
+	  - [External Scripts](#external-scripts)
+	  - [Environments](#environments)
+	  - [GitHub](#github)
+	- [Change Log](#change-log)
+	
+## Setup as Mailto Protocal Handler
+
+I have yet to figure out how to make EmailIt a normal mailto protocal handler, but you can do it with the help of [LinCastor](https://onflapp.github.io/blog/pages/LinCastor.html). When you download the program and create a mailto protocal handler, add this script:
+
+```sh
+#!/bin/zsh
+# the script will execute with following environmental variables defined:
+#   URL           => my-http://myhost.domain.com:8080/mysite/a.html?search=blah#myanchor
+#   URL_SCHEME    => my-http
+#   URL_HOST      => myhost.domain.com
+#   URL_PORT      => 8080
+#   URL_QUERY     => ?search=blah
+#   URL_PATH      => /mysite/a.html
+#   URL_PATH_EXT  => html
+#   URL_PATH_NAME => a.html
+#   URL_FRAGMENT  => #myanchor
+#   URL_VALUE     => everything that comes after the 'scheme:'
+#   URL_B64VALUE  => the same as URL_VALUE but decoded using based64
+#
+# NOTE: The system env variable (e.g. PATH) may have different values
+# then what you would get if you would run the script in the terminal.
+#
+# if you are mapping a file extension, use URL_PATH to pass the file path
+#
+# ---
+#
+# If you intended to trigger this handler from a bookmarket,
+# you can 'print out' valid javascript code to be execute in the browser when this scripts returns.
+# Unless you execute the command asynchronosly in the Terminal.
+#
+# ---
+#
+# you should exit with 0, this means the handler has finished succesfully
+# non-zero value indicates an error
+
+/Applications/EmailIt.app/Contents/macOS/EmailIt $URL
+```
+
+And then click the 'Save and Activate' button in the lower right corner.
+
+![Lincastor Mailto Config](/images/lincastor.png)
+
+Once done, anytime you click on a mailto link, it will open in EmailIt for your additions before sending.
 
 ## How to Use
 

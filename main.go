@@ -48,7 +48,9 @@ func getRequest(url string, data io.Reader) string {
 
 	resp, err2 := client.Do(req)
 	if err2 != nil {
-		// handle error
+		//
+		// handle error. Most likely not running.
+		//
 		log.Fatal(err2)
 	}
 	body, err3 := ioutil.ReadAll(resp.Body)
@@ -102,7 +104,7 @@ func main() {
 				Aliases: []string{"me"},
 				Usage:   "Create an email",
 				Action: func(cCtx *cli.Context) error {
-					return nil
+					return CliBuild()
 				},
 			},
 		},

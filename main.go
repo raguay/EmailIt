@@ -68,7 +68,7 @@ func main() {
 	app := &cli.App{
 		Name:     "EmailIt",
 		Usage:    "A program for sending emails and working with text and scripts.",
-		Version:  "v1.0.0",
+		Version:  "v2.0.1",
 		Compiled: time.Now(),
 		Authors: []*cli.Author{
 			{
@@ -104,7 +104,7 @@ func main() {
 				Aliases: []string{"me"},
 				Usage:   "Create an email",
 				Action: func(cCtx *cli.Context) error {
-					return CliBuild()
+					return BuildEmail()
 				},
 			},
 		},

@@ -252,16 +252,12 @@ func (b *App) DeleteEntries(path string) {
 }
 
 func (b *App) RunCommandLine(cmd string, args []string, env []string, dir string) string {
-	b.err = ""
+	cmd = b.AppendPath(dir, cmd)
 	cmdline := exec.Command(cmd)
 	cmdline.Args = args
 	cmdline.Env = env
 	cmdline.Dir = dir
-	result, err := cmdline.CombinedOutput()
-	if err != nil {
-		b.err = err.Error()
-	}
-
+	result, _ := cmdline.CombinedOutput()
 	return string(result[:])
 }
 

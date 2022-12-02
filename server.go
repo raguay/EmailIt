@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -24,24 +26,32 @@ type NoteChangeMsg struct {
 }
 
 type ScriptMsg struct {
-	Script string `json:"script" binding:"required"`
-	Text   string `json:"text"`
+	Script      string `json:"script" binding:"required"`
+	Text        string `json:"text"`
+	Env         string `json:"env"`
+	EnvVar      string `json:"envVar"`
+	CommandLine string `json:"commandLine"`
+	ReturnMsg   string `json:"returnMsg"`
 }
 
 type TemplateMsg struct {
-	Template string `json:"template" binding:"required"`
-	Text     string `json:"text"`
+	Template  string `json:"template" binding:"required"`
+	Text      string `json:"text"`
+	ReturnMsg string `json:"returnMsg"`
 }
 
 type EmailMsg struct {
-	Account string `json:"account"`
-	To      string `json:"to" binding:"required"`
-	From    string `json:"from" binding:"required"`
-	Subject string `json:"subject" binding:"required"`
-	Body    string `json:"body" binding:"required"`
+	Account   string `json:"account"`
+	To        string `json:"to" binding:"required"`
+	From      string `json:"from" binding:"required"`
+	Subject   string `json:"subject" binding:"required"`
+	Body      string `json:"body" binding:"required"`
+	ReturnMsg string `json:"returnMsg"`
 }
 
-type EmptyMsg struct{}
+type EmptyMsg struct {
+	ReturnMsg string `json:"returnMsg"`
+}
 
 func backend(app *App, ctx context.Context) {
 	//
@@ -60,12 +70,15 @@ func backend(app *App, ctx context.Context) {
 		notesfilepath := filepath.Join(hmdir, ".config", "EmailIt", "notes.json")
 		notesRaw, err := os.ReadFile(notesfilepath)
 		if err != nil || nid < 0 || nid > 9 {
-			c.JSON(http.StatusOK, gin.H{
+			c.JSON(http.StatusBadRequest, gin.H{
 				"note": "no note",
 			})
 		} else {
 			var notes []string
-			json.Unmarshal(notesRaw, &notes)
+			err := json.Unmarshal(notesRaw, &notes)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			}
 			c.JSON(http.StatusOK, gin.H{
 				"note": notes[nid],
 			})
@@ -98,27 +111,41 @@ func backend(app *App, ctx context.Context) {
 	})
 
 	r.GET("/api/script/env/list", func(c *gin.Context) {
-		rt.EventsEmit(ctx, "envList", EmptyMsg{})
-		running := true
-		rt.EventsOnce(ctx, "envListReturn", func(optionalData ...interface{}) {
+		json := EmptyMsg{}
+		//
+		// Create return message name for this query.
+		//
+        umicro := time.Now().UnixMicro()
+		json.ReturnMsg = fmt.Sprintf("%s%d", "EnvList", umicro)
+        ch := make(chan int)
+
+		rt.EventsEmit(ctx, "envList", json)
+		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
-			running = false
+            nwdata := 1
+            ch <- nwdata
 		})
-		for running {
-			time.Sleep(time.Millisecond)
-		}
+        <- ch
+        close(ch)
 	})
 
 	r.GET("/api/scripts/list", func(c *gin.Context) {
-		rt.EventsEmit(ctx, "scriptList", EmptyMsg{})
-		running := true
-		rt.EventsOnce(ctx, "scriptListReturn", func(optionalData ...interface{}) {
+		json := EmptyMsg{}
+		//
+		// Create return message name for this query.
+		//
+        umicro := time.Now().UnixMicro()
+		json.ReturnMsg = fmt.Sprintf("%s%d", "ScriptList", umicro)
+        ch := make(chan int)
+
+		rt.EventsEmit(ctx, "scriptList", json)
+		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
-			running = false
+            nwdata := 1
+            ch <- nwdata
 		})
-		for running {
-			time.Sleep(time.Millisecond)
-		}
+        <- ch
+        close(ch)
 	})
 
 	r.PUT("/api/script/run", func(c *gin.Context) {
@@ -127,27 +154,40 @@ func backend(app *App, ctx context.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
+		//
+		// Create return message name for this query.
+		//
+        umicro := time.Now().UnixMicro()
+		json.ReturnMsg = fmt.Sprintf("%s%d", json.Script, umicro)
+        ch := make(chan int)
 		rt.EventsEmit(ctx, "scriptRun", json)
-		running := true
-		rt.EventsOnce(ctx, "scriptRunReturn", func(optionalData ...interface{}) {
+		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
-			running = false
+            nwdata := 1
+            ch <- nwdata 
 		})
-		for running {
-			time.Sleep(time.Millisecond)
-		}
-	})
+        <- ch 
+        close(ch)
+    })
 
 	r.GET("/api/template/list", func(c *gin.Context) {
-		rt.EventsEmit(ctx, "templateList", EmptyMsg{})
-		running := true
-		rt.EventsOnce(ctx, "templateListReturn", func(optionalData ...interface{}) {
+		//
+		// Create return message name for this query.
+		//
+		json := EmptyMsg{}
+        umicro := time.Now().UnixMicro()
+		json.ReturnMsg = fmt.Sprintf("%s%d", "templatelist", umicro)
+        ch := make(chan int)
+	
+		rt.EventsEmit(ctx, "templateList", json)
+		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
-			running = false
+            nwdata := 1
+            ch <- nwdata
 		})
-		for running {
-			time.Sleep(time.Millisecond)
-		}
+        <- ch
+        close(ch)
 	})
 
 	r.PUT("/api/template/run", func(c *gin.Context) {
@@ -156,39 +196,51 @@ func backend(app *App, ctx context.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+		//
+		// Create return message name for this query.
+		//
+        umicro := time.Now().UnixMicro()
+		json.ReturnMsg = strings.ReplaceAll(fmt.Sprintf("%s%d", json.Template, umicro), " ", "-")
+        ch := make(chan int)
+	
 		rt.EventsEmit(ctx, "templateRun", json)
-		running := true
-		rt.EventsOnce(ctx, "templateRunReturn", func(optionalData ...interface{}) {
+		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
-			running = false
+            nwdata := 1
+            ch <- nwdata
 		})
-		for running {
-			time.Sleep(time.Millisecond)
-		}
+        <- ch
+        close(ch)
 	})
 
 	r.GET("/api/emailit/mailto", func(c *gin.Context) {
 		to := c.DefaultQuery("to", "")
 		subject := c.DefaultQuery("subject", "")
 		body := c.DefaultQuery("body", "")
-		email := EmailMsg{
-			Account: "Default",
-			To:      to,
-			From:    "",
-			Subject: subject,
-			Body:    body,
-		}
-		rt.EventsEmit(ctx, "EditEmail", email)
-		running := true
-		rt.EventsOnce(ctx, "emailSendReturn", func(optionalData ...interface{}) {
-			c.JSON(http.StatusOK, optionalData[0])
-			running = false
-		})
-		for running {
-			time.Sleep(time.Millisecond)
-		}
 
-		// c.JSON(http.StatusOK, "sent")
+		email := EmailMsg{
+			Account:   "Default",
+			To:        to,
+			From:      "",
+			Subject:   subject,
+			Body:      body,
+			ReturnMsg: "",
+		}
+		//
+		// Create return message name for this query.
+		//
+        umicro := time.Now().UnixMicro()
+		email.ReturnMsg = strings.ReplaceAll(fmt.Sprintf("%s%d", to, umicro), " ", "-")
+        ch := make(chan int)
+	
+		rt.EventsEmit(ctx, "EditEmail", email)
+		rt.EventsOnce(ctx, email.ReturnMsg, func(optionalData ...interface{}) {
+			c.JSON(http.StatusOK, optionalData[0])
+            nwdata := 1
+            ch <- nwdata
+		})
+        <- ch
+        close(ch)
 	})
 
 	r.PUT("/api/emailit/send", func(c *gin.Context) {
@@ -197,15 +249,22 @@ func backend(app *App, ctx context.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}
+
+		//
+		// Create return message name for this query.
+		//
+        umicro := time.Now().UnixMicro()
+		json.ReturnMsg = fmt.Sprintf("%s%d", "emailitSend", umicro)
+        ch := make(chan int)
+
 		rt.EventsEmit(ctx, "emailSend", json)
-		running := true
-		rt.EventsOnce(ctx, "emailSendReturn", func(optionalData ...interface{}) {
+		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
-			running = false
+            nwdata := 1
+            ch <- nwdata
 		})
-		for running {
-			time.Sleep(time.Millisecond)
-		}
+        <- ch
+        close(ch)
 	})
 
 	//

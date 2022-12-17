@@ -26,12 +26,12 @@ type NoteChangeMsg struct {
 }
 
 type ScriptMsg struct {
-	Script      string `json:"script" binding:"required"`
-	Text        string `json:"text"`
-	Env         string `json:"env"`
-	EnvVar      string `json:"envVar"`
-	CommandLine string `json:"commandLine"`
-	ReturnMsg   string `json:"returnMsg"`
+	Script      string   `json:"script" binding:"required"`
+	Text        string   `json:"text"`
+	Env         string   `json:"env"`
+	EnvVar      []string `json:"envVar"`
+	CommandLine string   `json:"commandLine"`
+	ReturnMsg   string   `json:"returnMsg"`
 }
 
 type TemplateMsg struct {
@@ -115,18 +115,18 @@ func backend(app *App, ctx context.Context) {
 		//
 		// Create return message name for this query.
 		//
-        umicro := time.Now().UnixMicro()
+		umicro := time.Now().UnixMicro()
 		json.ReturnMsg = fmt.Sprintf("%s%d", "EnvList", umicro)
-        ch := make(chan int)
+		ch := make(chan int)
 
 		rt.EventsEmit(ctx, "envList", json)
 		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
-            nwdata := 1
-            ch <- nwdata
+			nwdata := 1
+			ch <- nwdata
 		})
-        <- ch
-        close(ch)
+		<-ch
+		close(ch)
 	})
 
 	r.GET("/api/scripts/list", func(c *gin.Context) {
@@ -134,18 +134,18 @@ func backend(app *App, ctx context.Context) {
 		//
 		// Create return message name for this query.
 		//
-        umicro := time.Now().UnixMicro()
+		umicro := time.Now().UnixMicro()
 		json.ReturnMsg = fmt.Sprintf("%s%d", "ScriptList", umicro)
-        ch := make(chan int)
+		ch := make(chan int)
 
 		rt.EventsEmit(ctx, "scriptList", json)
 		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
-            nwdata := 1
-            ch <- nwdata
+			nwdata := 1
+			ch <- nwdata
 		})
-        <- ch
-        close(ch)
+		<-ch
+		close(ch)
 	})
 
 	r.PUT("/api/script/run", func(c *gin.Context) {
@@ -158,36 +158,36 @@ func backend(app *App, ctx context.Context) {
 		//
 		// Create return message name for this query.
 		//
-        umicro := time.Now().UnixMicro()
+		umicro := time.Now().UnixMicro()
 		json.ReturnMsg = fmt.Sprintf("%s%d", json.Script, umicro)
-        ch := make(chan int)
+		ch := make(chan int)
 		rt.EventsEmit(ctx, "scriptRun", json)
 		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
-            nwdata := 1
-            ch <- nwdata 
+			nwdata := 1
+			ch <- nwdata
 		})
-        <- ch 
-        close(ch)
-    })
+		<-ch
+		close(ch)
+	})
 
 	r.GET("/api/template/list", func(c *gin.Context) {
 		//
 		// Create return message name for this query.
 		//
 		json := EmptyMsg{}
-        umicro := time.Now().UnixMicro()
+		umicro := time.Now().UnixMicro()
 		json.ReturnMsg = fmt.Sprintf("%s%d", "templatelist", umicro)
-        ch := make(chan int)
-	
+		ch := make(chan int)
+
 		rt.EventsEmit(ctx, "templateList", json)
 		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
-            nwdata := 1
-            ch <- nwdata
+			nwdata := 1
+			ch <- nwdata
 		})
-        <- ch
-        close(ch)
+		<-ch
+		close(ch)
 	})
 
 	r.PUT("/api/template/run", func(c *gin.Context) {
@@ -199,18 +199,18 @@ func backend(app *App, ctx context.Context) {
 		//
 		// Create return message name for this query.
 		//
-        umicro := time.Now().UnixMicro()
+		umicro := time.Now().UnixMicro()
 		json.ReturnMsg = strings.ReplaceAll(fmt.Sprintf("%s%d", json.Template, umicro), " ", "-")
-        ch := make(chan int)
-	
+		ch := make(chan int)
+
 		rt.EventsEmit(ctx, "templateRun", json)
 		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
-            nwdata := 1
-            ch <- nwdata
+			nwdata := 1
+			ch <- nwdata
 		})
-        <- ch
-        close(ch)
+		<-ch
+		close(ch)
 	})
 
 	r.GET("/api/emailit/mailto", func(c *gin.Context) {
@@ -229,18 +229,18 @@ func backend(app *App, ctx context.Context) {
 		//
 		// Create return message name for this query.
 		//
-        umicro := time.Now().UnixMicro()
+		umicro := time.Now().UnixMicro()
 		email.ReturnMsg = strings.ReplaceAll(fmt.Sprintf("%s%d", to, umicro), " ", "-")
-        ch := make(chan int)
-	
+		ch := make(chan int)
+
 		rt.EventsEmit(ctx, "EditEmail", email)
 		rt.EventsOnce(ctx, email.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
-            nwdata := 1
-            ch <- nwdata
+			nwdata := 1
+			ch <- nwdata
 		})
-        <- ch
-        close(ch)
+		<-ch
+		close(ch)
 	})
 
 	r.PUT("/api/emailit/send", func(c *gin.Context) {
@@ -253,22 +253,25 @@ func backend(app *App, ctx context.Context) {
 		//
 		// Create return message name for this query.
 		//
-        umicro := time.Now().UnixMicro()
+		umicro := time.Now().UnixMicro()
 		json.ReturnMsg = fmt.Sprintf("%s%d", "emailitSend", umicro)
-        ch := make(chan int)
+		ch := make(chan int)
 
 		rt.EventsEmit(ctx, "emailSend", json)
 		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
-            nwdata := 1
-            ch <- nwdata
+			nwdata := 1
+			ch <- nwdata
 		})
-        <- ch
-        close(ch)
+		<-ch
+		close(ch)
 	})
 
 	//
 	// Run the server.
 	//
-	r.Run(":9978")
+	err := r.Run(":9978")
+	if err != nil {
+		fmt.Print("\n Server error:\n", err.Error())
+	}
 }

@@ -218,10 +218,16 @@
             );
         });
 
-        rt.EventsOn("scriptRun", async (msg) => {
-            let result = await $runscript(msg.script, msg.text);
-            rt.EventsEmit(msg.returnMsg, result);
-        });
+      rt.EventsOn("scriptRun", async (msg) => {
+        let result = '';
+        console.log("Event Run Script: ", msg);
+        if(msg.commandLine === null || msg.commandLine.trim().length === 0) {
+          result = await $runscript(msg.script, msg.text, msg.envVar);
+        } else {
+          result = await $runscript(msg.commandLine, msg.text, msg.envVar);
+        }
+        rt.EventsEmit(msg.returnMsg, result);
+      });
 
         rt.EventsOn("templateList", async (msg) => {
             rt.EventsEmit(
@@ -819,7 +825,7 @@
         return SP.text;
     }
 
-    async function runExtScript(extScrpt, text) {
+    async function runExtScript(extScrpt, text, scriptEnv) {
         //
         // extScript.name     - File name of the script
         // extScript.script   - User name for the script
@@ -849,6 +855,12 @@
                 env = {};
             }
         }
+        if(scriptEnv !== null) {
+          for(let i=0;i<scriptEnv.length;i++){
+            let parts = scriptEnv[i].split("=");
+            env[parts[0]] = parts[1];
+          }
+        }
         try {
             let args = [];
             args.push(text);
@@ -870,7 +882,7 @@
         return result;
     }
 
-    async function runScript(script, text) {
+    async function runScript(script, text, env) {
         var result = "Script not found!";
         if (typeof script === "object") {
             if (typeof script.name !== "undefined") {
@@ -902,17 +914,30 @@
                 if (isfile && !isDir) {
                     result = await runJavaScriptFile(script, text);
                 } else {
-                    result = runJavaScript(script, text);
+                  result = runJavaScript(script, text);
                 }
             } else {
+              console.log("Run External Script: ", script);
                 scriptIndex = $extScripts.find((ele) => {
-                    return ele.name === script;
+                  return ele.name === script;
                 });
+                console.log("Script Index: ", scriptIndex);
                 if (typeof scriptIndex !== "undefined") {
-                    //
-                    // It's an external script.
-                    //
-                    result = await runExtScript(scriptIndex, text);
+                  //
+                  // It's an external script.
+                  //
+                  console.log("run external script:", scriptIndex.name);
+                    result = await runExtScript(scriptIndex, text, env);
+                } else {
+                  //
+                  // It is a command line. Run it directly.
+                  //
+                  console.log("Run command line");
+                  result = await runExtScript({
+                    name: "",
+                    script: script, 
+                    env: "Default"
+                  }, text, env);
                 }
             }
         }

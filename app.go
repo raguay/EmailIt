@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -251,13 +252,53 @@ func (b *App) DeleteEntries(path string) {
 	}
 }
 
+func (b *App) CreateTempFile(contents string) string {
+	//
+	// Create the temperary file.
+	//
+	f, err := os.CreateTemp("", "extscript*")
+	if err != nil {
+		b.err = err.Error()
+	}
+	fname := f.Name()
+
+	//
+	// Write the contents.
+	//
+	if _, err := f.Write([]byte(contents)); err != nil {
+		b.err = err.Error()
+	}
+
+	//
+	// Close the file.
+	//
+	if err := f.Close(); err != nil {
+		b.err = err.Error()
+	}
+
+	//
+	// Return the results.
+	//
+	return (fname)
+}
+
+func (b *App) Chmod(file string, nmode fs.FileMode) {
+	err := os.Chmod(file, nmode)
+	if err != nil {
+		b.err = err.Error()
+	}
+}
+
 func (b *App) RunCommandLine(cmd string, args []string, env []string, dir string) string {
 	cmd = b.AppendPath(dir, cmd)
 	cmdline := exec.Command(cmd)
 	cmdline.Args = args
 	cmdline.Env = env
 	cmdline.Dir = dir
-	result, _ := cmdline.CombinedOutput()
+	result, err := cmdline.CombinedOutput()
+	if err != nil {
+		fmt.Print("\nRunCommandLine had an error: ", err.Error(), "\n")
+	}
 	return string(result[:])
 }
 

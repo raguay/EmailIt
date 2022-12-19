@@ -6,8 +6,16 @@ export function AppendPath(arg1, arg2) {
   return window['go']['main']['App']['AppendPath'](arg1, arg2);
 }
 
+export function Chmod(arg1, arg2) {
+  return window['go']['main']['App']['Chmod'](arg1, arg2);
+}
+
 export function CopyEntries(arg1, arg2) {
   return window['go']['main']['App']['CopyEntries'](arg1, arg2);
+}
+
+export function CreateTempFile(arg1) {
+  return window['go']['main']['App']['CreateTempFile'](arg1);
 }
 
 export function DeleteEntries(arg1) {

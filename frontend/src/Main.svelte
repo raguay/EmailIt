@@ -220,8 +220,7 @@
 
       rt.EventsOn("scriptRun", async (msg) => {
         let result = '';
-        console.log("Event Run Script: ", msg);
-        if(msg.commandLine === null || msg.commandLine.trim().length === 0) {
+        if(msg.commandLine == null || msg.commandLine.trim().length === 0) {
           result = await $runscript(msg.script, msg.text, msg.envVar);
         } else {
           result = await $runscript(msg.commandLine, msg.text, msg.envVar);
@@ -862,22 +861,22 @@
           }
         }
         try {
-            let args = [];
-            args.push(text);
-            var strEnv = [];
-            for (const key in env) {
-                strEnv.push(`${key}=${env[key]}`);
-            }
-            result = await App.RunCommandLine(
-                extScrpt.script,
-                args,
-                strEnv,
-                extScrpt.path
-            );
-            if (result !== null && typeof result === "object")
-                result = result.toString();
+          let args = [];
+          args.push(text);
+          var strEnv = [];
+          for (const key in env) {
+              strEnv.push(`${key}=${env[key]}`);
+          }
+          result = await App.RunCommandLine(
+            extScrpt.script,
+            args,
+            strEnv,
+            extScrpt.path
+          );
+          if (result !== null && typeof result === "object")
+            result = result.toString();
         } catch (e) {
-            result = "Error: " + e.message;
+          result = "Error: " + e.message;
         }
         return result;
     }
@@ -917,27 +916,43 @@
                   result = runJavaScript(script, text);
                 }
             } else {
-              console.log("Run External Script: ", script);
                 scriptIndex = $extScripts.find((ele) => {
                   return ele.name === script;
                 });
-                console.log("Script Index: ", scriptIndex);
                 if (typeof scriptIndex !== "undefined") {
                   //
                   // It's an external script.
                   //
-                  console.log("run external script:", scriptIndex.name);
                     result = await runExtScript(scriptIndex, text, env);
                 } else {
                   //
-                  // It is a command line. Run it directly.
+                  // It is a command line. Run it directly.  NOTE: Change to user specified shell.
                   //
-                  console.log("Run command line");
+                  let tmpscript = await App.CreateTempFile(`#!/bin/zsh
+
+${text}
+`);
+
+                  //
+                  // Change the mode.
+                  //
+                  await App.Chmod(tmpscript, 0o777);
+
+                  //
+                  // Run the script.
+                  //
                   result = await runExtScript({
-                    name: "",
-                    script: script, 
-                    env: "Default"
-                  }, text, env);
+                    name: '',
+                    script: tmpscript,
+                    env: "Default",
+                    path: ""
+                  }, '', env);
+                  result = `\n${result}`;
+
+                  //
+                  // Remove the temperary script.
+                  //
+                  await App.DeleteEntries(tmpscript);
                 }
             }
         }

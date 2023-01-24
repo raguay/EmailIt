@@ -8,7 +8,7 @@ require (
 	github.com/google/go-github/v49 v49.1.0
 	github.com/otiai10/copy v1.7.0
 	github.com/urfave/cli/v2 v2.23.2
-	github.com/wailsapp/wails/v2 v2.2.0
+	github.com/wailsapp/wails/v2 v2.3.1
 	gopkg.in/mail.v2 v2.3.1
 )
 

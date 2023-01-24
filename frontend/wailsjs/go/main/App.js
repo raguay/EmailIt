@@ -58,6 +58,10 @@ export function GetFeedback(arg1, arg2) {
   return window['go']['main']['App']['GetFeedback'](arg1, arg2);
 }
 
+export function GetGitHubScripts() {
+  return window['go']['main']['App']['GetGitHubScripts']();
+}
+
 export function GetGitHubThemes() {
   return window['go']['main']['App']['GetGitHubThemes']();
 }

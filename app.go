@@ -15,7 +15,10 @@ import (
 	"strconv"
 	"time"
 
+	//"github.com/davecgh/go-spew/spew"
+
 	clip "github.com/atotto/clipboard"
+	github "github.com/google/go-github/v49/github"
 	cp "github.com/otiai10/copy"
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 	mail "gopkg.in/mail.v2"
@@ -46,6 +49,15 @@ type FileInfo struct {
 type Environment struct {
 	Name   string   `json:"name" binding:"required"`
 	EnvVar []string `json:"envVar" binding:"required"`
+}
+
+type GitHubRepos struct {
+	Name        string `json:"name"`
+	URL	    string `json:"url"`
+	Stars       int    `json:"stars"`
+	Owner       string `json:"owner"`
+	ID          int64  `json:"id"`
+	Description string `json:"description"`
 }
 
 // NewApp creates a new App application struct
@@ -358,8 +370,43 @@ func (b *App) GetFeedback(question string, defans string) string {
 	return "Not Implemented Yet"
 }
 
-func (b *App) GetGitHubThemes() []string {
-	var result []string
+func (b *App) GetGitHubThemes() []GitHubRepos {
+	fmt.Println("Get the GitHub Themes...")
+	var result []GitHubRepos
+	client := github.NewClient(nil)
+	topics, _, err := client.Search.Repositories(context.Background(), "in:topic emailit in:topic theme", nil)
+	if err == nil {
+		total := *topics.Total;
+		result = make([]GitHubRepos, total, total)
+		for i := 0; i<total; i++ {
+			result[i].ID = *topics.Repositories[i].ID
+			result[i].Name = *topics.Repositories[i].Name
+			result[i].Owner = *topics.Repositories[i].Owner.Login
+			result[i].URL = *topics.Repositories[i].CloneURL
+			result[i].Stars = *topics.Repositories[i].StargazersCount
+			result[i].Description = *topics.Repositories[i].Description
+		}
+	}
+	return result
+}
+
+func (b *App) GetGitHubScripts() []GitHubRepos {
+	fmt.Println("Get the GitHub Scripts...")
+	var result []GitHubRepos
+	client := github.NewClient(nil)
+	topics, _, err := client.Search.Repositories(context.Background(), "in:topic emailit in:topic extension in:topic script", nil)
+	if err == nil {
+		total := *topics.Total;
+		result = make([]GitHubRepos, total, total)
+		for i := 0; i<total; i++ {
+			result[i].ID = *topics.Repositories[i].ID
+			result[i].Name = *topics.Repositories[i].Name
+			result[i].Owner = *topics.Repositories[i].Owner.Login
+			result[i].URL = *topics.Repositories[i].CloneURL
+			result[i].Stars = *topics.Repositories[i].StargazersCount
+			result[i].Description = *topics.Repositories[i].Description
+		}
+	}
 	return result
 }
 

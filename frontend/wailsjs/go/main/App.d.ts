@@ -31,7 +31,9 @@ export function GetExecutable():Promise<string>;
 
 export function GetFeedback(arg1:string,arg2:string):Promise<string>;
 
-export function GetGitHubThemes():Promise<Array<string>>;
+export function GetGitHubScripts():Promise<Array<main.GitHubRepos>>;
+
+export function GetGitHubThemes():Promise<Array<main.GitHubRepos>>;
 
 export function GetHomeDir():Promise<string>;
 

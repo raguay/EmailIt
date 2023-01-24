@@ -4,10 +4,8 @@
   import { termscripts } from "../stores/termscripts.js";
   import { scripts } from "../stores/scripts.js";
   import { config } from "../stores/config.js";
-  import GitHub from 'github-api';
-  import * as App from '../../wailsjs/go/main/App.js';
+  import * as ap from '../../wailsjs/go/main/App.js';
 
-  let gh;
   let repos = null;
   let themes = null;
   let msgs = [];
@@ -20,12 +18,11 @@
   };
 
   onMount(async () => {
-    let hdir = await App.GetHomeDir();
-    cfg.configDir = await App.AppendPath(
+    let hdir = await ap.GetHomeDir();
+    cfg.configDir = await ap.AppendPath(
       hdir,
       ".config/scriptserver"
     );
-    gh = new GitHub();
     await loadRepoInfo();
     timeOut = setTimeout(focusInput, 1000);
     return () => {
@@ -48,31 +45,13 @@
   async function loadRepoInfo() {
     if (repos === null && themes === null) {
       loading = true;
-      if (typeof repos !== "undefined") {
-        repos = {};
+      repos = await ap.GetGitHubScripts();
+      themes = await ap.GetGitHubThemes();
+      for (var i = 0; i < repos.length; i++) {
+        repos[i].loaded = await extExists(repos[i]);
       }
-      if (typeof themes !== "undefined") {
-        themes = {};
-      }
-      var repost = await gh.search.repos({
-        q: "topic:emailit+topic:script",
-      });
-      if (check(repost)) {
-        repost = repost.data.items;
-        for (var i = 0; i < repost.length; i++) {
-          repost[i].loaded = await extExists(repost[i]);
-        }
-        repos = repost;
-      }
-      var themest = await gh.search.repos({
-        q: "topic:emailit+topic:theme",
-      });
-      if (check(themest)) {
-        themest = themest.data.items;
-        for (var i = 0; i < themest.length; i++) {
-          themest[i].loaded = await themeExists(themest[i]);
-        }
-        themes = themest;
+      for (var i = 0; i < themes.length; i++) {
+        themes[i].loaded = await themeExists(themes[i]);
       }
       loading = false;
     }
@@ -80,25 +59,17 @@
     themes = themes;
   }
 
-  function check(val) {
-    return (
-      typeof val !== "undefined" &&
-      typeof val.data !== "undefined" &&
-      typeof val.data.items !== "undefined"
-    );
-  }
-
   async function installTheme(thm) {
-    var thmDir = await App.AppendPath(
+    var thmDir = await ap.AppendPath(
       cfg.configDir,
       "styles"
     );
-    if (!(await App.DirExists(thmDir))) {
-      await App.MakeDir(thmDir);
+    if (!(await ap.DirExists(thmDir))) {
+      await ap.MakeDir(thmDir);
     }
-    thmDir = await App.AppendPath(thmDir, thm.name);
-    if (!(await App.DirExists(thmDir))) {
-      await App.MakeDir(thmDir);
+    thmDir = await ap.AppendPath(thmDir, thm.name);
+    if (!(await ap.DirExists(thmDir))) {
+      await ap.MakeDir(thmDir);
     }
     await runCommandLine(
       `git clone '${thm.git_url}' '${thmDir}'`,
@@ -121,20 +92,20 @@
   }
 
   async function loadTheme(thm) {
-    var thmDir = await App.AppendPath(
+    var thmDir = await ap.AppendPath(
       cfg.configDir,
       "styles"
     );
-    thmDir = await App.AppendPath(thmDir, thm.name);
-    const pfile = await App.AppendPath(thmDir, "package.json");
-    if (await App.FileExists(pfile)) {
-      var manifest = await App.ReadFile(pfile);
+    thmDir = await ap.AppendPath(thmDir, thm.name);
+    const pfile = await ap.AppendPath(thmDir, "package.json");
+    if (await ap.FileExists(pfile)) {
+      var manifest = await ap.ReadFile(pfile);
       manifest = JSON.parse(manifest);
-      const mfile = await App.AppendPath(
+      const mfile = await ap.AppendPath(
         thmDir,
         manifest.theme.main
       );
-      var newTheme = await App.ReadFile(mfile);
+      var newTheme = await ap.ReadFile(mfile);
       newTheme = JSON.parse(newTheme);
       $theme = newTheme;
       addMsg(thm, "This theme is now being used.");
@@ -144,22 +115,22 @@
   }
 
   async function themeExists(thm) {
-    var thmDir = await App.AppendPath(
+    var thmDir = await ap.AppendPath(
       cfg.configDir,
       "styles"
     );
-    thmDir = await App.AppendPath(thmDir, thm.name);
-    var result = await App.DirExists(thmDir);
+    thmDir = await ap.AppendPath(thmDir, thm.name);
+    var result = await ap.DirExists(thmDir);
     return result;
   }
 
   async function deleteTheme(thm) {
-    var thmDir = await App.AppendPath(
+    var thmDir = await ap.AppendPath(
       cfg.configDir,
       "styles"
     );
-    var tpath = await App.AppendPath(thmDir, thm.name);
-    await App.DeleteEntries(tpath);
+    var tpath = await ap.AppendPath(thmDir, thm.name);
+    await ap.DeleteEntries(tpath);
     themes = themes.map((item) => {
       if (item.name === thm.name) {
         item.loaded = false;
@@ -170,26 +141,26 @@
   }
 
   async function installExtension(ext) {
-    var extDir = await App.AppendPath(
+    var extDir = await ap.AppendPath(
       cfg.configDir,
       "scripts"
     );
-    if (!(await App.DirExists(extDir))) {
-      await App.MakeDir(extDir);
+    if (!(await ap.DirExists(extDir))) {
+      await ap.MakeDir(extDir);
     }
-    extDir = await App.AppendPath(extDir, ext.name);
-    if (!(await App.DirExists(extDir))) {
-      await App.MakeDir(extDir);
+    extDir = await ap.AppendPath(extDir, ext.name);
+    if (!(await ap.DirExists(extDir))) {
+      await ap.MakeDir(extDir);
     }
     await runCommandLine(
       `git clone '${ext.git_url}' '${extDir}'`,
       [],
       async () => {
-        let cfgloc = await App.AppendPath(
+        let cfgloc = await ap.AppendPath(
           extDir,
           "package.json"
         );
-        let cfg = await App.ReadFile(cfgloc);
+        let cfg = await ap.ReadFile(cfgloc);
         cfg = JSON.parse(cfg);
         let script = {
           name: cfg.script.name,
@@ -223,25 +194,25 @@
   }
 
   async function extExists(ext) {
-    var extDir = await App.AppendPath(
+    var extDir = await ap.AppendPath(
       cfg.configDir,
       "scripts"
     );
-    extDir = await App.AppendPath(extDir, ext.name);
-    var flag = await App.DirExists(extDir);
+    extDir = await ap.AppendPath(extDir, ext.name);
+    var flag = await ap.DirExists(extDir);
     return flag;
   }
 
   async function deleteExtension(ext) {
-    var extDir = await App.AppendPath(
+    var extDir = await ap.AppendPath(
       cfg.configDir,
       "scripts"
     );
-    let epath = await App.AppendPath(extDir, ext.name);
-    let cfgloc = await App.AppendPath(epath, "package.json");
-    let cfg = await App.ReadFile(cfgloc);
+    let epath = await ap.AppendPath(extDir, ext.name);
+    let cfgloc = await ap.AppendPath(epath, "package.json");
+    let cfg = await ap.ReadFile(cfgloc);
     cfg = JSON.parse(cfg);
-    await App.DeleteEntries(epath);
+    await ap.DeleteEntries(epath);
     repos = repos.map((item) => {
       if (item.name === ext.name) {
         item.loaded = false;
@@ -316,8 +287,8 @@
 	  //
 	  // Get the environment to use.
     //
-    let envlistloc = await App.AppendPath($config.configDir, "environments.json");
-    let envlist = await App.ReadFile(envlistloc);
+    let envlistloc = await ap.AppendPath($config.configDir, "environments.json");
+    let envlist = await ap.ReadFile(envlistloc);
     envlist = JSON.parse(envlist);
     let nEnv = envlist.map(item => 'Default');
 
@@ -350,8 +321,8 @@
 	  //
 	  // Run the command line.
 	  //
-	  var result = await App.RunCommandLine(cmd, args, penv, dir);
-	  var err = await App.GetError();
+	  var result = await ap.RunCommandLine(cmd, args, penv, dir);
+	  var err = await ap.GetError();
 	  //
 	  // If callback is given, call it with the results.
 	  //
@@ -381,7 +352,7 @@
               {repo.name}
             </p>
             <p class="repostars" style="color: {$theme.Yellow};">
-              {repo.stargazers_count} ⭐️s
+              {repo.stars} ⭐️s
             </p>
           </div>
           <div class="reporow">
@@ -424,7 +395,7 @@
               {thm.name}
             </p>
             <p class="repostars" style="color: {$theme.Yellow};">
-              {thm.stargazers_count} ⭐️ s
+              {thm.stars} ⭐️s
             </p>
           </div>
           <div class="reporow">

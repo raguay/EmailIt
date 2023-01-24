@@ -5,6 +5,7 @@ go 1.18
 require (
 	github.com/atotto/clipboard v0.1.4
 	github.com/gin-gonic/gin v1.8.1
+	github.com/google/go-github/v49 v49.1.0
 	github.com/otiai10/copy v1.7.0
 	github.com/urfave/cli/v2 v2.23.2
 	github.com/wailsapp/wails/v2 v2.2.0
@@ -20,6 +21,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.10.0 // indirect
 	github.com/goccy/go-json v0.9.7 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect

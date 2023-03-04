@@ -14,12 +14,13 @@
   import { showTemplates } from "../stores/showTemplates.js";
   import { config } from "../stores/config.js";
   import { runtemplate } from "../stores/runtemplate.js";
-  import * as App from '../../wailsjs/go/main/App.js';
+  import * as App from "../../wailsjs/go/main/App.js";
   import * as rt from "../../wailsjs/runtime/runtime.js"; // the runtime for Wails2
 
   let receiver = "";
   let subject = "";
   let emailState = "edit";
+  let focusAgain = false;
   let showChangeAccount = false;
   let showNewAccount = false;
   let showPreview = false;
@@ -37,7 +38,6 @@
   let previewHTML = "";
   let bodyValue = "";
   let oldState = "";
-  let starting = false;
   let emails = [];
   let editorConfig = {
     language: "markdown",
@@ -60,6 +60,9 @@
     emailState = "edit";
     oldState = "edit";
     initFinished = true;
+    if ($email.new) {
+      focusAgain = true;
+    }
   });
 
   afterUpdate(() => {
@@ -68,20 +71,18 @@
       $email.to = $commandLineEmail;
       $commandLineEmail = undefined;
     }
-    if (starting || $email.new) {
+    if ($email.new && $emailEditor !== null) {
       receiver = $email.to;
       var rec = document.getElementById("receiverInput");
       rec.value = $email.to;
       subject.value = $email.subject;
-      starting = false;
       $emailEditor.setValue($email.body);
-      rt.WindowShow();
       $email = {
-        account: 'Default',
-        to: '',
-        from: '',
-        subject: '',
-        new: false
+        account: "Default",
+        to: "",
+        from: "",
+        subject: "",
+        new: false,
       };
     }
     if ($emailEditor !== null) {
@@ -89,13 +90,14 @@
         $emailEditor.setValue(bodyValue);
         oldState = "edit";
       }
+      if (focusAgain) $emailEditor.focus();
+      focusAgain = false;
     }
   });
 
   function generateEmailList(e) {
     if (e !== undefined && (e.key === "Escape" || e.key === "Tab")) {
       showEmailList = false;
-      if (e.key !== "Tab" && e.key !== "Escape") e.preventDefault();
     } else {
       var fullLine = receiver.toString().toLowerCase();
       var currentPart = "";
@@ -142,16 +144,16 @@
     //
     // Get the emails from the system.
     //
-    let emailfileloc = await App.AppendPath($config.configDir,"emails.json");
-    if(await App.FileExists(emailfileloc)) {
+    let emailfileloc = await App.AppendPath($config.configDir, "emails.json");
+    if (await App.FileExists(emailfileloc)) {
       let emailfilejson = await App.ReadFile(emailfileloc);
       emails = JSON.parse(emailfilejson);
       emails = emails.map((item) => {
-       if (item.name === "") {
-         return item.email;
-       } else {
-         return `${item.name.trim()} <${item.email.trim()}>`;
-       }
+        if (item.name === "") {
+          return item.email;
+        } else {
+          return `${item.name.trim()} <${item.email.trim()}>`;
+        }
       });
     }
   }
@@ -210,12 +212,7 @@
 
   function createPreview() {
     var toAddress;
-    if (typeof $email.to !== "undefined") {
-      toAddress = $email.to;
-    } else {
-      var em = document.getElementById("receiverInput").value;
-      toAddress = em;
-    }
+    toAddress = document.getElementById("receiverInput").value;
     if (validate(toAddress)) {
       //
       // Keep a copy of the body value for when we exit preview mode.
@@ -274,18 +271,30 @@
     if (validate(toAddress)) {
       addToEmails(toAddress);
       var bodyText = bodyValue + cleanTags($account.signiture);
-      bodyText = $runtemplate('given',bodyText);
+      bodyText = $runtemplate("given", bodyText);
       showPreview = false;
       emailState = "edit";
 
-      // 
+      //
       // Send the email.
       //
-      let result = await App.SendEmail($account.username, $account.from, $account.password, $account.smtpserver, $account.port, toAddress, previewHTML, bodyText, subject.value);
-      if(result !== "Success") {
+      let result = await App.SendEmail(
+        $account.username,
+        $account.from,
+        $account.password,
+        $account.smtpserver,
+        $account.port,
+        toAddress,
+        previewHTML,
+        bodyText,
+        subject.value
+      );
+      if (result !== "Success") {
         alertTitle = "Sending Email Failed";
         alertMsg = result;
         showAlert = true;
+      } else {
+        $email.new = false;
       }
     } else {
       showInvalidEmails();
@@ -330,7 +339,6 @@
     const emailRegexp = new RegExp(
       /^[a-zA-Z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1}([a-zA-Z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1})*[a-zA-Z0-9]@[a-zA-Z0-9][-\.]{0,1}([a-zA-Z][-\.]{0,1})*[a-zA-Z0-9]\.[a-zA-Z0-9]{1,}([\.\-]{0,1}[a-zA-Z]){0,}[a-zA-Z0-9]{0,}$/i
     );
-
     return emailRegexp.test(email);
   }
 
@@ -375,6 +383,7 @@
     $email.to = "";
     $email.subject = "";
     $email.body = "";
+    $email.new = false;
     showPreview = false;
     emailState = "edit";
     oldState = "edit";
@@ -436,7 +445,10 @@
     //
     // This will save the accounts to the harddrive.
     //
-    let accountfileloc = await App.AppendPath($config.configDir,"emailaccounts.json");
+    let accountfileloc = await App.AppendPath(
+      $config.configDir,
+      "emailaccounts.json"
+    );
     await App.WriteFile(accountfileloc, JSON.stringify($emailaccounts));
   }
 
@@ -470,6 +482,7 @@
       $email.to = rec.value;
       $email.body = $emailEditor.getValue();
       $email.subject = subject.value;
+      $email.new = true;
     }
   }
 
@@ -679,8 +692,7 @@
         bind:value={receiver}
         bind:this={receiverDOM}
         on:blur={() => {
-          $email.to = receiver;
-          //showEmailList = false;
+          saveEmailState();
         }}
         on:focus={() => {
           showEmailList = true;
@@ -725,9 +737,13 @@
       <input
         id="subject"
         bind:this={subject}
-        on:blur={saveEmailState}
+        on:blur={() => {
+          saveEmailState();
+          $emailEditor.focus();
+          focusAgain = true;
+        }}
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
-        on:focus={()=>{
+        on:focus={() => {
           showEmailList = false;
         }}
       />
@@ -754,6 +770,9 @@
       }}
       on:focus={() => {
         showEmailList = false;
+      }}
+      on:blur={() => {
+        saveEmailState();
       }}
     />
   {/if}

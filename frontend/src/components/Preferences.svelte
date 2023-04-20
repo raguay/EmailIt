@@ -123,6 +123,8 @@
     user-select: none;
     outline-style: none;
     z-index: 1;
+    border-radius: 10px;
+    border: 0px transparent;
   }
 
   #tabs {

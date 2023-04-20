@@ -7,6 +7,8 @@ export function AppendPath(arg1:string,arg2:string):Promise<string>;
 
 export function Chmod(arg1:string,arg2:fs.FileMode):Promise<void>;
 
+export function CloneGitHub(arg1:string,arg2:string):Promise<void>;
+
 export function CopyEntries(arg1:string,arg2:string):Promise<void>;
 
 export function CreateTempFile(arg1:string):Promise<string>;

@@ -1,20 +1,21 @@
 <script>
-  import { onMount } from "svelte";
-  import { Terminal } from "xterm";
-  import "xterm/css/xterm.css";
-  import { WebLinksAddon } from "xterm-addon-web-links";
-  import { FitAddon } from "xterm-addon-fit";
-  import { theme } from "../stores/theme.js";
-  import { state } from "../stores/state.js";
+  import { onMount, afterUpdate } from "svelte";
   import { termscripts } from "../stores/termscripts.js";
   import { runscript } from "../stores/runscript.js";
   import { aliases } from "../stores/aliases.js";
+  import { state } from "../stores/state.js";
   import { config } from "../stores/config.js";
+  import { theme } from "../stores/theme.js";
   import * as App from "../../wailsjs/go/main/App.js";
 
-  let term = null;
   let commands = [];
-  let curr_line = "";
+  let showHtmlDiv = false;
+  let showOutputDiv = false;
+  let showError = false;
+  let errorOutput = "";
+  let textOutput = "";
+  let htmlOutput = "";
+  let inputdiv = null;
   let tCommands = {
     cd: {
       command: cdCommand,
@@ -64,234 +65,98 @@
     scriptline: {
       command: viewScriptLine,
     },
+    editscript: {
+      command: viewScriptEditor,
+    },
+    quit: {
+      command: quit,
+    },
   };
-  let mode = "insert";
   let wd = "~";
-  let esc = String.fromCharCode(0x1b);
   let lastData = {
     line: "",
     data: [],
     valid: false,
   };
-  let lcommandRow = 0;
-  let lcommandCol = 0;
-  let termAtb = {
-    red: `${esc}[31m`,
-    black: `${esc}[30m`,
-    green: `${esc}[32m`,
-    orange: `${esc}[33m`,
-    blue: `${esc}[34m`,
-    magenta: `${esc}[35m`,
-    cyan: `${esc}[36m`,
-    gray: `${esc}[37m`,
-    default: `${esc}[39m`,
-    up: `${esc}[A`,
-    down: `${esc}[B`,
-    left: `${esc}[D`,
-    right: `${esc}[C`,
-  };
   let homeDir = "";
+  let outputDivInput;
+  let htmlDivInput;
+  let currentLine = 0;
 
   onMount(async () => {
     homeDir = await App.GetHomeDir();
     wd = homeDir;
-    term = new Terminal({
-      rendererType: "canvas",
-      convertEol: true,
-      cursorBlink: true,
-      cursorStyle: "bar",
-      allowProposedApi: true,
-      theme: {
-        background: $theme.textAreaColor,
-        black: $theme.backgroundColor,
-        blue: $theme.Cyan,
-        brightBlack: $theme.backgroundColor,
-        brightBlue: $theme.Cyan,
-        brightCyan: $theme.Cyan,
-        brightGreen: $theme.Green,
-        brightMagenta: $theme.Pink,
-        brightRed: $theme.Red,
-        brightWhite: $theme.textColor,
-        brightYellow: $theme.Yellow,
-        cursor: $theme.textColor,
-        cursorAccent: $theme.highlightBackgroundColor,
-        cyan: $theme.Cyan,
-        foreground: $theme.textColor,
-        green: $theme.Green,
-        magenta: $theme.Pink,
-        red: $theme.Red,
-        selection: $theme.highlightBackgroundColor,
-        white: $theme.textColor,
-        yellow: $theme.Yellow,
-      },
-    });
-    const webLinksAddon = new WebLinksAddon();
-    const fitAddon = new FitAddon();
-    term.loadAddon(webLinksAddon);
-    term.loadAddon(fitAddon);
-
-    term.open(document.getElementById("terminal"));
-    fitAddon.fit();
-
-    term.write(" Welcome to Script Terminal!\n");
-    term.prompt = () => {
-      term.write(" $ ");
-    };
-    term.prompt();
-
-    term.onKey(({ key, domEvent }) => {
-      if (mode === "insert") {
-        //
-        // This is the insert mode keymappings.
-        //
-        if (domEvent.key === "Enter") {
-          //
-          // If it is an enter key, process the line
-          //
-          if (curr_line) {
-            ProcessLine(curr_line);
-          }
-        } else if (domEvent.key === "Backspace") {
-          //
-          // If it is a backspace, delete the last character form the line.
-          //
-          if (curr_line) {
-            if (curr_line.length >= 1) {
-              curr_line = curr_line.slice(0, curr_line.length - 1);
-              term.write("\b \b");
-            }
-          }
-        } else if (
-          domEvent.key === "ArrowUp" ||
-          domEvent.key === "ArrowDown" ||
-          domEvent.key === "ArrowLeft" ||
-          domEvent.key === "ArrowRight"
-        ) {
-          //
-          // Only do something when in command mode.
-          //
-        } else if (domEvent.key === "Tab") {
-          //
-          // If it is a tab, add two spaces to the line and terminal.
-          //
-          term.write("  ");
-          curr_line += "  ";
-        } else if (domEvent.key === "Escape") {
-          //
-          // Set toggle the mode.
-          //
-          if (mode === "insert") {
-            if (lastData.valid === true) {
-              mode = "command";
-              lcommandRow = lastData.data.length - 1;
-              lcommandCol = 0;
-              term.write(termAtb.up);
-              term.write(termAtb.right);
-            }
-          } else {
-            mode = "insert";
-          }
-        } else if (domEvent.key === "l" && domEvent.ctrlKey) {
-          term.clear();
-        } else {
-          //
-          // Every other key, add to the line and terminal.
-          //
-          curr_line += key;
-          term.write(key);
-        }
-      } else {
-        //
-        // This is the command mode keymappings.
-        //
-        let depth = 0;
-        switch (key) {
-          case "i":
-            depth = lastData.data.length - lcommandRow;
-            for (var i = 0; i < depth; i++) {
-              term.write(termAtb.down);
-            }
-            for (i = 0; i < lcommandCol; i++) {
-              term.write(termAtb.left);
-            }
-            term.write(termAtb.left);
-            mode = "insert";
-            break;
-          case "k":
-            if (lcommandRow !== 0) {
-              lcommandRow -= 1;
-              term.write(termAtb.up);
-            }
-            break;
-          case "j":
-            if (lcommandRow < lastData.data.length - 1) {
-              term.write(termAtb.down);
-              lcommandRow += 1;
-            }
-            break;
-          case "l":
-            lcommandCol += 1;
-            term.write(termAtb.right);
-            break;
-          case "h":
-            if (lcommandCol !== 0) {
-              term.write(termAtb.left);
-              lcommandCol -= 1;
-            }
-            break;
-          case "r":
-            //
-            // first, go back to the command line.
-            //
-            depth = lastData.data.length - lcommandRow;
-            for (var i = 0; i < depth; i++) {
-              term.write(termAtb.down);
-            }
-            for (i = 0; i < lcommandCol; i++) {
-              term.write(termAtb.left);
-            }
-            term.write(termAtb.left);
-            mode = "insert";
-
-            //
-            // Add the command to the command line.
-            //
-            term.write(`${lastData.data[lcommandRow].command}\n\r`);
-
-            //
-            // Get the command to run and run it.
-            //
-            ProcessLine(lastData.data[lcommandRow].command);
-            break;
-          default:
-            break;
-        }
-      }
-    });
 
     //
     // Load the aliases.
     //
     loadAliases();
+  });
 
-    //
-    // Make sure the terminal is focused.
-    //
-    term.focus();
+  afterUpdate(() => {
+    if (!showOutputDiv && !showHtmlDiv) inputdiv.focus();
+    else if (showOutputDiv) {
+      outputDivInput.focus();
+    } else {
+      htmlDivInput.focus();
+    }
   });
 
   function splitAt(index, xs) {
     return [xs.slice(0, index), xs.slice(index)];
   }
 
+  function showErrorHTML(msg) {
+    //
+    // Display an error message to the user.
+    //
+    showError = true;
+    errorOutput = `<span style="color: ${$theme.Red};">${msg}</span>`;
+  }
+
+  function showOutputText(data, clear) {
+    //
+    // Show the user information that is in text format. Convert it
+    // to HTML and then show in the information area.
+    //
+    showOutputDiv = true;
+    if (clear) textOutput = "";
+    textOutput += data.toString();
+  }
+
+  function showOutputHTML(data, clear) {
+    //
+    // Show HTML formated data to the user.
+    //
+    showHtmlDiv = true;
+    if (clear) htmlOutput = "";
+    htmlOutput += data;
+  }
+
+  function lineInput(e) {
+    //
+    // Get the information from the line input and see if we can expand it to a
+    // valid command.
+    // TODO: Not Implemented
+    //
+  }
+
   async function ProcessLine(text) {
+    //
+    // clear out the output items.
+    //
+    showHtmlDiv = false;
+    showOutputDiv = false;
+    showError = false;
+    htmlOutput = "";
+    textOutput = "";
+
     //
     // Get the words of the line.
     //
     var words = text.trim().split(" ");
     lastData.line = text;
     lastData.valid = false;
-    curr_line = "";
 
     //
     // See if the first word is a valid command.
@@ -303,10 +168,7 @@
         //
         // Command not found. Print the error and give a new prompt.
         //
-        term.write(
-          `\r\n\r\n    ${termAtb.red}<Error>${termAtb.default} The command "${words[0]}" wasn't found!\r\n\r\n`
-        );
-        term.prompt();
+        showErrorHTML(`Command '${words[0]}' doesn't exist!`);
       } else {
         //
         // run the aliases commands.
@@ -334,11 +196,6 @@
 
   function ProcessScriptReturn(data) {
     //
-    // Give the carrage return before the data.
-    //
-    term.write("\r\n");
-
-    //
     // Process the JSON structure given to perform the command. The JSON structure
     // should be:
     //
@@ -353,6 +210,7 @@
     //    }, ...]
     //  }
     //
+    currentLine = 0;
     data = JSON.parse(data);
     lastData.data = data.lines;
     lastData.valid = true;
@@ -374,8 +232,9 @@
       //
       // Write the line text with the color change.
       //
-      term.write(
-        `    ${termAtb[line.color]}${line.text}${termAtb.default}\r\n`
+      showOutputText(
+        `<p style="margin: 5px;"><span style="text: ${line.color};">${line.text}</span></p>`,
+        false
       );
     });
   }
@@ -404,7 +263,6 @@
       //
       await tCommands[com[0]].command(com.slice(1).join(" "));
     }
-    term.prompt();
   }
 
   async function cdCommand(text) {
@@ -425,7 +283,10 @@
       if (exists) {
         wd = path;
       } else {
-        term.write(`    <Error> The path "${path} doesn't exist!\n\n`);
+        //
+        // Error message
+        //
+        showErrorHTML(`The Path doesn't exist!`);
       }
     } else {
       wd = homeDir;
@@ -439,13 +300,17 @@
       //
       // show the commands available.
       //
+      showOutputText("<h2>Available Commands</h2><table>", true);
       $termscripts.forEach((item) => {
         //
         // Make sure the description lines are not too long.
         //
-        let description = truncateLines(item.description);
-        term.write(`    ${item.name}    ${description}\n\r`);
+        showOutputText(
+          `<tr><td>${item.name}</td><td>${item.description}</td></tr>`,
+          false
+        );
       });
+      showOutputText("</table>", false);
       //
       // Show the aliases if any.
       //
@@ -453,10 +318,17 @@
         //
         // We have aliases. Show them.
         //
-        term.write(`\n\r    Aliases:\n\r\n\r`);
+        showOutputText("<h2>Available Aliases</h2><table>", false);
         $aliases.forEach((item) => {
-          term.write(`    ${item.name}="${item.line}"\n\r`);
+          //
+          // Show the aliases
+          //
+          showOutputText(
+            `<tr><td>${item.name}</td><td>${item.line}</td></tr>`,
+            false
+          );
         });
+        showOutputText("</table>", false);
       }
     } else {
       //
@@ -464,38 +336,18 @@
       //
       let spt = $termscripts.find((item) => item.name === text);
       if (spt === "undefined") {
-        term.write(
-          `\n\r    ${termAtb.red}<Error>${termAtb.default} ${text} is an invalid Command.\n\r`
-        );
+        //
+        // Invalid command.aliases
+        //
+        showErrorHTML("Command not found!");
       } else {
-        let help = truncateLines(spt.help);
-        term.write(`    ${spt.name}  -  ${help}\n\r`);
+        showOutputText(
+          `<table><tr><td>${spt.name}</td><td>${spt.help}</td></tr></table>`,
+          true
+        );
       }
     }
     lastData.valid = false;
-  }
-
-  function truncateLines(text) {
-    var description = [text];
-    let index = 80;
-    let subin = 0;
-    while (description[subin].length > index) {
-      while (description[subin][index] !== " ") index--;
-      let nsub = splitAt(index, description[subin]);
-      if (subin === 0) {
-        description = nsub;
-      } else {
-        description = description.slice(0, subin).concat(nsub);
-      }
-      subin++;
-      index = 80;
-    }
-    if (subin === 0) {
-      description = description[0];
-    } else {
-      description = description.join("\n\r           ");
-    }
-    return description;
   }
 
   async function lsCommand(text) {
@@ -515,6 +367,7 @@
     if (dirReal) {
       var result = await App.ReadDir(path);
       var lines = [];
+      showOutputText("", true);
       for (let i = 0; i < result.length; i++) {
         //
         // Rewrite lastData.lines to have a tcommand for each entry printed.
@@ -537,24 +390,22 @@
         //
         // Print the item name.
         //
-        term.write(`    ${item.Name}\n\r`);
+        showOutputText(`<p style="margin: 3px;">${item.Name}</p>`, false);
       }
       lastData.data = lines;
       lastData.valid = true;
     } else {
       let fileReal = await App.FileExists(path);
       if (fileReal) {
-        term.write(`    ${text}\n\r`);
         lastData.data = [
           {
             name: text,
             tcommand: `ls '${path}'`,
           },
         ];
+        showOutputText(`<p>${text}</p>`, true);
       } else {
-        term.write(
-          `\n\r    ${termAtb.red}<Error>${termAtb.default} ${path} is an invalid Directory.\n\r`
-        );
+        showErrorHTML("Not a valid Path.");
       }
     }
   }
@@ -586,9 +437,7 @@
     lastData.valid = false;
     var scriptName = text.split(",");
     if (scriptName.length < 2) {
-      term.write(
-        `\n\r    ${termAtb.red}<Error>${termAtb.default} runscript wasn't given enough arguments.\n\r`
-      );
+      showErrorHTML("runscript wasn't given enough parameters.");
     } else {
       //
       // Get the script name and file name or text separated.
@@ -613,7 +462,7 @@
       // Process the text based on what it is.
       //
       let newText = await $runscript(scriptName, text);
-      term.write(`\n\r     ${newText}\n\r`);
+      showOutputText(`<p>${newText}</p>`, true);
     }
     lastData.valid = false;
   }
@@ -622,19 +471,21 @@
     //
     // fix the file name.
     //
+    text = new String(text.trim());
     if (text[0] === '"' || text[0] === "'") {
       text = text.slice(1, text.length - 1);
     }
     if (text[0] !== "/") {
       text = await App.AppendPath(wd, text);
     }
-    text = new String(text.trim());
+    console.log("edit: ", text);
 
     //
     // Setup the user editor data file.
     //
     let userEditor = await App.AppendPath(homeDir, ".myeditorchoice");
-    if (!(await App.FileExists(userEditor))) {
+    let editorExists = await App.FileExists(userEditor);
+    if (!editorExists) {
       //
       // They don't have this file setup. Open in the system's default editor.  TODO: Not usable on non-macOS systems.
       //
@@ -703,14 +554,18 @@
       //
       // List the aliases.
       //
-      term.write("   Aliases:\n\r");
+      showOutputText("", true);
       for (const item of $aliases) {
-        term.write(`    ${item.name} = "${item.line}"\n\r`);
+        //
+        // Show each alias
+        //
+        showOutputText(`<p>${item.name}</p>`, false);
       }
     } else {
-      term.write(
-        `\n\r    ${termAtb.red}<Error>${termAtb.default} Not enough parameters for an alias.\n\r`
-      );
+      //
+      // Error: not enough given
+      //
+      showErrorHTML("Not enough information is given!");
     }
     lastData.valid = false;
   }
@@ -760,7 +615,7 @@
     // command as it will be the history command.
     //
     for (let i = commands.length - (depth + 1); i < commands.length - 1; i++) {
-      term.write(`    ${commands[i]}\n\r`);
+      showOutputText(`<p>${commands[i]}</p>`, false);
       lines.push({
         name: commands[i],
         command: commands[i],
@@ -792,6 +647,7 @@
     if (dirReal && textblank) {
       var result = await App.ReadDir(path);
       var lines = [];
+      showOutputText("", true);
       for (let i = 0; i < result.length; i++) {
         //
         // Rewrite lastData.lines to have a tcommand for each entry printed.
@@ -806,7 +662,7 @@
         //
         // Print the item name.
         //
-        term.write(`    ${item.Name}\n\r`);
+        showOutputText(`<p>${item.Name}</p>`, false);
       }
       lastData.data = lines;
       lastData.valid = true;
@@ -818,9 +674,7 @@
         //
         await App.DeleteEntries(path);
       } else {
-        term.write(
-          `\n\r    ${termAtb.red}<Error>${termAtb.default} ${path} is an invalid Directory.\n\r`
-        );
+        showErrorHTML(`The path "${path}" doesn't exist!`);
       }
     }
   }
@@ -853,10 +707,7 @@
       //
       // It already exists.
       //
-      term.write(
-        `\r\n\r\n    ${termAtb.red}<Error>${termAtb.default} The directory "${path}" already exists!\r\n\r\n`
-      );
-      term.prompt();
+      showErrorHTML(`The path "${path}" already exists.`);
     }
   }
 
@@ -888,10 +739,7 @@
       //
       // It already exists.
       //
-      term.write(
-        `\r\n\r\n    ${termAtb.red}<Error>${termAtb.default} The file "${path}" already exists!\r\n\r\n`
-      );
-      term.prompt();
+      showErrorHTML(`The file "${path}" already exists!`);
     }
   }
 
@@ -961,102 +809,229 @@
       callback(err, result);
     }
   }
+
+  function processKey(e) {
+    switch (e.key) {
+      case "Enter":
+        //
+        // The user hit enter, so process the line.
+        //
+        e.stopPropagation();
+        ProcessLine(e.target.value);
+        break;
+
+      case "Tab":
+        //
+        // Expand the suggestion.
+        //
+        e.stopPropagation();
+        break;
+
+      case "Escape":
+        //
+        // Reset everything.
+        //
+        inputdiv.value = "";
+        showOutputDiv = false;
+        showHtmlDiv = false;
+        showError = false;
+        e.stopPropagation();
+        break;
+    }
+  }
+
+  function outputKeyProcess(e) {
+    switch (e.key) {
+      case "UpArrow":
+      case "j":
+        break;
+
+      case "DownArrow":
+      case "k":
+        break;
+
+      case "Enter":
+        //
+        // The user hit enter, so process the line.
+        //
+        e.stopPropagation();
+        break;
+
+      case "Escape":
+        //
+        // Reset everything.
+        //
+        inputdiv.value = "";
+        showOutputDiv = false;
+        showHtmlDiv = false;
+        showError = false;
+        e.stopPropagation();
+        break;
+    }
+  }
+
+  function htmlKeyProcess(e) {
+    switch (e.key) {
+      case "UpArrow":
+      case "j":
+        break;
+
+      case "DownArrow":
+      case "k":
+        break;
+
+      case "Enter":
+        //
+        // The user hit enter, so process the line.
+        //
+        e.stopPropagation();
+        break;
+
+      case "Escape":
+        //
+        // Reset everything.
+        //
+        inputdiv.value = "";
+        showOutputDiv = false;
+        showHtmlDiv = false;
+        showError = false;
+        e.stopPropagation();
+        break;
+    }
+  }
+
+  async function quit() {
+    App.Quit();
+  }
 </script>
 
-<div
-  id="ScriptTermDiv"
-  style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
->
+<div id="container">
   <div
-    id="terminal"
-    style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
-  />
-  <div
-    id="statusline"
-    style="background-color: {$theme.backgroundColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
+    id="ScriptTermDiv"
+    style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
   >
-    <span
-      id="modeIndicator"
-      style="background-color : {mode === 'insert'
-        ? $theme.Cyan
-        : $theme.Purple}; color: {$theme.backgroundColor}">{mode}</span
+    <input
+      id="CommandInput"
+      on:keydown={processKey}
+      on:input={lineInput}
+      bind:this={inputdiv}
+      style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; font-size: {$theme.fontSize}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
+    />
+    <div
+      id="statusline"
+      style="background-color: {$theme.backgroundColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
     >
-    <span id="workingdir">
       WD: {wd}
-    </span>
+    </div>
+    {#if showError}
+      <div id="errorContainer">
+        {@html errorOutput}
+      </div>
+    {/if}
   </div>
-  <div id="buttonRow">
-    <button
-      on:click={viewEmailIt}
-      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
-    >
-      EmailIt
-    </button>
-    <button
-      on:click={viewNotes}
-      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
-    >
-      Notes
-    </button>
-    <button
-      on:click={viewScriptEditor}
-      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
-    >
-      Edit Scripts
-    </button>
+  <div id="outputContainer">
+    {#if showOutputDiv}
+      <div
+        id="scriptOutput"
+        style="width: {showHtmlDiv
+          ? '40%'
+          : '100%'}; background-color: {$theme.backgroundColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
+      >
+        <input bind:this={outputDivInput} on:keydown={outputKeyProcess} />
+        {@html textOutput}
+      </div>
+    {/if}
+    {#if showHtmlDiv}
+      <div
+        id="htmlOutput"
+        style="background-color: {$theme.backgroundColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
+      >
+        <input bind:this={htmlDivInput} on:keydown={htmlKeyProcess} />
+        {@html htmlOutput}
+      </div>
+    {/if}
   </div>
 </div>
 
 <style>
-  #ScriptTermDiv {
+  #container {
     display: flex;
     flex-direction: column;
     padding: 0px;
     margin: 0px;
-    height: 100%;
-    width: 100%;
+    background-color: transparent;
+    width: 1000px;
+    height: 70%;
+    border: 0px;
+    border-color: transparent;
   }
 
-  #terminal {
+  #errorContainer {
     display: flex;
     flex-direction: column;
-    margin: 0px 10px 0px 10px;
+  }
+
+  #outputContainer {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 100%;
+    border: 0px transparent;
+  }
+
+  #scriptOutput {
+    display: flex;
+    flex-direction: column;
+    height: 440px;
+    margin: 10px;
+    padding: 10px;
+    overflow: auto;
+    border-radius: 10px;
+  }
+
+  #scriptOutput input {
+    display: none;
+  }
+
+  #htmlOutput {
+    display: flex;
+    flex-direction: column;
+    height: 440px;
+    margin: 10px;
+    padding: 10px;
+    overflow: auto;
+    border-radius: 10px;
+  }
+
+  #htmlOutput input {
+    display: none;
+  }
+
+  #ScriptTermDiv {
+    display: flex;
+    flex-direction: column;
+    padding: 0px 10px 10px 10px;
+    margin: 0px;
     width: 1000px;
-    height: 470px;
+    border-radius: 0px 0px 10px 10px;
+  }
+
+  #CommandInput {
+    margin: 10px;
+    padding: 5px;
+    border-radius: 10px;
+    border: 3px;
   }
 
   #statusline {
     display: flex;
     flex-direction: row;
     height: 30px;
-    width: 1000px;
+    width: 900px;
     margin: 10px;
   }
 
-  #modeIndicator {
-    padding: 3px 10px;
-    border-radius: 5px;
-    width: 94px;
-  }
-
-  #workingdir {
-    padding: 3px 20px;
-  }
-
-  #buttonRow {
-    display: flex;
-    flex-direction: row;
-    margin: 10px auto;
-  }
-
-  #buttonRow button {
-    border-radius: 10px;
-    padding: 5px 20px 5px 20px;
-    margin: 0px 20px;
-    width: 100%;
-    max-height: 40px;
-    height: 40px;
-    width: auto;
-    cursor: pointer;
+  #scriptOutput p {
+    margin: 0px;
   }
 </style>

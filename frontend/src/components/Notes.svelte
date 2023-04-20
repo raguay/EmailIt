@@ -9,7 +9,7 @@
   import { showScripts } from "../stores/showScripts.js";
   import { showTemplates } from "../stores/showTemplates.js";
   import { notes } from "../stores/notes.js";
-  import * as App from '../../wailsjs/go/main/App.js';
+  import * as App from "../../wailsjs/go/main/App.js";
 
   let editorConfig = {
     language: "markdown",
@@ -24,9 +24,9 @@
     // Load everything for working with the notes:
     //
     await loadNotes();
-    return(()=>{
+    return () => {
       $noteEditor = null;
-    })
+    };
   });
 
   async function loadNotes() {
@@ -97,7 +97,7 @@
 </script>
 
 <div
-  id="notes"
+  id="notesDiv"
   style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
 >
   <div id="editorRow">
@@ -113,7 +113,10 @@
         editorChange(event.detail.data);
       }}
     />
-    <div id="noteButtons">
+    <div
+      id="noteButtons"
+      style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
+    >
       {#each $theme.buttons as button, key}
         <div
           class="noteButton {$currentNote === $theme.buttons[key].id
@@ -127,7 +130,10 @@
       {/each}
     </div>
   </div>
-  <div id="buttonRow">
+  <div
+    id="buttonRow"
+    style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
+  >
     <button
       on:click={viewEmailIt}
       style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
@@ -168,29 +174,28 @@
 </div>
 
 <style>
-  #notes {
+  #notesDiv {
     display: flex;
     flex-direction: column;
     margin: 0px 0px 0px 0px;
     padding: 10px;
-    height: 100%;
     width: 100%;
+    border-radius: 10px;
+    border: 0px transparent;
   }
 
   #buttonRow {
     display: flex;
     flex-direction: row;
-    margin: 10px auto;
-    position: absolute;
+    padding: 10px;
+    margin: 0px auto;
     bottom: 0px;
-    width: 100%;
-    height: 40px;
   }
 
   #buttonRow button {
     border-radius: 10px;
     padding: 5px 10px 5px 10px;
-    margin: 0px 5px;
+    margin: 10px;
     max-height: 40px;
     height: 40px;
     cursor: pointer;

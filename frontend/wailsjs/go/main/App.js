@@ -10,6 +10,10 @@ export function Chmod(arg1, arg2) {
   return window['go']['main']['App']['Chmod'](arg1, arg2);
 }
 
+export function CloneGitHub(arg1, arg2) {
+  return window['go']['main']['App']['CloneGitHub'](arg1, arg2);
+}
+
 export function CopyEntries(arg1, arg2) {
   return window['go']['main']['App']['CopyEntries'](arg1, arg2);
 }

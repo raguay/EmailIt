@@ -129,10 +129,10 @@ func runFrontEnd() {
 		MaxHeight:         608,
 		DisableResize:     true,
 		Fullscreen:        false,
-		Frameless:         false,
+		Frameless:         true,
 		StartHidden:       false,
 		HideWindowOnClose: false,
-		BackgroundColour:  &options.RGBA{R: 33, G: 37, B: 43, A: 255},
+		BackgroundColour:  &options.RGBA{R: 33, G: 37, B: 43, A: 0},
 		Assets:            assets,
 		LogLevel:          logger.DEBUG,
 		OnStartup:         app.startup,
@@ -145,7 +145,7 @@ func runFrontEnd() {
 		},
 		// Windows platform specific options
 		Windows: &windows.Options{
-			WebviewIsTransparent: false,
+			WebviewIsTransparent: true,
 			WindowIsTranslucent:  false,
 			DisableWindowIcon:    false,
 		},
@@ -153,7 +153,7 @@ func runFrontEnd() {
 			TitleBar:             mac.TitleBarHiddenInset(),
 			Appearance:           mac.NSAppearanceNameDarkAqua,
 			WebviewIsTransparent: true,
-			WindowIsTranslucent:  true,
+			WindowIsTranslucent:  false,
 			About: &mac.AboutInfo{
 				Title:   "EmailIt",
 				Message: "Version 2.0.0 © 2022 Richard Guay <raguay@customct.com>",

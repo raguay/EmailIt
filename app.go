@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
+	"github.com/go-git/go-git/v5"
 	"io"
 	"io/fs"
 	"io/ioutil"
@@ -53,7 +54,7 @@ type Environment struct {
 
 type GitHubRepos struct {
 	Name        string `json:"name"`
-	URL	    string `json:"url"`
+	URL         string `json:"url"`
 	Stars       int    `json:"stars"`
 	Owner       string `json:"owner"`
 	ID          int64  `json:"id"`
@@ -302,7 +303,6 @@ func (b *App) Chmod(file string, nmode fs.FileMode) {
 }
 
 func (b *App) RunCommandLine(cmd string, args []string, env []string, dir string) string {
-	cmd = b.AppendPath(dir, cmd)
 	cmdline := exec.Command(cmd)
 	cmdline.Args = args
 	cmdline.Env = env
@@ -371,14 +371,13 @@ func (b *App) GetFeedback(question string, defans string) string {
 }
 
 func (b *App) GetGitHubThemes() []GitHubRepos {
-	fmt.Println("Get the GitHub Themes...")
 	var result []GitHubRepos
 	client := github.NewClient(nil)
 	topics, _, err := client.Search.Repositories(context.Background(), "in:topic emailit in:topic theme", nil)
 	if err == nil {
-		total := *topics.Total;
+		total := *topics.Total
 		result = make([]GitHubRepos, total, total)
-		for i := 0; i<total; i++ {
+		for i := 0; i < total; i++ {
 			result[i].ID = *topics.Repositories[i].ID
 			result[i].Name = *topics.Repositories[i].Name
 			result[i].Owner = *topics.Repositories[i].Owner.Login
@@ -391,14 +390,13 @@ func (b *App) GetGitHubThemes() []GitHubRepos {
 }
 
 func (b *App) GetGitHubScripts() []GitHubRepos {
-	fmt.Println("Get the GitHub Scripts...")
 	var result []GitHubRepos
 	client := github.NewClient(nil)
 	topics, _, err := client.Search.Repositories(context.Background(), "in:topic emailit in:topic extension in:topic script", nil)
 	if err == nil {
-		total := *topics.Total;
+		total := *topics.Total
 		result = make([]GitHubRepos, total, total)
-		for i := 0; i<total; i++ {
+		for i := 0; i < total; i++ {
 			result[i].ID = *topics.Repositories[i].ID
 			result[i].Name = *topics.Repositories[i].Name
 			result[i].Owner = *topics.Repositories[i].Owner.Login
@@ -425,4 +423,13 @@ func (b *App) SendEmail(username string, from string, password string, host stri
 		return b.err
 	}
 	return "Success"
+}
+
+func (b *App) CloneGitHub(url string, dir string) {
+	_, err := git.PlainClone(dir, false, &git.CloneOptions{
+		URL: url,
+	})
+	if err != nil {
+		b.err = err.Error()
+	}
 }

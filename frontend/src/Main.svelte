@@ -9,6 +9,7 @@
   import TemplatesEditor from "./components/TemplatesEditor.svelte";
   import Preferences from "./components/Preferences.svelte";
   import ScriptTerminal from "./components/ScriptTerminal.svelte";
+  import ScriptLine from "./components/ScriptLine.svelte";
   import { state } from "./stores/state.js";
   import { email } from "./stores/email.js";
   import { scripts } from "./stores/scripts.js";
@@ -37,7 +38,6 @@
   import * as rt from "../wailsjs/runtime/runtime.js"; // the runtime for Wails2
   import * as App from "../wailsjs/go/main/App.js";
 
-  let savetext = "";
   let notestruct = {
     notes: ["", "", "", "", "", "", "", "", "", ""],
     loadNotes: async function () {
@@ -46,8 +46,8 @@
       //
       let notejsonloc = await App.AppendPath($config.configDir, "notes.json");
       if (await App.FileExists(notejsonloc)) {
-        notestruct.notes = await App.ReadFile(notejsonloc);
-        notestruct.notes = JSON.parse(this.notes);
+        let tmp = await App.ReadFile(notejsonloc);
+        notestruct.notes = JSON.parse(tmp);
       } else {
         notestruct.saveNotes();
       }
@@ -570,6 +570,14 @@
       if (await App.FileExists(configloc)) {
         let configJSON = await App.ReadFile(configloc);
         $config = JSON.parse(configJSON);
+        let thmDir = new String($config.themeDir);
+        if (thmDir.includes("themes")) {
+          //
+          // The config file has the error I introduced on earlier versions. Fix it.
+          //
+          $config.themeDir = thmDir.replaceAll("themes", "styles");
+          await App.WriteFile(configloc, JSON.stringify($config));
+        }
       } else {
         //
         // Create the default config file.
@@ -589,7 +597,7 @@
     //
     // Create the default Configuration file.
     //
-    let themedir = await App.AppendPath(configdir, "themes");
+    let themedir = await App.AppendPath(configdir, "styles");
     let scriptsdir = await App.AppendPath(configdir, "scripts");
     let configloc = await App.AppendPath(configdir, "config.json");
     let emailaccountloc = await App.AppendPath(configdir, "emailacounts.json");
@@ -1069,13 +1077,22 @@ ${text}
         case "p":
           $state = "preferences";
           e.preventDefault();
+          break;
+
+        case "s":
+          $state = "scriptline";
+          e.preventDefault();
+          break;
       }
     }
   }
 </script>
 
 <svelte:window on:keydown={keyDownProcessor} />
-<div id="dragbar" />
+<div
+  id="dragbar"
+  style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
+/>
 
 {#if $state === "emailit"}
   <EmailIt />
@@ -1089,6 +1106,8 @@ ${text}
   <Preferences />
 {:else if $state === "scriptterm"}
   <ScriptTerminal />
+{:else if $state === "scriptline"}
+  <ScriptLine />
 {:else}
   <div id="error">
     <h1>Something went wrong!</h1>
@@ -1100,12 +1119,14 @@ ${text}
 
 <style>
   :global(body) {
-    background-color: rgb(34, 33, 44);
+    background-color: rgba(34, 33, 44, 0);
   }
 
   #dragbar {
-    height: 30px;
-    width: 100%;
+    height: 20px;
+    width: 1020px;
+    border-radius: 10px 10px 0px 0px;
+    border: 0px transparent;
     --wails-draggable: drag;
   }
 </style>

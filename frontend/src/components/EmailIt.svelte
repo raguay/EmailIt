@@ -900,6 +900,8 @@
     flex-direction: column;
     margin: 0px;
     padding: 0px 20px 0px 20px;
+    border-radius: 10px;
+    border: 0px transparent;
   }
 
   #alert {
@@ -936,7 +938,7 @@
   #buttonrow {
     display: flex;
     flex-direction: row;
-    margin: auto;
+    margin: 0px auto 10px auto;
   }
 
   #buttonrow button {

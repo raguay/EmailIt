@@ -4,7 +4,7 @@
   import { termscripts } from "../stores/termscripts.js";
   import { scripts } from "../stores/scripts.js";
   import { config } from "../stores/config.js";
-  import * as ap from '../../wailsjs/go/main/App.js';
+  import * as ap from "../../wailsjs/go/main/App.js";
 
   let repos = null;
   let themes = null;
@@ -13,16 +13,8 @@
   let hiddenInput;
   let timeOut;
   let loading = true;
-  let cfg = {
-    configDir: "",
-  };
 
   onMount(async () => {
-    let hdir = await ap.GetHomeDir();
-    cfg.configDir = await ap.AppendPath(
-      hdir,
-      ".config/scriptserver"
-    );
     await loadRepoInfo();
     timeOut = setTimeout(focusInput, 1000);
     return () => {
@@ -47,11 +39,15 @@
       loading = true;
       repos = await ap.GetGitHubScripts();
       themes = await ap.GetGitHubThemes();
-      for (var i = 0; i < repos.length; i++) {
-        repos[i].loaded = await extExists(repos[i]);
+      if (typeof repos !== "undefined" && repos !== null) {
+        for (var i = 0; i < repos.length; i++) {
+          repos[i].loaded = await extExists(repos[i]);
+        }
       }
-      for (var i = 0; i < themes.length; i++) {
-        themes[i].loaded = await themeExists(themes[i]);
+      if (typeof themes !== "undefined" && themes !== null) {
+        for (var i = 0; i < themes.length; i++) {
+          themes[i].loaded = await themeExists(themes[i]);
+        }
       }
       loading = false;
     }
@@ -60,10 +56,7 @@
   }
 
   async function installTheme(thm) {
-    var thmDir = await ap.AppendPath(
-      cfg.configDir,
-      "styles"
-    );
+    var thmDir = await ap.AppendPath($config.configDir, "styles");
     if (!(await ap.DirExists(thmDir))) {
       await ap.MakeDir(thmDir);
     }
@@ -71,43 +64,24 @@
     if (!(await ap.DirExists(thmDir))) {
       await ap.MakeDir(thmDir);
     }
-    await runCommandLine(
-      `git clone '${thm.git_url}' '${thmDir}'`,
-      [],
-      () => {
-        //
-        // The clone should be there. Let's load the new theme.
-        //
-        loadTheme(thm);
-        themes = themes.map((item) => {
-          if (item.name === thm.name) {
-            item.loaded = true;
-          }
-          return item;
-        });
-        loadRepoInfo();
-      },
-      "."
-    );
+    await ap.CloneGitHub(thm.url, thmDir);
+    await loadTheme(thm);
+    await loadRepoInfo();
   }
 
   async function loadTheme(thm) {
-    var thmDir = await ap.AppendPath(
-      cfg.configDir,
-      "styles"
-    );
+    var thmDir = await ap.AppendPath($config.configDir, "styles");
     thmDir = await ap.AppendPath(thmDir, thm.name);
     const pfile = await ap.AppendPath(thmDir, "package.json");
     if (await ap.FileExists(pfile)) {
       var manifest = await ap.ReadFile(pfile);
       manifest = JSON.parse(manifest);
-      const mfile = await ap.AppendPath(
-        thmDir,
-        manifest.theme.main
-      );
+      const mfile = await ap.AppendPath(thmDir, manifest.theme.main);
       var newTheme = await ap.ReadFile(mfile);
       newTheme = JSON.parse(newTheme);
+      newTheme.name = thm.name;
       $theme = newTheme;
+      await changeStyle($theme.name);
       addMsg(thm, "This theme is now being used.");
     } else {
       addMsg(thm, "The theme doesn't have a package.json file.");
@@ -115,20 +89,14 @@
   }
 
   async function themeExists(thm) {
-    var thmDir = await ap.AppendPath(
-      cfg.configDir,
-      "styles"
-    );
+    var thmDir = await ap.AppendPath($config.configDir, "styles");
     thmDir = await ap.AppendPath(thmDir, thm.name);
     var result = await ap.DirExists(thmDir);
     return result;
   }
 
   async function deleteTheme(thm) {
-    var thmDir = await ap.AppendPath(
-      cfg.configDir,
-      "styles"
-    );
+    var thmDir = await ap.AppendPath($config.configDir, "styles");
     var tpath = await ap.AppendPath(thmDir, thm.name);
     await ap.DeleteEntries(tpath);
     themes = themes.map((item) => {
@@ -137,14 +105,17 @@
       }
       return item;
     });
+    if ($config.theme === thm.name) {
+      let thmlist = await getStyleList();
+      await loadTheme({
+        name: thmlist[0],
+      });
+    }
     loadRepoInfo();
   }
 
   async function installExtension(ext) {
-    var extDir = await ap.AppendPath(
-      cfg.configDir,
-      "scripts"
-    );
+    var extDir = await ap.AppendPath($config.configDir, "scripts");
     if (!(await ap.DirExists(extDir))) {
       await ap.MakeDir(extDir);
     }
@@ -152,62 +123,47 @@
     if (!(await ap.DirExists(extDir))) {
       await ap.MakeDir(extDir);
     }
-    await runCommandLine(
-      `git clone '${ext.git_url}' '${extDir}'`,
-      [],
-      async () => {
-        let cfgloc = await ap.AppendPath(
-          extDir,
-          "package.json"
-        );
-        let cfg = await ap.ReadFile(cfgloc);
-        cfg = JSON.parse(cfg);
-        let script = {
-          name: cfg.script.name,
-          script: cfg.script.script,
-          path: extDir,
-          env: "Default",
-          termscript: cfg.script.termscript,
-          description: cfg.script.description,
-          help: cfg.script.help,
-        };
-        //
-        // Save the script #TODO
-        //
-        if (script.termscript) {
-          $termscripts.push(script);
-        } else {
-          script.insert = false;
-          $scripts.push(script);
-        }
-        repos = repos.map((item) => {
-          if (item.name === ext.name) {
-            item.loaded = true;
-          }
-          return item;
-        });
-        addMsg(ext, `${ext.name} external script has been downloaded.`);
-        loadRepoInfo();
-      },
-      "."
-    );
+    await ap.CloneGitHub(ext.url, extDir);
+    let cfgloc = await ap.AppendPath(extDir, "package.json");
+    let cfg = await ap.ReadFile(cfgloc);
+    cfg = JSON.parse(cfg);
+    let script = {
+      name: cfg.script.name,
+      script: cfg.script.script,
+      path: extDir,
+      env: "Default",
+      termscript: cfg.script.termscript,
+      description: cfg.script.description,
+      help: cfg.script.help,
+    };
+    //
+    // Save the script #TODO
+    //
+    if (script.termscript) {
+      $termscripts.push(script);
+    } else {
+      script.insert = false;
+      $scripts.push(script);
+    }
+    repos = repos.map((item) => {
+      if (item.name === ext.name) {
+        item.loaded = true;
+      }
+      return item;
+    });
+    addMsg(ext, `${ext.name} external script has been downloaded.`);
+    loadRepoInfo();
   }
 
   async function extExists(ext) {
-    var extDir = await ap.AppendPath(
-      cfg.configDir,
-      "scripts"
-    );
+    var extDir = await ap.AppendPath($config.configDir, "scripts");
     extDir = await ap.AppendPath(extDir, ext.name);
     var flag = await ap.DirExists(extDir);
     return flag;
   }
 
   async function deleteExtension(ext) {
-    var extDir = await ap.AppendPath(
-      cfg.configDir,
-      "scripts"
-    );
+    var extDir = await ap.AppendPath($config.configDir, "scripts");
     let epath = await ap.AppendPath(extDir, ext.name);
     let cfgloc = await ap.AppendPath(epath, "package.json");
     let cfg = await ap.ReadFile(cfgloc);
@@ -224,7 +180,7 @@
     //
     // Remove from the external scripts list.
     //
-    if (cfg.termscript) {
+    if ($config.termscript) {
       $termscripts = $termscripts.filter((item) => item.name !== ext.name);
     } else {
       $scripts = $scripts.filter((item) => item.name !== ext.name);
@@ -260,6 +216,42 @@
     repos = repos;
   }
 
+  async function changeStyle(nm) {
+    $theme = await getStyle(nm);
+    $theme.name = nm;
+
+    //
+    // Save the new theme.
+    //
+    $config.theme = $theme.name;
+    let configloc = await App.AppendPath($config.configDir, "config.json");
+    await App.WriteFile(configloc, JSON.stringify($config));
+  }
+
+  async function getStyle(nm) {
+    let theme = {};
+    //
+    // Load in the themes.
+    //
+    let thmdir = await App.AppendPath($config.themeDir, nm);
+    let thmprojfile = await App.AppendPath(thmdir, "package.json");
+    thmprojfile = await App.ReadFile(thmprojfile);
+    thmprojfile = JSON.parse(thmprojfile);
+    let thmfile = await App.AppendPath(thmdir, thmprojfile.theme.main);
+    theme = await App.ReadFile(thmfile);
+    theme = JSON.parse(theme);
+    return theme;
+  }
+
+  async function getStyleList() {
+    //
+    // get the list of themes.
+    //
+    let list = await App.ReadDir($config.themeDir);
+    list = list.filter((item) => item.IsDir).map((item) => item.Name);
+    return list;
+  }
+
   function inputChange(e) {
     if (e.key === "ArrowUp" || e.key === "k") {
       //
@@ -282,54 +274,6 @@
       if (pickerDOM.scrollTop < 0) pickerDOM.scrollTop = 0;
     }
   }
-
-	async function runCommandLine(line, rEnv, callback, dir) {
-	  //
-	  // Get the environment to use.
-    //
-    let envlistloc = await ap.AppendPath($config.configDir, "environments.json");
-    let envlist = await ap.ReadFile(envlistloc);
-    envlist = JSON.parse(envlist);
-    let nEnv = envlist.map(item => 'Default');
-
-    //
-    // Get the default environment.
-    //
-	  if (typeof rEnv !== "undefined") {
-	    nEnv = { ...nEnv, ...rEnv };
-	  }
-	
-	  //
-	  // Fix the environment from a map to an array of strings.
-	  //
-	  var penv = [];
-	  for (const key in nEnv) {
-	    penv.push(`${key}=${nEnv[key]}`);
-	  }
-	
-	  //
-	  // Make sure dir has a value.
-	  //
-	  if (typeof dir === "undefined") dir = ".";
-	
-	  //
-	  // Run the command line in a shell. #TODO: make the shell configurable.
-	  //
-	  var args = ["/bin/zsh", "-c", line];
-	  var cmd = "/bin/zsh";
-	
-	  //
-	  // Run the command line.
-	  //
-	  var result = await ap.RunCommandLine(cmd, args, penv, dir);
-	  var err = await ap.GetError();
-	  //
-	  // If callback is given, call it with the results.
-	  //
-	  if (typeof callback !== "undefined" || callback !== null) {
-	    callback(err, result);
-	  }
-	}
 </script>
 
 <div

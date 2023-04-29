@@ -900,7 +900,7 @@
     flex-direction: column;
     margin: 0px;
     padding: 0px 20px 0px 20px;
-    border-radius: 10px;
+    border-radius: 0px 0px 10px 10px;
     border: 0px transparent;
   }
 

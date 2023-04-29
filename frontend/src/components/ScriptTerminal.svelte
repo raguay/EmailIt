@@ -1013,8 +1013,8 @@
     flex-direction: column;
     padding: 0px;
     margin: 0px;
-    height: 100%;
-    width: 100%;
+    border: 0px transparent;
+    border-radius: 0px 0px 10px 10px;
   }
 
   #terminal {
@@ -1046,7 +1046,7 @@
   #buttonRow {
     display: flex;
     flex-direction: row;
-    margin: 10px auto;
+    margin: 13px auto;
   }
 
   #buttonRow button {

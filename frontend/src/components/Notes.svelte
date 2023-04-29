@@ -178,9 +178,9 @@
     display: flex;
     flex-direction: column;
     margin: 0px 0px 0px 0px;
-    padding: 10px;
+    padding: 0px 0px 8px 0px;
     width: 100%;
-    border-radius: 10px;
+    border-radius: 0px 0px 10px 10px;
     border: 0px transparent;
   }
 
@@ -190,6 +190,8 @@
     padding: 10px;
     margin: 0px auto;
     bottom: 0px;
+    border-radius: 0px 0px 10px 10px;
+    border: 0px transparent;
   }
 
   #buttonRow button {

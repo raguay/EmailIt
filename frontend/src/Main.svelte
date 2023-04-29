@@ -1124,7 +1124,7 @@ ${text}
 
   #dragbar {
     height: 20px;
-    width: 1020px;
+    width: 1022px;
     border-radius: 10px 10px 0px 0px;
     border: 0px transparent;
     --wails-draggable: drag;

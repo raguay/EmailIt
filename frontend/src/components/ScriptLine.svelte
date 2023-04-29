@@ -1,5 +1,5 @@
 <script>
-  import { onMount, afterUpdate } from "svelte";
+  import { onMount, afterUpdate, tick } from "svelte";
   import { termscripts } from "../stores/termscripts.js";
   import { runscript } from "../stores/runscript.js";
   import { aliases } from "../stores/aliases.js";
@@ -11,11 +11,14 @@
   let commands = [];
   let showHtmlDiv = false;
   let showOutputDiv = false;
+  let scrollDiv = null;
   let showError = false;
   let errorOutput = "";
-  let textOutput = "";
-  let htmlOutput = "";
+  let textOutput = [];
+  let htmlOutput = [];
   let inputdiv = null;
+  let cursorDiv = null;
+  let AltAdj = "";
   let tCommands = {
     cd: {
       command: cdCommand,
@@ -82,6 +85,7 @@
   let outputDivInput;
   let htmlDivInput;
   let currentLine = 0;
+  let inputTimer = null;
 
   onMount(async () => {
     homeDir = await App.GetHomeDir();
@@ -93,14 +97,21 @@
     loadAliases();
   });
 
-  afterUpdate(() => {
+  afterUpdate(async () => {
+    await tick();
+    FocusInput();
+  });
+
+  function FocusInput() {
+    if (inputTimer !== null) clearTimeout(inputTimer);
     if (!showOutputDiv && !showHtmlDiv) inputdiv.focus();
     else if (showOutputDiv) {
       outputDivInput.focus();
     } else {
       htmlDivInput.focus();
     }
-  });
+    inputTimer = setTimeout(FocusInput, 100);
+  }
 
   function splitAt(index, xs) {
     return [xs.slice(0, index), xs.slice(index)];
@@ -120,8 +131,11 @@
     // to HTML and then show in the information area.
     //
     showOutputDiv = true;
-    if (clear) textOutput = "";
-    textOutput += data.toString();
+    if (clear) textOutput = [];
+    if (data !== "") {
+      textOutput.push(data.toString());
+      textOutput = textOutput;
+    }
   }
 
   function showOutputHTML(data, clear) {
@@ -129,8 +143,8 @@
     // Show HTML formated data to the user.
     //
     showHtmlDiv = true;
-    if (clear) htmlOutput = "";
-    htmlOutput += data;
+    if (clear) htmlOutput = [];
+    htmlOutput.push(data);
   }
 
   function lineInput(e) {
@@ -148,8 +162,8 @@
     showHtmlDiv = false;
     showOutputDiv = false;
     showError = false;
-    htmlOutput = "";
-    textOutput = "";
+    htmlOutput = [];
+    textOutput = [];
 
     //
     // Get the words of the line.
@@ -390,7 +404,7 @@
         //
         // Print the item name.
         //
-        showOutputText(`<p style="margin: 3px;">${item.Name}</p>`, false);
+        showOutputText(`${item.Name}`, false);
       }
       lastData.data = lines;
       lastData.valid = true;
@@ -403,7 +417,7 @@
             tcommand: `ls '${path}'`,
           },
         ];
-        showOutputText(`<p>${text}</p>`, true);
+        showOutputText(`${text}`, true);
       } else {
         showErrorHTML("Not a valid Path.");
       }
@@ -478,7 +492,6 @@
     if (text[0] !== "/") {
       text = await App.AppendPath(wd, text);
     }
-    console.log("edit: ", text);
 
     //
     // Setup the user editor data file.
@@ -840,14 +853,112 @@
     }
   }
 
-  function outputKeyProcess(e) {
+  function updateScroll(amount) {
+    if (scrollDiv !== null) {
+      scrollDiv.scrollTop += amount;
+      if (scrollDiv.scrollTop < 0) scrollDiv.scrollTop = 0;
+    }
+  }
+
+  function checkInView(container, element) {
+    //Get container properties
+    let Offset = 0;
+    let cTop = container.scrollTop + 140;
+    let cBottom = cTop + container.clientHeight;
+    cTop += 5; // take into account the padding on the top. Not needed for the bottom calculations.
+
+    //Get element properties
+    let eTop = element.offsetTop;
+    let eBottom = eTop + element.clientHeight;
+
+    //Check if in view
+    let isTotal = eTop >= cTop && eBottom <= cBottom;
+    let isPartial =
+      (eTop < cTop && eBottom > cTop) || (eBottom > cBottom && eTop < cBottom);
+
+    if (eBottom > cBottom) {
+      Offset = eBottom - cBottom;
+    } else if (eTop < cTop) {
+      Offset = eTop - cTop;
+    }
+
+    //Return outcome
+    return {
+      cTop: cTop,
+      cBottom: cBottom,
+      eTop: eTop,
+      eBottom: eBottom,
+      istotal: isTotal,
+      ispartial: isPartial,
+      offset: Offset,
+    };
+  }
+
+  async function checkPosition() {
+    await tick();
+    await tick();
+    let pos = checkInView(scrollDiv, cursorDiv);
+    if (!pos.istotal) updateScroll(pos.offset);
+  }
+
+  async function outputKeyProcess(e) {
     switch (e.key) {
-      case "UpArrow":
-      case "j":
+      case "1":
+      case "2":
+      case "3":
+      case "4":
+      case "5":
+      case "6":
+      case "7":
+      case "8":
+      case "9":
+        AltAdj = `${AltAdj}${e.key}`;
         break;
 
-      case "DownArrow":
+      case "ArrowUp":
       case "k":
+        e.stopPropagation();
+        if (AltAdj !== "") {
+          currentLine = currentLine - parseInt(AltAdj);
+        } else {
+          currentLine = currentLine - 1;
+        }
+        if (currentLine < 0) currentLine = 0;
+        await checkPosition();
+        AltAdj = "";
+        break;
+
+      case "ArrowDown":
+      case "j":
+        e.stopPropagation();
+        if (AltAdj !== "") {
+          currentLine = currentLine + parseInt(AltAdj);
+        } else {
+          currentLine = currentLine + 1;
+        }
+        if (currentLine >= lastData.data.length) {
+          currentLine = lastData.data.length - 1;
+        }
+        await checkPosition();
+        AltAdj = "";
+        break;
+
+      case "G":
+        //
+        // This implements a go to the top.
+        //
+        currentLine = 0;
+        await checkPosition();
+        AltAdj = "";
+        break;
+
+      case "g":
+        //
+        // This implements a go to the bottom.
+        //
+        currentLine = lastData.data.length - 1;
+        await checkPosition();
+        AltAdj = "";
         break;
 
       case "Enter":
@@ -855,6 +966,47 @@
         // The user hit enter, so process the line.
         //
         e.stopPropagation();
+        ExecuteLine(currentLine);
+        break;
+
+      case "Escape":
+        //
+        // Reset everything.
+        //
+        inputdiv.value = "";
+        showOutputDiv = false;
+        showHtmlDiv = false;
+        showError = false;
+        AltAdj = "";
+        e.stopPropagation();
+        break;
+    }
+  }
+
+  function htmlKeyProcess(e) {
+    switch (e.key) {
+      case "DownArrow":
+      case "k":
+        currentLine = currentLine - 1;
+        if (currentLine < 0) currentLine = 0;
+        e.stopPropagation();
+        break;
+
+      case "UpArrow":
+      case "j":
+        currentLine = currentLine + 1;
+        if (currentLine >= lastData.data.length) {
+          currentLine = lastData.data.length - 1;
+        }
+        e.stopPropagation();
+        break;
+
+      case "Enter":
+        //
+        // The user hit enter, so process the line.
+        //
+        e.stopPropagation();
+        ExecuteLine(currentLine);
         break;
 
       case "Escape":
@@ -870,34 +1022,8 @@
     }
   }
 
-  function htmlKeyProcess(e) {
-    switch (e.key) {
-      case "UpArrow":
-      case "j":
-        break;
-
-      case "DownArrow":
-      case "k":
-        break;
-
-      case "Enter":
-        //
-        // The user hit enter, so process the line.
-        //
-        e.stopPropagation();
-        break;
-
-      case "Escape":
-        //
-        // Reset everything.
-        //
-        inputdiv.value = "";
-        showOutputDiv = false;
-        showHtmlDiv = false;
-        showError = false;
-        e.stopPropagation();
-        break;
-    }
+  function ExecuteLine(index) {
+    ProcessLine(lastData.data[index].command);
   }
 
   async function quit() {
@@ -931,14 +1057,46 @@
   </div>
   <div id="outputContainer">
     {#if showOutputDiv}
+      <input
+        style="height: 0px; margin: 0px; border: 0px; padding: 0px;"
+        bind:this={outputDivInput}
+        on:keydown={outputKeyProcess}
+      />
       <div
+        bind:this={scrollDiv}
         id="scriptOutput"
         style="width: {showHtmlDiv
           ? '40%'
           : '100%'}; background-color: {$theme.backgroundColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
       >
-        <input bind:this={outputDivInput} on:keydown={outputKeyProcess} />
-        {@html textOutput}
+        {#each textOutput as tout, index}
+          {#if currentLine == index}
+            <a
+              href="/"
+              data-index={index}
+              bind:this={cursorDiv}
+              class="outputLine"
+              style="background-color: {$theme.highlightBackgroundColor}; color: {$theme.selectionColor};"
+              on:click|preventDefault={() => {
+                ExecuteLine(index);
+              }}
+            >
+              {@html tout}
+            </a>
+          {:else}
+            <a
+              href="/"
+              data-index={index}
+              class="outputLine"
+              style="background-color: {$theme.backgroundColor}; color: {$theme.textColor};"
+              on:click|preventDefault={() => {
+                ExecuteLine(index);
+              }}
+            >
+              {@html tout}
+            </a>
+          {/if}
+        {/each}
       </div>
     {/if}
     {#if showHtmlDiv}
@@ -960,7 +1118,7 @@
     padding: 0px;
     margin: 0px;
     background-color: transparent;
-    width: 1000px;
+    width: 1022px;
     height: 70%;
     border: 0px;
     border-color: transparent;
@@ -989,10 +1147,6 @@
     border-radius: 10px;
   }
 
-  #scriptOutput input {
-    display: none;
-  }
-
   #htmlOutput {
     display: flex;
     flex-direction: column;
@@ -1003,16 +1157,11 @@
     border-radius: 10px;
   }
 
-  #htmlOutput input {
-    display: none;
-  }
-
   #ScriptTermDiv {
     display: flex;
     flex-direction: column;
     padding: 0px 10px 10px 10px;
     margin: 0px;
-    width: 1000px;
     border-radius: 0px 0px 10px 10px;
   }
 
@@ -1031,7 +1180,10 @@
     margin: 10px;
   }
 
-  #scriptOutput p {
+  .outputLine {
+    text-decoration: none;
     margin: 0px;
+    padding: 5px 0px 0px 0px;
+    border-radius: 5px;
   }
 </style>

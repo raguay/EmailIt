@@ -274,9 +274,7 @@
     display: flex;
     flex-direction: column;
     padding: 10px;
-    margin: 0px 10px 10px 10px;
-    height: 100%;
-    width: 100%;
+    border-radius: 0px 0px 10px 10px;
   }
 
   #header {
@@ -331,7 +329,7 @@
   #buttonRow {
     display: flex;
     flex-direction: row;
-    padding: 10px;
+    padding: 20px 10px 10px 10px;
     width: 100%;
   }
 

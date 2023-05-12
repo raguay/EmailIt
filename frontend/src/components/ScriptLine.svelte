@@ -19,6 +19,7 @@
   let inputdiv = null;
   let cursorDiv = null;
   let AltAdj = "";
+  let InterActive = true;
   let tCommands = {
     cd: {
       command: cdCommand,
@@ -127,8 +128,8 @@
 
   function showOutputText(data, clear) {
     //
-    // Show the user information that is in text format. Convert it
-    // to HTML and then show in the information area.
+    // Show the information from running a command. This goes to the main output
+    // flow.
     //
     showOutputDiv = true;
     if (clear) textOutput = [];
@@ -140,7 +141,7 @@
 
   function showOutputHTML(data, clear) {
     //
-    // Show HTML formated data to the user.
+    // Add content to the secodary output area. This will be HTML formated already.
     //
     showHtmlDiv = true;
     if (clear) htmlOutput = [];
@@ -164,48 +165,51 @@
     showError = false;
     htmlOutput = [];
     textOutput = [];
+    InterActive = true;
 
-    //
-    // Get the words of the line.
-    //
-    var words = text.trim().split(" ");
-    lastData.line = text;
-    lastData.valid = false;
+    text = text.trim();
+    let chains = text.split(").");
+    if (chains.length === 1 && !text.includes("(")) {
+      //
+      // It is a command line style. Get the words of the line.
+      //
+      var words = text.split(" ");
+      lastData.line = text;
+      lastData.valid = false;
 
-    //
-    // See if the first word is a valid command.
-    //
-    let scrpt = $termscripts.filter((item) => item.name === words[0]);
-    if (scrpt.length === 0) {
-      let alias = $aliases.filter((item) => item.name === words[0]);
-      if (alias.length === 0) {
-        //
-        // Command not found. Print the error and give a new prompt.
-        //
-        showErrorHTML(`Command '${words[0]}' doesn't exist!`);
+      //
+      // See if the first word is a valid command.
+      //
+      let scrpt = $termscripts.filter((item) => item.name === words[0]);
+      if (scrpt.length === 0) {
+        let alias = $aliases.filter((item) => item.name === words[0]);
+        if (alias.length === 0) {
+          //
+          // Command not found. Print the error and give a new prompt.
+          //
+          showErrorHTML(`Command '${words[0]}' doesn't exist!`);
+        } else {
+          //
+          // run the aliases commands.
+          //
+          var parts = alias[0].line.split(";");
+          for (const item of parts) {
+            await ProcessLine(item);
+          }
+        }
       } else {
         //
-        // run the aliases commands.
+        // Command found. Run it! This is the script command running.
         //
-        var parts = alias[0].line.split(";");
-        for (const item of parts) {
-          await ProcessLine(item);
-        }
+        let result = await $runscript(scrpt[0].name, words.slice(1).join(" "));
+        ProcessScriptReturn(result);
       }
     } else {
       //
-      // Command found. Run it!
+      // It is a chaining command style.
       //
-      await runCommandLineScripts(scrpt[0], words.slice(1).join(" "));
+      console.log(chains);
     }
-  }
-
-  async function runCommandLineScripts(scrpt, args) {
-    //
-    // Command found. Run it! This is the script command running.
-    //
-    let result = await $runscript(scrpt.name, args);
-    ProcessScriptReturn(result);
   }
 
   function ProcessScriptReturn(data) {
@@ -280,6 +284,7 @@
   }
 
   async function cdCommand(text) {
+    InterActive = false;
     //
     // Remove inclosing quotes
     //
@@ -309,6 +314,7 @@
   }
 
   async function helpCommand(text) {
+    InterActive = false;
     text = text.trim().split(" ")[0];
     if (text.length === 0) {
       //
@@ -365,6 +371,7 @@
   }
 
   async function lsCommand(text) {
+    InterActive = true;
     if (text[0] === '"' || text[0] === "'") {
       text = text.slice(1, text.length - 1);
     }
@@ -425,6 +432,7 @@
   }
 
   async function openCommand(text) {
+    InterActive = false;
     //
     // Fix up the file path given to the open command.
     //
@@ -444,6 +452,7 @@
   }
 
   async function runscriptCommand(text) {
+    InterActive = false;
     //
     // Run a script on a file or text. Make sure enough arguments were given. It requires two arguments separated by a comma:
     // the script name and the file name or text to be processed.
@@ -476,12 +485,13 @@
       // Process the text based on what it is.
       //
       let newText = await $runscript(scriptName, text);
-      showOutputText(`<p>${newText}</p>`, true);
+      showOutputText(`<p style="margin: 5px;">${newText}</p>`, true);
     }
     lastData.valid = false;
   }
 
   async function editCommand(text) {
+    InterActive = false;
     //
     // fix the file name.
     //
@@ -540,6 +550,7 @@
   }
 
   async function aliasCommand(text) {
+    InterActive = false;
     //
     // Add to the Aliases.
     //
@@ -567,12 +578,12 @@
       //
       // List the aliases.
       //
-      showOutputText("", true);
+      showOutputText("<h2>Available Aliases</h2>", true);
       for (const item of $aliases) {
         //
         // Show each alias
         //
-        showOutputText(`<p>${item.name}</p>`, false);
+        showOutputText(`<p style="margin: 5px;">${item.name}</p>`, false);
       }
     } else {
       //
@@ -602,6 +613,7 @@
   }
 
   async function histCommand(text) {
+    InterActive = true;
     //
     // Get needed variables ready.
     //
@@ -628,7 +640,7 @@
     // command as it will be the history command.
     //
     for (let i = commands.length - (depth + 1); i < commands.length - 1; i++) {
-      showOutputText(`<p>${commands[i]}</p>`, false);
+      showOutputText(`${commands[i]}`, false);
       lines.push({
         name: commands[i],
         command: commands[i],
@@ -639,6 +651,7 @@
   }
 
   async function rmCommand(text) {
+    InterActive = false;
     let textblank = false;
     if (text[0] === '"' || text[0] === "'") {
       text = text.slice(1, text.length - 1);
@@ -658,6 +671,7 @@
     }
     var dirReal = await App.DirExists(path);
     if (dirReal && textblank) {
+      InterActive = true;
       var result = await App.ReadDir(path);
       var lines = [];
       showOutputText("", true);
@@ -675,7 +689,7 @@
         //
         // Print the item name.
         //
-        showOutputText(`<p>${item.Name}</p>`, false);
+        showOutputText(`${item.Name}`, false);
       }
       lastData.data = lines;
       lastData.valid = true;
@@ -693,6 +707,7 @@
   }
 
   async function mkdirCommand(text) {
+    InterActive = false;
     let textblank = false;
     if (text[0] === '"' || text[0] === "'") {
       text = text.slice(1, text.length - 1);
@@ -725,6 +740,7 @@
   }
 
   async function mkfileCommand(text) {
+    InterActive = false;
     let textblank = false;
     if (text[0] === '"' || text[0] === "'") {
       text = text.slice(1, text.length - 1);
@@ -903,6 +919,7 @@
 
   async function outputKeyProcess(e) {
     switch (e.key) {
+      case "0":
       case "1":
       case "2":
       case "3":
@@ -1069,34 +1086,38 @@
           ? '40%'
           : '100%'}; background-color: {$theme.backgroundColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
       >
-        {#each textOutput as tout, index}
-          {#if currentLine == index}
-            <a
-              href="/"
-              data-index={index}
-              bind:this={cursorDiv}
-              class="outputLine"
-              style="background-color: {$theme.highlightBackgroundColor}; color: {$theme.selectionColor};"
-              on:click|preventDefault={() => {
-                ExecuteLine(index);
-              }}
-            >
-              {@html tout}
-            </a>
-          {:else}
-            <a
-              href="/"
-              data-index={index}
-              class="outputLine"
-              style="background-color: {$theme.backgroundColor}; color: {$theme.textColor};"
-              on:click|preventDefault={() => {
-                ExecuteLine(index);
-              }}
-            >
-              {@html tout}
-            </a>
-          {/if}
-        {/each}
+        {#if InterActive}
+          {#each textOutput as tout, index}
+            {#if currentLine == index}
+              <a
+                href="/"
+                data-index={index}
+                bind:this={cursorDiv}
+                class="outputLine"
+                style="background-color: {$theme.highlightBackgroundColor}; color: {$theme.selectionColor};"
+                on:click|preventDefault={() => {
+                  ExecuteLine(index);
+                }}
+              >
+                {@html tout}
+              </a>
+            {:else}
+              <a
+                href="/"
+                data-index={index}
+                class="outputLine"
+                style="background-color: {$theme.backgroundColor}; color: {$theme.textColor};"
+                on:click|preventDefault={() => {
+                  ExecuteLine(index);
+                }}
+              >
+                {@html tout}
+              </a>
+            {/if}
+          {/each}
+        {:else}
+          {@html textOutput.join("\n")}
+        {/if}
       </div>
     {/if}
     {#if showHtmlDiv}

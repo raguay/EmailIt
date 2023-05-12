@@ -11,7 +11,7 @@
   import { systemTemplates } from "../stores/systemTemplates.js";
   import { templateEditor } from "../stores/templateEditor.js";
   import { config } from "../stores/config.js";
-  import * as App from '../../wailsjs/go/main/App.js';
+  import * as App from "../../wailsjs/go/main/App.js";
 
   let editorConfig = {
     language: "javascript",
@@ -36,13 +36,13 @@
   });
 
   function getUserTemplates(callback) {
-    list = $userTemplates.map(item => item.name).sort();
+    list = $userTemplates.map((item) => item.name).sort();
     if (typeof callback !== "undefined") callback();
   }
 
   function getTemplate(name, callback) {
     if (name !== undefined && name !== "") {
-      template = $userTemplates.find(item => item.name === name);
+      template = $userTemplates.find((item) => item.name === name);
       $templateEditor.setValue(template.template);
       templateDescription = template.description;
       if (typeof callback !== "undefined") callback();
@@ -50,7 +50,7 @@
   }
 
   async function saveUserTemplates() {
-    let templateloc = await App.AppendPath($config.configDir,"templates.json");
+    let templateloc = await App.AppendPath($config.configDir, "templates.json");
     await App.WriteFile(templateloc, JSON.stringify($userTemplates));
   }
 
@@ -62,11 +62,13 @@
         name: templateName,
         description: templateDescription,
         template: newtemplate,
-      }
-      $userTemplates = $userTemplates.filter(item => item.name != templateName);
+      };
+      $userTemplates = $userTemplates.filter(
+        (item) => item.name != templateName
+      );
       $userTemplates.push(templatedef);
       $templates = $systemTemplates.concat($userTemplates);
-      list = $userTemplates.map(item => item.name).sort();
+      list = $userTemplates.map((item) => item.name).sort();
       template = "";
       templateName = "";
       templateDescription = "";
@@ -78,9 +80,11 @@
 
   function deleteTemplate() {
     if (templateName !== undefined && templateName !== "") {
-      $userTemplates = $userTemplates.filter(item => item.name != templateName);
+      $userTemplates = $userTemplates.filter(
+        (item) => item.name != templateName
+      );
       $templates = $systemTemplates.concat($userTemplates);
-      list = $userTemplates.map(item => item.name).sort();
+      list = $userTemplates.map((item) => item.name).sort();
       template = "";
       templateName = "";
       templateDescription = "";
@@ -171,7 +175,10 @@
       editorChange(event.detail.data);
     }}
   />
-  <div id="buttonRow">
+  <div
+    id="buttonRow"
+    style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
+  >
     <button
       on:click={saveTemplate}
       style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
@@ -211,17 +218,15 @@
   #templates {
     display: flex;
     flex-direction: column;
-    margin: 10px;
     padding: 10px;
     height: 100%;
-    width: 100%;
+    border-radius: 0px 0px 10px 10px;
   }
 
   #header {
     display: flex;
     flex-direction: column;
     margin: 0px 0px 0px 0px;
-    width: 100%;
   }
 
   #description {
@@ -259,10 +264,8 @@
   #buttonRow {
     display: flex;
     flex-direction: row;
-    margin: 10px auto;
-    position: absolute;
+    margin: 15px auto;
     bottom: 0px;
-    width: 100%;
     height: 40px;
   }
 

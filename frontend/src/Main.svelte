@@ -321,7 +321,7 @@
 
     rt.EventsOn("emailSend", async (msg) => {
       let result = "Sent successfully!";
-      let processText = $runtemplate("given", msg.body);
+      let processText = await $runtemplate("given", msg.body);
       if (msg.account === "") {
         //
         // Use the current account to send it.
@@ -427,7 +427,17 @@
     });
   }
 
-  function runTemplate(template, text) {
+  async function getCopyClip(ccadd) {
+    let result = `CopyClip ${ccadd} not set.`;
+    let ccdir = `${$config.homeDir}${$config.AlfredData}/com.customct.CopyClips/copyclips`;
+    let ccfile = `${ccdir}/copy-${ccadd}.txt`;
+    if (await App.FileExists(ccfile)) {
+      result = await App.ReadFile(ccfile);
+    }
+    return result;
+  }
+
+  async function runTemplate(template, text) {
     //
     // process the template.
     //
@@ -454,6 +464,16 @@
       data["cHMampm"] = DateTime.now().toFormat("h:mm a");
       data["cHMS24"] = DateTime.now().toFormat("H:mm:ss");
       data["cHM24"] = DateTime.now().toFormat("H:mm");
+      data["cc0"] = await getCopyClip("0");
+      data["cc1"] = await getCopyClip("1");
+      data["cc2"] = await getCopyClip("2");
+      data["cc3"] = await getCopyClip("3");
+      data["cc4"] = await getCopyClip("4");
+      data["cc5"] = await getCopyClip("5");
+      data["cc6"] = await getCopyClip("6");
+      data["cc7"] = await getCopyClip("7");
+      data["cc8"] = await getCopyClip("8");
+      data["cc9"] = await getCopyClip("9");
 
       //
       // Get the User's default data.
@@ -591,6 +611,11 @@
       await App.MakeDir(configdir);
       await createDefaultConfig(hmdir, configdir);
     }
+    //
+    // TODO: This fixes old configs and needs to be made more generic. This needs to be
+    // made configuratable in the preferences.
+    //
+    $config.AlfredData = "/Library/Application Support/Alfred/Workflow Data";
   }
 
   async function createDefaultConfig(homedir, configdir) {
@@ -614,7 +639,11 @@
       theme: "Default",
       configDir: configdir,
       scriptsDir: scriptsdir,
+      AlfredData: "/Library/Application Support/Alfred/Workflow Data/",
     };
+    //
+    // TODO: The AlfredData needs to be made configuratable in the preferences.
+    //
     await App.WriteFile(configloc, JSON.stringify($config));
 
     //

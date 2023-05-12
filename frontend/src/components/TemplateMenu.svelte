@@ -40,21 +40,23 @@
   function searchTempaltes(text) {
     var tmp = [];
     if (text === "" || text === undefined) {
-      tmp = $templates.filter(item => item.name !== "Defaults");
+      tmp = $templates.filter((item) => item.name !== "Defaults");
     } else {
       text = text.toLowerCase();
-      tmp = $templates.filter(item => item.name !== "Defaults").filter((item) => {
-        if (item !== undefined && item !== null) {
-          return item.name.toLowerCase().includes(text);
-        }
-        return false;
-      });
+      tmp = $templates
+        .filter((item) => item.name !== "Defaults")
+        .filter((item) => {
+          if (item !== undefined && item !== null) {
+            return item.name.toLowerCase().includes(text);
+          }
+          return false;
+        });
     }
     tmp = tmp.sort((a, b) => a.name.toLowerCase() > b.name.toLowerCase());
     return tmp;
   }
 
-  function runTemplate(template) {
+  async function runTemplate(template) {
     var text = "";
     var selection = false;
     if ($state === "emailit") {
@@ -92,7 +94,7 @@
         text = $templateEditor.getValue();
       }
     }
-    let datatext = $runtemplate(template, text);
+    let datatext = await $runtemplate(template, text);
     if ($state === "emailit") {
       //
       // Paste the template in the body of the email.
@@ -132,7 +134,7 @@
     search = "";
   }
 
-  function keyDownProcessor(e) {
+  async function keyDownProcessor(e) {
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
@@ -148,7 +150,7 @@
 
       case "Enter":
         e.preventDefault();
-        runTemplate(list[cursor]);
+        await runTemplate(list[cursor]);
         break;
 
       case "Escape":
@@ -176,8 +178,8 @@
       {#if typeof $templates === "object"}
         {#each list as template, key}
           <li
-            on:click={() => {
-              runTemplate(template.name);
+            on:click={async () => {
+              await runTemplate(template.name);
             }}
             style="background-color: {cursor === key
               ? $theme.Purple

@@ -330,7 +330,7 @@
     display: flex;
     flex-direction: row;
     padding: 20px 10px 10px 10px;
-    width: 100%;
+    margin: 5px auto;
   }
 
   #buttonRow button {

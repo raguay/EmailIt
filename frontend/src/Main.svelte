@@ -10,7 +10,9 @@
   import Preferences from "./components/Preferences.svelte";
   import ScriptTerminal from "./components/ScriptTerminal.svelte";
   import ScriptLine from "./components/ScriptLine.svelte";
+  import { commands } from "./stores/commands.js";
   import { state } from "./stores/state.js";
+  import { sp } from "./stores/sp.js";
   import { email } from "./stores/email.js";
   import { scripts } from "./stores/scripts.js";
   import { termscripts } from "./stores/termscripts.js";
@@ -35,8 +37,8 @@
   import { DateTime } from "luxon";
   import { create, all } from "mathjs";
   import Handlebars from "handlebars";
-  import * as rt from "../wailsjs/runtime/runtime.js"; // the runtime for Wails2
   import * as App from "../wailsjs/go/main/App.js";
+  import * as rt from "../wailsjs/runtime/runtime.js"; // the runtime for Wails2
 
   let notestruct = {
     notes: ["", "", "", "", "", "", "", "", "", ""],
@@ -160,12 +162,18 @@
       return result;
     },
   };
-  var SP = {
+  $sp = {
     text: "",
+    data: {
+      result: "",       // Contains the result from the last command.
+      registers: [],    // Temporary storage registers.
+      line: "",         // Running command line.
+      previousLines: [], // former command lines.
+    },
     DateTime: DateTime,
     mathjs: mathjs,
     mathParser: mathjs.parser(),
-    that: SP,
+    that: $sp,
     Handlebars: $runhandlebars,
     fs: fs,
     ProcessMathSelection: function (txt) {
@@ -232,6 +240,7 @@
     // Set the state to emailit.
     //
     $state = "emailit";
+    $commands = [];
 
     //
     // Get stuff from the server.
@@ -247,7 +256,7 @@
 
     $runscript = runScript;
     $runhandlebars = Handlebars;
-    SP.Handlebars = Handlebars;
+    $sp.Handlebars = Handlebars;
     $runtemplate = runTemplate;
 
     //
@@ -906,26 +915,28 @@
   //                   text            The text to process.
   //
   function runJavaScript(script, text) {
-    var originalText = text;
-    SP.that = SP;
-    SP.text = text;
+    $sp.data.originalText = text;
+    $sp.that = $sp;
+    $sp.text = text;
+    $sp.data.text = text;
+
     //
     // Try to evaluate the expression.
     //
     try {
       var scriptFunction = new Function("SP", `${script} ; return SP;`);
-      SP = scriptFunction(SP);
+      $sp.text = scriptFunction($sp).text;
     } catch (error) {
       console.error(error);
-      SP.text = originalText;
+      $sp.text = $sp.data.originalText;
     }
     //
     // Make sure we have a string and not an array or object.
     //
-    if (typeof SP.text != "string") {
-      SP.text = SP.text.toString();
+    if (typeof $sp.text != "string") {
+      $sp.text = $sp.text.toString();
     }
-    return SP.text;
+    return $sp.text;
   }
 
   async function runExtScript(extScrpt, text, scriptEnv) {
@@ -964,6 +975,12 @@
         env[parts[0]] = parts[1];
       }
     }
+
+    // 
+    // Add the $sp.data structure to the environment.
+    // 
+    env['RUNNINGDATA'] = JSON.stringify($sp.data);
+
     try {
       let args = [];
       args.push(text);
@@ -1148,7 +1165,7 @@ ${text}
 
 <style>
   :global(body) {
-    background-color: rgba(34, 33, 44, 0);
+    background-color: rgba(0, 0, 0, 0);
   }
 
   #dragbar {

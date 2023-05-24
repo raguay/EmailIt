@@ -4,11 +4,13 @@
   import { runscript } from "../stores/runscript.js";
   import { aliases } from "../stores/aliases.js";
   import { state } from "../stores/state.js";
+  import { commands } from "../stores/commands.js";
   import { config } from "../stores/config.js";
   import { theme } from "../stores/theme.js";
+  import { sp } from "../stores/sp.js";
   import * as App from "../../wailsjs/go/main/App.js";
+  import * as rt from "../../wailsjs/runtime/runtime.js"; // the runtime for Wails2
 
-  let commands = [];
   let showHtmlDiv = false;
   let showOutputDiv = false;
   let scrollDiv = null;
@@ -18,6 +20,7 @@
   let htmlOutput = [];
   let inputdiv = null;
   let cursorDiv = null;
+  let containerDiv = null;
   let AltAdj = "";
   let InterActive = true;
   let tCommands = {
@@ -87,6 +90,7 @@
   let htmlDivInput;
   let currentLine = 0;
   let inputTimer = null;
+  let oldheight = 0;
 
   onMount(async () => {
     homeDir = await App.GetHomeDir();
@@ -101,17 +105,32 @@
   afterUpdate(async () => {
     await tick();
     FocusInput();
+    await AdjustHeight();
   });
 
-  function FocusInput() {
-    if (inputTimer !== null) clearTimeout(inputTimer);
-    if (!showOutputDiv && !showHtmlDiv) inputdiv.focus();
-    else if (showOutputDiv) {
-      outputDivInput.focus();
-    } else {
-      htmlDivInput.focus();
+  async function AdjustHeight() {
+    if(containerDiv !== null) {
+      let height = containerDiv.clientHeight + 20;  // Have to add the height of the dragbar.
+      let width = containerDiv.clientWidth;
+      console.log("AdjustHeight: ", height, width);
+      if(height !== oldheight) {
+        await rt.WindowSetSize(width, height);
+        oldheight = height;
+      }
     }
-    inputTimer = setTimeout(FocusInput, 100);
+  }
+
+  function FocusInput() {
+    if(inputdiv !== null) {
+      if (inputTimer !== null) clearTimeout(inputTimer);
+      if (!showOutputDiv && !showHtmlDiv) inputdiv.focus();
+      else if (showOutputDiv) {
+        outputDivInput.focus();
+      } else {
+        htmlDivInput.focus();
+      }
+      inputTimer = setTimeout(FocusInput, 100);
+    }
   }
 
   function splitAt(index, xs) {
@@ -166,7 +185,11 @@
     htmlOutput = [];
     textOutput = [];
     InterActive = true;
-
+    $sp.data.previousLines = [];
+    $sp.data.registers = [];
+    $sp.data.line = '';
+    $sp.data.result = '';
+ 
     text = text.trim();
     let chains = text.split(").");
     if (chains.length === 1 && !text.includes("(")) {
@@ -201,14 +224,76 @@
         //
         // Command found. Run it! This is the script command running.
         //
-        let result = await $runscript(scrpt[0].name, words.slice(1).join(" "));
-        ProcessScriptReturn(result);
+        $sp.data.previousLines.push($sp.data.line);
+        $sp.data.line = text;
+
+        //
+        // Keep a list of valid commands.
+        //
+        $commands.push($sp.data.line);
+
+        // 
+        // Run the command. 
+        //
+        $sp.data.result = await $runscript(scrpt[0].name, words.slice(1).join(" "));
+
+        // 
+        // Process the results.
+        //
+        ProcessScriptReturn($sp.data.result);
       }
     } else {
       //
       // It is a chaining command style.
       //
-      console.log(chains);
+      for(let i=0;i<chains.length;i++) {
+        if(chains[i][chains[i].length-1] === ')') {
+          // 
+          // Remove the closing parenthesis.
+          //
+          chains[i] = chains[i].slice(0,-1);
+        }
+        let parts = chains[i].split('(');
+        let scrpt = $termscripts.filter((item) => item.name === parts[0]);
+        if (scrpt.length > 0) {
+          // 
+          // It's a valid command. Let run it.
+          //
+          let args = parts[1].replaceAll(',', ' ');
+          $sp.data.previousLines.push($sp.data.line);
+          $sp.data.line = chains[i] + ')';
+          //
+          // Keep a list of valid commands.
+          //
+          $commands.push($sp.data.line);
+
+          // 
+          // Run the command.
+          //
+          $sp.data.result = await $runscript(scrpt[0].name, args);
+
+          // 
+          // Process the results.
+          //
+          ProcessScriptReturn($sp.data.result);
+        } else {
+          // 
+          // An invalid command throws the whole chain out.
+          //
+          showHtmlDiv = false;
+          showOutputDiv = false;
+          showError = false;
+          htmlOutput = [];
+          textOutput = [];
+          InterActive = false;
+          $sp.data.previousLines = [];
+          $sp.data.registers = [];
+          $sp.data.line = '';
+          $sp.data.result = '';
+          showErrorHTML(`Command '${parts[0]}' doesn't exist!`);
+          break;
+        }
+      }
     }
   }
 
@@ -259,11 +344,6 @@
 
   async function RunTerminalCommand(text) {
     //
-    // Keep a list of valid commands.
-    //
-    commands.push(lastData.line);
-
-    //
     // Get the command and it's arguments separated. There can by any number of commands separated by a semicolon.
     //
     let com = text.split(" ");
@@ -292,10 +372,10 @@
       text = text.slice(1, text.length - 1);
     }
     if (text.length > 0) {
-      let path = new String(text);
+      let path = new String(text).toString();
       if (text[0] !== "/") {
-        let ndir = new String(text);
-        let nwd = new String(wd);
+        let ndir = new String(text).toString();
+        let nwd = new String(wd).toString();
         path = await App.AppendPath(nwd, ndir);
       }
       let exists = await App.DirExists(path);
@@ -375,8 +455,8 @@
     if (text[0] === '"' || text[0] === "'") {
       text = text.slice(1, text.length - 1);
     }
-    text = new String(text.trim());
-    var path = new String(wd);
+    text = new String(text.trim()).toString();
+    var path = new String(wd).toString();
     if (text !== "") {
       if (text[0] === "/") {
         path = text;
@@ -442,7 +522,7 @@
     if (text[0] !== "/") {
       text = await App.AppendPath(wd, text);
     }
-    text = new String(text.trim());
+    text = new String(text.trim()).toString();
 
     //
     // Run the open command on the file.
@@ -479,7 +559,7 @@
       if (await App.FileExists(textfile)) {
         text = textfile;
       }
-      text = new String(text.trim());
+      text = new String(text.trim()).toString();
 
       //
       // Process the text based on what it is.
@@ -495,7 +575,7 @@
     //
     // fix the file name.
     //
-    text = new String(text.trim());
+    text = new String(text.trim()).toString();
     if (text[0] === '"' || text[0] === "'") {
       text = text.slice(1, text.length - 1);
     }
@@ -618,7 +698,7 @@
     // Get needed variables ready.
     //
     let lines = [];
-    let depth = 5;
+    let depth = 999;    // Most likely will not get that deep.
 
     //
     // See if we were given a depth to show.
@@ -631,19 +711,19 @@
     //
     // Make sure we have that many commands to display.
     //
-    if (depth > commands.length - 1) {
-      depth = commands.length - 1;
+    if (depth > $commands.length - 1) {
+      depth = $commands.length - 1;
     }
 
     //
     // Display the command and create the command for it. Don't show the last
     // command as it will be the history command.
     //
-    for (let i = commands.length - (depth + 1); i < commands.length - 1; i++) {
-      showOutputText(`${commands[i]}`, false);
+    for (let i = $commands.length - 1; i > $commands.length - (depth + 1); i--) {
+      showOutputText(`${$commands[i]}`, false);
       lines.push({
-        name: commands[i],
-        command: commands[i],
+        name: $commands[i],
+        command: $commands[i],
       });
     }
     lastData.data = lines;
@@ -657,10 +737,10 @@
       text = text.slice(1, text.length - 1);
     }
     text = text.trim();
-    var path = new String(wd);
+    var path = new String(wd).toString();
     if (text !== "") {
       textblank = false;
-      text = new String(text);
+      text = new String(text).toString();
       if (text[0] === "/") {
         path = text;
       } else {
@@ -713,10 +793,10 @@
       text = text.slice(1, text.length - 1);
     }
     text = text.trim();
-    var path = new String(wd);
+    var path = new String(wd).toString();
     if (text !== "") {
       textblank = false;
-      text = new String(text);
+      text = new String(text).toString();
       if (text[0] === "/") {
         path = text;
       } else {
@@ -746,10 +826,10 @@
       text = text.slice(1, text.length - 1);
     }
     text = text.trim();
-    var path = new String(wd);
+    var path = new String(wd).toString();
     if (text !== "") {
       textblank = false;
-      text = new String(text);
+      text = new String(text).toString();
       if (text[0] === "/") {
         path = text;
       } else {
@@ -1048,7 +1128,7 @@
   }
 </script>
 
-<div id="container">
+<div id="container" bind:this={containerDiv}>
   <div
     id="ScriptTermDiv"
     style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
@@ -1075,9 +1155,9 @@
   <div id="outputContainer">
     {#if showOutputDiv}
       <input
-        style="height: 0px; margin: 0px; border: 0px; padding: 0px;"
+        style="height: 0px; width: 0px; margin: 0px; border: 0px; padding: 0px;"
         bind:this={outputDivInput}
-        on:keydown={outputKeyProcess}
+        on:keydown|preventDefault={outputKeyProcess}
       />
       <div
         bind:this={scrollDiv}
@@ -1161,9 +1241,9 @@
   #scriptOutput {
     display: flex;
     flex-direction: column;
-    height: 440px;
-    margin: 10px;
-    padding: 10px;
+    height: 455px;
+    margin: 5px 0px 0px 0px;
+    padding: 5px;
     overflow: auto;
     border-radius: 10px;
   }

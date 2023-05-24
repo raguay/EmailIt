@@ -132,7 +132,7 @@ func runFrontEnd() {
 		Frameless:         true,
 		StartHidden:       false,
 		HideWindowOnClose: false,
-		BackgroundColour:  &options.RGBA{R: 33, G: 37, B: 43, A: 0},
+		BackgroundColour:  &options.RGBA{R: 0, G: 0, B: 0, A: 0},
 		Assets:            assets,
 		LogLevel:          logger.DEBUG,
 		OnStartup:         app.startup,

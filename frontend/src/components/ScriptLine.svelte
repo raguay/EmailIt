@@ -852,19 +852,23 @@
     }
   }
 
-  function viewEmailIt() {
+  async function viewEmailIt() {
+    await rt.WindowSetSize(1022, 608);
     $state = "emailit";
   }
 
-  function viewNotes() {
+  async function viewNotes() {
+    await rt.WindowSetSize(1022, 608);
     $state = "notes";
   }
 
-  function viewScriptEditor() {
+  async function viewScriptEditor() {
+    await rt.WindowSetSize(1022, 608);
     $state = "scripts";
   }
 
-  function viewScriptTerminal() {
+  async function viewScriptTerminal() {
+    await rt.WindowSetSize(1022, 608);
     $state = "scriptterm";
   }
 

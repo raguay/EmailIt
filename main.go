@@ -159,7 +159,13 @@ func runFrontEnd() {
 				Message: "Version 2.0.0 © 2022 Richard Guay <raguay@customct.com>",
 				Icon:    icon,
 			},
-		},
+    },
+    Linux: &linux.Options{
+      Icon: icon,
+			WebviewIsTransparent: true,
+      WindowIsTranslucent: false,
+      WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
+    },
 	})
 	if err != nil {
 		log.Fatal(err)

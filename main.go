@@ -150,6 +150,7 @@ func runFrontEnd() {
 			WindowIsTranslucent:  false,
 			DisableWindowIcon:    false,
 		},
+    // macOS platform specific items.
 		Mac: &mac.Options{
 			TitleBar:             mac.TitleBarHiddenInset(),
 			Appearance:           mac.NSAppearanceNameDarkAqua,
@@ -161,9 +162,10 @@ func runFrontEnd() {
 				Icon:    icon,
 			},
     },
+    // Linux platform specific items.
     Linux: &linux.Options{
       Icon: icon,
-      WindowIsTranslucent: false,
+      WindowIsTranslucent: true,
       WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
     },
 	})

@@ -163,7 +163,6 @@ func runFrontEnd() {
     },
     Linux: &linux.Options{
       Icon: icon,
-			WebviewIsTransparent: true,
       WindowIsTranslucent: false,
       WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
     },

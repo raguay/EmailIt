@@ -1,7 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import CodeMirror from "../components/CodeMirror.svelte";
-  import SimpleAutoComplete from "../components/SimpleAutoComplete.svelte";
+  import SimpleAutocomplete from "../components/SimpleAutocomplete.svelte";
   import { state } from "../stores/state.js";
   import { theme } from "../stores/theme.js";
   import { showScripts } from "../stores/showScripts.js";
@@ -173,7 +173,7 @@
   <div id="header">
     <div class="headerRow">
       <label for="scriptName"> Name: </label>
-      <SimpleAutoComplete
+      <SimpleAutocomplete
         inputId="scriptName"
         items={list}
         bind:selectedItem={scriptSel}

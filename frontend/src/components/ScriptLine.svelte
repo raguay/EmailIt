@@ -853,21 +853,33 @@
   }
 
   async function viewEmailIt() {
+    // 
+    // Reset the window size to normal.
+    //
     await rt.WindowSetSize(1022, 608);
     $state = "emailit";
   }
 
   async function viewNotes() {
+     // 
+    // Reset the window size to normal.
+    //
     await rt.WindowSetSize(1022, 608);
     $state = "notes";
   }
 
   async function viewScriptEditor() {
+    // 
+    // Reset the window size to normal.
+    //
     await rt.WindowSetSize(1022, 608);
     $state = "scripts";
   }
 
   async function viewScriptTerminal() {
+    // 
+    // Reset the window size to normal.
+    //
     await rt.WindowSetSize(1022, 608);
     $state = "scriptterm";
   }
@@ -930,6 +942,7 @@
         // The user hit enter, so process the line.
         //
         e.stopPropagation();
+        e.preventDefault();
         ProcessLine(e.target.value);
         break;
 
@@ -938,6 +951,7 @@
         // Expand the suggestion.
         //
         e.stopPropagation();
+        e.preventDefault();
         break;
 
       case "Escape":
@@ -949,6 +963,7 @@
         showHtmlDiv = false;
         showError = false;
         e.stopPropagation();
+        e.preventDefault();
         break;
     }
   }
@@ -1139,6 +1154,7 @@
   >
     <input
       id="CommandInput"
+      autocomplete="off"
       on:keydown={processKey}
       on:input={lineInput}
       bind:this={inputdiv}

@@ -317,6 +317,7 @@
     data = JSON.parse(data);
     lastData.data = data.lines;
     lastData.valid = true;
+    InterActive = true;
 
     //
     // See if there is a terminal command to run.
@@ -856,7 +857,8 @@
     // 
     // Reset the window size to normal.
     //
-    await rt.WindowSetSize(1022, 608);
+    console.log($config);
+    await rt.WindowSetSize($config.width, $config.height);
     $state = "emailit";
   }
 
@@ -864,7 +866,7 @@
      // 
     // Reset the window size to normal.
     //
-    await rt.WindowSetSize(1022, 608);
+    await rt.WindowSetSize($config.width, $config.height);
     $state = "notes";
   }
 
@@ -872,7 +874,7 @@
     // 
     // Reset the window size to normal.
     //
-    await rt.WindowSetSize(1022, 608);
+    await rt.WindowSetSize($config.width, $config.height);
     $state = "scripts";
   }
 
@@ -880,7 +882,7 @@
     // 
     // Reset the window size to normal.
     //
-    await rt.WindowSetSize(1022, 608);
+    await rt.WindowSetSize($config.width, $config.height);
     $state = "scriptterm";
   }
 
@@ -917,10 +919,10 @@
     if (typeof dir === "undefined") dir = ".";
 
     //
-    // Run the command line in a shell. #TODO: make the shell configurable.
+    // Run the command line in a shell.
     //
-    var args = ["/bin/zsh", "-c", line];
-    var cmd = "/bin/zsh";
+    var args = [$config.shell, "-c", line];
+    var cmd = $config.shell;
 
     //
     // Run the command line.

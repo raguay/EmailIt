@@ -946,8 +946,8 @@
     //
     // Run the command line in a shell. #TODO: make the shell configurable.
     //
-    var args = ["/bin/zsh", "-c", line];
-    var cmd = "/bin/zsh";
+    var args = [$config.shell, "-c", line];
+    var cmd = $config.shell;
 
     //
     // Run the command line.

@@ -176,7 +176,7 @@
     that: $sp,
     Handlebars: $runhandlebars,
     fs: fs,
-    ProcessMathSelection: function (txt) {
+    ProcessMath: function (txt) {
       var result = this.mathParser.evaluate(txt);
       return result;
     },
@@ -218,7 +218,23 @@
       return result;
     },
     runScript: function (script, text) {
-      return runJavaScript(script, text);
+      let result = 'Script not found! Only JavaScript scripts can be ran this way. No external scripts!';
+      let scriptIndex = $userScripts.find((ele) => {
+        return ele.name === script;
+      });
+      if (typeof scriptIndex !== "undefined") {
+        script = scriptIndex.script;
+        result = runJavaScript(script, text);
+      } else {
+        scriptIndex = $systemScripts.find(ele => {
+          return ele.name === script;
+        });
+        if (typeof scriptIndex !== "undefined") {
+          script = scriptIndex.script;
+          result = runJavaScript(script, text);
+        }
+      }
+      return(result);
     },
     returnNote: function (id) {
       var result = "";
@@ -267,7 +283,7 @@
       //
       // A StartUp script is defined. Run it!
       //
-      $runscript(startup, "");
+      await $runscript(startup, "");
     }
 
     //
@@ -293,14 +309,14 @@
       );
       let envlist = await App.ReadFile(envlistloc);
       envlist = JSON.parse(envlist);
-      rt.EventsEmit(
+      await rt.EventsEmit(
         msg.returnMsg,
         envlist.map((item) => item.name)
       );
     });
 
     rt.EventsOn("scriptList", async (msg) => {
-      rt.EventsEmit(
+      await rt.EventsEmit(
         msg.returnMsg,
         $scripts.map((item) => item.name)
       );
@@ -313,11 +329,11 @@
       } else {
         result = await $runscript(msg.commandLine, msg.text, msg.envVar);
       }
-      rt.EventsEmit(msg.returnMsg, result);
+      await rt.EventsEmit(msg.returnMsg, result);
     });
 
     rt.EventsOn("templateList", async (msg) => {
-      rt.EventsEmit(
+      await rt.EventsEmit(
         msg.returnMsg,
         $templates.map((item) => item.name)
       );
@@ -325,7 +341,7 @@
 
     rt.EventsOn("templateRun", async (msg) => {
       let result = await $runtemplate(msg.template, msg.text);
-      rt.EventsEmit(msg.returnMsg, result);
+      await rt.EventsEmit(msg.returnMsg, result);
     });
 
     rt.EventsOn("emailSend", async (msg) => {
@@ -370,9 +386,9 @@
           result = "Account not found.";
         }
       }
-      rt.EventsEmit(msg.returnMsg, result);
+      await rt.EventsEmit(msg.returnMsg, result);
     });
-    rt.EventsOn("EditEmail", (msg) => {
+    rt.EventsOn("EditEmail", async (msg) => {
       $email = {
         to: msg.to,
         subject: msg.subject,
@@ -380,9 +396,33 @@
         new: true,
       };
       $state = "emailit";
-      rt.Show();
-      rt.EventsEmit(msg.returnMsg, "Okay");
+      await rt.WindowSetSize($config.width, $config.height);
+      await rt.Show();
+      await rt.EventsEmit(msg.returnMsg, "Okay");
     });
+
+    //
+    // The next three are for switching program states. Since we aren't checking current state,
+    // just set the right window size just to be sure.
+    //
+    rt.EventsOn("EmailIt", async (msg) => {
+      $state = "emailit";
+      await rt.WindowSetSize($config.width, $config.height);
+      await rt.Show();
+      await rt.EventsEmit(msg.returnMsg, "Okay");
+    })
+    rt.EventsOn("ScriptLine", async (msg) => {
+      $state = "scriptline";
+      await rt.WindowSetSize($config.width, $config.height);
+      await rt.Show();
+      await rt.EventsEmit(msg.returnMsg, "Okay");
+    })
+    rt.EventsOn("Notes", async (msg) => {
+      $state = "notes";
+      await rt.WindowSetSize($config.width, $config.height);
+      await rt.Show();
+      await rt.EventsEmit(msg.returnMsg, "Okay");
+    })
   });
 
   function makeHtml(acc, text) {
@@ -593,9 +633,10 @@
     //
     let hmdir = await App.GetHomeDir();
     let configdir = await App.AppendPath(hmdir, ".config");
+    let configloc = "";
     configdir = await App.AppendPath(configdir, "EmailIt");
     if (await App.DirExists(configdir)) {
-      let configloc = await App.AppendPath(configdir, "config.json");
+      configloc = await App.AppendPath(configdir, "config.json");
       if (await App.FileExists(configloc)) {
         let configJSON = await App.ReadFile(configloc);
         $config = JSON.parse(configJSON);
@@ -624,7 +665,19 @@
     // TODO: This fixes old configs and needs to be made more generic. This needs to be
     // made configuratable in the preferences.
     //
-    $config.AlfredData = "/Library/Application Support/Alfred/Workflow Data";
+    if(typeof $config.AlfredData === 'undefined') {
+      $config.AlfredData = "/Library/Application Support/Alfred/Workflow Data";
+      await App.WriteFile(configloc, JSON.stringify($config));
+    }
+    if(typeof $config.shell === 'undefined') {
+      $config.shell = "/bin/zsh";
+      await App.WriteFile(configloc, JSON.stringify($config));
+    }
+    if(typeof $config.height === 'undefined') {
+      $config.height = 608;
+      $config.width = 1022;
+      await App.WriteFile(configloc, JSON.stringify($config));
+    }
   }
 
   async function createDefaultConfig(homedir, configdir) {
@@ -649,9 +702,12 @@
       configDir: configdir,
       scriptsDir: scriptsdir,
       AlfredData: "/Library/Application Support/Alfred/Workflow Data/",
+      shell: "/bin/zsh",
+      height: 608,
+      width: 1022,
     };
     //
-    // TODO: The AlfredData needs to be made configuratable in the preferences.
+    // TODO: The AlfredData, shell needs to be made configuratable in the preferences.
     //
     await App.WriteFile(configloc, JSON.stringify($config));
 
@@ -924,7 +980,7 @@
     // Try to evaluate the expression.
     //
     try {
-      var scriptFunction = new Function("SP", `${script} ; return SP;`);
+      var scriptFunction = new Function('SP', `${script} ; return SP;`);
       $sp.text = scriptFunction($sp).text;
     } catch (error) {
       console.error(error);
@@ -1047,9 +1103,9 @@
           result = await runExtScript(scriptIndex, text, env);
         } else {
           //
-          // It is a command line. Run it directly.  NOTE: Change to user specified shell.
+          // It is a command line. Run it directly.
           //
-          let tmpscript = await App.CreateTempFile(`#!/bin/zsh
+          let tmpscript = await App.CreateTempFile(`#!${$config.shell}
 
 ${text}
 `);
@@ -1084,7 +1140,7 @@ ${text}
     return result;
   }
 
-  function keyDownProcessor(e) {
+  async function keyDownProcessor(e) {
     if (e.metaKey && e.key === ",") {
       e.preventDefault();
       $state = "preferences";
@@ -1092,36 +1148,43 @@ ${text}
       switch (e.key) {
         case "e":
           $state = "emailit";
+          await rt.WindowSetSize($config.width, $config.height);
           e.preventDefault();
           break;
 
         case "v":
           $state = "viewlog";
+          await rt.WindowSetSize($config.width, $config.height);
           e.preventDefault();
           break;
 
         case "n":
           $state = "notes";
+          await rt.WindowSetSize($config.width, $config.height);
           e.preventDefault();
           break;
 
         case "m":
           $showScripts = !$showScripts;
+          await rt.WindowSetSize($config.width, $config.height);
           e.preventDefault();
           break;
 
         case "t":
           $showTemplates = !$showTemplates;
+          await rt.WindowSetSize($config.width, $config.height);
           e.preventDefault();
           break;
 
         case "l":
           $state = "scriptterm";
+          await rt.WindowSetSize($config.width, $config.height);
           e.preventDefault();
           break;
 
         case "p":
           $state = "preferences";
+          await rt.WindowSetSize($config.width, $config.height);
           e.preventDefault();
           break;
 

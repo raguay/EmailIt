@@ -49,6 +49,11 @@ type EmailMsg struct {
 	ReturnMsg string `json:"returnMsg"`
 }
 
+type CommandMsg struct {
+	Action    string `json:"action"`
+	ReturnMsg string `json:"returnMsg"`
+}
+
 type EmptyMsg struct {
 	ReturnMsg string `json:"returnMsg"`
 }
@@ -267,7 +272,67 @@ func backend(app *App, ctx context.Context) {
 		close(ch)
 	})
 
-	//
+  r.GET("/api/emailit/open", func(c *gin.Context) {
+		//
+		// Tell the main program to show the EmailIt program.
+		//
+    json := CommandMsg{ Action: "EmailIt" }
+		ch := make(chan int)
+
+    umicro := time.Now().UnixMicro()
+		json.ReturnMsg = fmt.Sprintf("%s%d", "commandSend", umicro)
+	
+		rt.EventsEmit(ctx, "EmailIt", json)
+		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
+			c.JSON(http.StatusOK, optionalData[0])
+			nwdata := 1
+			ch <- nwdata
+		})
+		<-ch
+		close(ch)
+	})
+
+  r.GET("/api/notes/open", func(c *gin.Context) {
+		//
+		// Tell the main program to show the EmailIt program.
+		//
+    json := CommandMsg{ Action: "Notes" }
+		ch := make(chan int)
+
+    umicro := time.Now().UnixMicro()
+		json.ReturnMsg = fmt.Sprintf("%s%d", "commandSend", umicro)
+	
+		rt.EventsEmit(ctx, "Notes", json)
+		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
+			c.JSON(http.StatusOK, optionalData[0])
+			nwdata := 1
+			ch <- nwdata
+		})
+		<-ch
+		close(ch)
+	})
+
+	r.GET("/api/scriptline/open", func(c *gin.Context) {
+		//
+		// Tell the main program to show the EmailIt program.
+		//
+    json := CommandMsg{ Action: "ScriptLine" }
+		ch := make(chan int)
+
+    umicro := time.Now().UnixMicro()
+		json.ReturnMsg = fmt.Sprintf("%s%d", "commandSend", umicro)
+	
+		rt.EventsEmit(ctx, "ScriptLine", json)
+		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
+			c.JSON(http.StatusOK, optionalData[0])
+			nwdata := 1
+			ch <- nwdata
+		})
+		<-ch
+		close(ch)
+	})
+
+  //
 	// Run the server.
 	//
 	err := r.Run(":9978")

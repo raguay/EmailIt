@@ -6,7 +6,9 @@ let defaultconfig = {
   systemDir: "",
   theme: "",
   configDir: "",
-  scriptsDir: ""
+  scriptsDir: "",
+  AlfredData: "",
+  shell: "",
 };
 
 export const config = writable(defaultconfig);

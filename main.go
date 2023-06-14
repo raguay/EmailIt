@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	rt "github.com/wailsapp/wails/v2/pkg/runtime"
 	"github.com/urfave/cli/v2"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
@@ -19,6 +20,8 @@ import (
   "github.com/wailsapp/wails/v2/pkg/options/windows"
   "github.com/wailsapp/wails/v2/pkg/options/linux"
 )
+
+var wailsapp = NewApp()
 
 //go:embed frontend/dist
 var assets embed.FS
@@ -108,6 +111,78 @@ func main() {
 					return BuildEmail()
 				},
 			},
+      {
+        Name: "notes",
+        Aliases: []string{"n"},
+        Usage: "Open the notes.",
+        Action: func(cCtx *cli.Context) error {
+      		//
+      		// Tell the main program to show the Notes program.
+      		//
+          json := CommandMsg{ Action: "Notes" }
+      		ch := make(chan int)
+
+          umicro := time.Now().UnixMicro()
+      		json.ReturnMsg = fmt.Sprintf("%s%d", "commandSend", umicro)
+	
+      		rt.EventsEmit(wailsapp.ctx, "Notes", json)
+      		rt.EventsOnce(wailsapp.ctx, json.ReturnMsg, func(optionalData ...interface{}) {
+      			nwdata := 1
+      			ch <- nwdata
+      		})
+      		<-ch
+      		close(ch)
+          return(nil)
+        },
+      },
+      {
+        Name: "emailit",
+        Aliases: []string{"e"},
+        Usage: "Open the EmailIt email sending application.",
+        Action: func(cCtx *cli.Context) error {
+      		//
+      		// Tell the main program to show the Notes program.
+      		//
+          json := CommandMsg{ Action: "EmailIt" }
+      		ch := make(chan int)
+
+          umicro := time.Now().UnixMicro()
+      		json.ReturnMsg = fmt.Sprintf("%s%d", "commandSend", umicro)
+	
+      		rt.EventsEmit(wailsapp.ctx, "EmailIt", json)
+      		rt.EventsOnce(wailsapp.ctx, json.ReturnMsg, func(optionalData ...interface{}) {
+      			nwdata := 1
+      			ch <- nwdata
+      		})
+      		<-ch
+      		close(ch)
+          return(nil)
+        },
+      },
+      {
+        Name: "scriptline",
+        Aliases: []string{"sl"},
+        Usage: "Open the ScriptLine application.",
+        Action: func(cCtx *cli.Context) error {
+      		//
+      		// Tell the main program to show the Notes program.
+      		//
+          json := CommandMsg{ Action: "ScriptLine" }
+      		ch := make(chan int)
+
+          umicro := time.Now().UnixMicro()
+      		json.ReturnMsg = fmt.Sprintf("%s%d", "commandSend", umicro)
+	
+      		rt.EventsEmit(wailsapp.ctx, "ScriptLine", json)
+      		rt.EventsOnce(wailsapp.ctx, json.ReturnMsg, func(optionalData ...interface{}) {
+      			nwdata := 1
+      			ch <- nwdata
+      		})
+      		<-ch
+      		close(ch)
+          return(nil)
+        },
+      },
 		},
 	}
 	if err := app.Run(os.Args); err != nil {
@@ -117,7 +192,6 @@ func main() {
 
 func runFrontEnd() {
 	// Create an instance of the app structure
-	app := NewApp()
 
 	// Create application with options
 	err := wails.Run(&options.App{
@@ -136,13 +210,13 @@ func runFrontEnd() {
 		BackgroundColour:  &options.RGBA{R: 0, G: 0, B: 0, A: 0},
 		Assets:            assets,
 		LogLevel:          logger.DEBUG,
-		OnStartup:         app.startup,
-		OnDomReady:        app.domReady,
-		OnShutdown:        app.shutdown,
+		OnStartup:         wailsapp.startup,
+		OnDomReady:        wailsapp.domReady,
+		OnShutdown:        wailsapp.shutdown,
 		CSSDragProperty:   "--wails-draggable",
 		CSSDragValue:      "drag",
 		Bind: []interface{}{
-			app,
+			wailsapp,
 		},
 		// Windows platform specific options
 		Windows: &windows.Options{

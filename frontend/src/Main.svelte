@@ -1200,8 +1200,20 @@ ${text}
 <svelte:window on:keydown={keyDownProcessor} />
 <div
   id="dragbar"
-  style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
-/>
+  style="background-color: {$theme.backgroundColor}; 
+         font-family: {$theme.font}; 
+         color: {$theme.textColor}; 
+         font-size: {$theme.fontSize};"
+>
+  <div
+    id="close"
+    on:click={() => {
+      rt.Quit();
+    }}
+  >
+  <span style="color: {$theme.Red};">X</span>
+  </div>
+</div>
 
 {#if $state === "emailit"}
   <EmailIt />
@@ -1237,5 +1249,13 @@ ${text}
     border-radius: 10px 10px 0px 0px;
     border: 0px transparent;
     --wails-draggable: drag;
+  }
+  #close {
+    font-size: 10px;
+    height:  15px;
+    width:   15px;
+    margin:  0px;
+    padding: 5px 0px 0px 10px;
+    cursor:  pointer;
   }
 </style>

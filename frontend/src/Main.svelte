@@ -1251,11 +1251,11 @@ ${text}
     --wails-draggable: drag;
   }
   #close {
-    font-size: 10px;
+    font-size: 13px;
     height:  15px;
     width:   15px;
     margin:  0px;
-    padding: 5px 0px 0px 10px;
+    padding: 5px 0px 0px 7px;
     cursor:  pointer;
   }
 </style>

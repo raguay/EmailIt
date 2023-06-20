@@ -8,11 +8,14 @@
   import { config } from "../stores/config.js";
   import { theme } from "../stores/theme.js";
   import { sp } from "../stores/sp.js";
-  import * as App from "../../wailsjs/go/main/App.js";
+  import * as App from "../../wailsjs/go/main/App.js";    // My application API
   import * as rt from "../../wailsjs/runtime/runtime.js"; // the runtime for Wails2
 
   let showHtmlDiv = false;
   let showOutputDiv = false;
+  let showHint = false;
+  let hints = [];
+  let hintCursor = 0;
   let scrollDiv = null;
   let showError = false;
   let errorOutput = "";
@@ -112,7 +115,6 @@
     if(containerDiv !== null) {
       let height = containerDiv.clientHeight + 20;  // Have to add the height of the dragbar.
       let width = containerDiv.clientWidth;
-      console.log("AdjustHeight: ", height, width);
       if(height !== oldheight) {
         await rt.WindowSetSize(width, height);
         oldheight = height;
@@ -171,8 +173,16 @@
     //
     // Get the information from the line input and see if we can expand it to a
     // valid command.
-    // TODO: Not Implemented
-    //
+    // 
+    let curin = inputdiv.value.trim();
+    if(curin.length === 0) {
+      showHint = false;
+    } else {
+      hints = ($aliases.filter(ele => ele.name.includes(curin))
+        .concat($termscripts.filter(ele => ele.name.includes(curin))))
+        .map(ele => ele.name).sort();
+      if(hints.length > 0) showHint = true;
+    }
   }
 
   async function ProcessLine(text) {
@@ -193,54 +203,58 @@
     text = text.trim();
     let chains = text.split(").");
     if (chains.length === 1 && !text.includes("(")) {
-      //
-      // It is a command line style. Get the words of the line.
-      //
-      var words = text.split(" ");
-      lastData.line = text;
-      lastData.valid = false;
+      var commandparts = text.split(';');
+      for(var i=0;i<commandparts.length;i++) {
+        //
+        // It is a command line style. Get the words of the line.
+        //
+        var words = commandparts[i].split(" ");
+        lastData.line = commandparts[i];
+        lastData.valid = false;
 
-      //
-      // See if the first word is a valid command.
-      //
-      let scrpt = $termscripts.filter((item) => item.name === words[0]);
-      if (scrpt.length === 0) {
-        let alias = $aliases.filter((item) => item.name === words[0]);
-        if (alias.length === 0) {
-          //
-          // Command not found. Print the error and give a new prompt.
-          //
-          showErrorHTML(`Command '${words[0]}' doesn't exist!`);
+        //
+        // See if the first word is a valid command.
+        //
+        let scrpt = $termscripts.filter((item) => item.name === words[0]);
+        if (scrpt.length === 0) {
+          let alias = $aliases.filter((item) => item.name === words[0]);
+          if (alias.length === 0) {
+            //
+            // Command not found. Print the error and give a new prompt.
+            //
+            showErrorHTML(`Command '${words[0]}' doesn't exist!`);
+            break;
+          } else {
+            //
+            // run the aliases commands.
+            //
+            var parts = alias[0].line.split(";");
+            for (const item of parts) {
+              await ProcessLine(item);
+            }
+          }
         } else {
           //
-          // run the aliases commands.
+          // Command found. Run it! This is the script command running.
           //
-          var parts = alias[0].line.split(";");
-          for (const item of parts) {
-            await ProcessLine(item);
-          }
+          $sp.data.previousLines.push($sp.data.line);
+          $sp.data.line = commandparts[i];
+
+          //
+          // Keep a list of valid commands.
+          //
+          $commands.push($sp.data.line);
+
+          // 
+          // Run the command. 
+          //
+          $sp.data.result = await $runscript(scrpt[0].name, words.slice(1).join(" "));
+
+          // 
+          // Process the results.
+          //
+          ProcessScriptReturn($sp.data.result);
         }
-      } else {
-        //
-        // Command found. Run it! This is the script command running.
-        //
-        $sp.data.previousLines.push($sp.data.line);
-        $sp.data.line = text;
-
-        //
-        // Keep a list of valid commands.
-        //
-        $commands.push($sp.data.line);
-
-        // 
-        // Run the command. 
-        //
-        $sp.data.result = await $runscript(scrpt[0].name, words.slice(1).join(" "));
-
-        // 
-        // Process the results.
-        //
-        ProcessScriptReturn($sp.data.result);
       }
     } else {
       //
@@ -348,19 +362,22 @@
     // Get the command and it's arguments separated. There can by any number of commands separated by a semicolon.
     //
     let com = text.split(" ");
-    if (com[0].trim() !== "alias") {
-      let parts = text.split(";");
-      for (let i = 0; i < parts.length; i++) {
-        let words = parts[i].split(" ");
-        if (words.length > 0) {
+    let parts = text.split(";");
+    for (let i = 0; i < parts.length; i++) {
+      let words = parts[i].split(" ");
+      if (words.length > 0) {
+        if (typeof tCommands[words[0]] !== 'undefined') {
+          //
+          // It's a valid command. Run it.
+          //
           await tCommands[words[0]].command(words.slice(1).join(" "));
+        } else {
+          //
+          // It's not a command. Tell the user.
+          //
+          showErrorHTML(`Terminal Command ${words[0]} doesn't exist!`);
         }
       }
-    } else {
-      //
-      // this is the alias command. Run it without decomposing the line.
-      //
-      await tCommands[com[0]].command(com.slice(1).join(" "));
     }
   }
 
@@ -857,7 +874,6 @@
     // 
     // Reset the window size to normal.
     //
-    console.log($config);
     await rt.WindowSetSize($config.width, $config.height);
     $state = "emailit";
   }
@@ -945,13 +961,17 @@
         //
         e.stopPropagation();
         e.preventDefault();
+        showHint = false;
         ProcessLine(e.target.value);
         break;
 
       case "Tab":
         //
-        // Expand the suggestion.
+        // Expand the suggestion. TODO: Add subcommand hints
         //
+        if(typeof hints[hintCursor] !== 'undefined') inputdiv.value = hints[hintCursor];
+        showHint = false;
+        hintCursor = 0;
         e.stopPropagation();
         e.preventDefault();
         break;
@@ -960,12 +980,27 @@
         //
         // Reset everything.
         //
+        showHint = false;
         inputdiv.value = "";
         showOutputDiv = false;
         showHtmlDiv = false;
         showError = false;
         e.stopPropagation();
         e.preventDefault();
+        break;
+
+      case "ArrowUp":
+        if( showHint ) {
+          hintCursor = hintCursor - 1;
+          if(hintCursor < 0) hintCursor = 0;
+        }
+        break;
+
+      case "ArrowDown":
+        if( showHint ) {
+          hintCursor = hintCursor + 1;
+          if(hintCursor >= hints.length) hintCursor = hints.length - 1;
+        }
         break;
     }
   }
@@ -1083,6 +1118,7 @@
         //
         // The user hit enter, so process the line.
         //
+        showHint = false;
         e.stopPropagation();
         ExecuteLine(currentLine);
         break;
@@ -1091,6 +1127,7 @@
         //
         // Reset everything.
         //
+        showHint = false;
         inputdiv.value = "";
         showOutputDiv = false;
         showHtmlDiv = false;
@@ -1123,6 +1160,7 @@
         //
         // The user hit enter, so process the line.
         //
+        showHint = false;
         e.stopPropagation();
         ExecuteLine(currentLine);
         break;
@@ -1131,6 +1169,7 @@
         //
         // Reset everything.
         //
+        showHint = false;
         inputdiv.value = "";
         showOutputDiv = false;
         showHtmlDiv = false;
@@ -1156,12 +1195,23 @@
   >
     <input
       id="CommandInput"
-      autocomplete="off"
+      autocomplete="off" spellcheck="false" autocorrect="off"
       on:keydown={processKey}
       on:input={lineInput}
       bind:this={inputdiv}
       style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; font-size: {$theme.fontSize}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
     />
+    {#if showHint}
+      <div id="hintDiv" style="border-color: {$theme.Cyan};">
+        {#each hints as hint, hindex}
+          {#if hindex === hintCursor}
+            <p style="background-color: {$theme.highlightBackgroundColor};">{hint}</p>
+          {:else}
+            <p>{hint}</p>
+          {/if}
+        {/each}
+      </div>
+    {/if}
     <div
       id="statusline"
       style="background-color: {$theme.backgroundColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
@@ -1301,6 +1351,21 @@
     height: 30px;
     width: 900px;
     margin: 10px;
+  }
+
+  #hintDiv {
+    display: flex;
+    flex-direction: column;
+    padding: 5px;
+    margin: 5px 0px 5px 20px;
+    border-radius: 10px;
+    border: 3px solid;
+  }
+
+  #hintDiv p {
+    margin: 5px 0px 0px 5px;
+    padding: 0px 0px 0px 5px;
+    border-radius: 5px;
   }
 
   .outputLine {

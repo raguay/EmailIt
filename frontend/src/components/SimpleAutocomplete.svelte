@@ -120,8 +120,6 @@
   export let selectId = undefined;
   // add the title to the HTML input
   export let title = undefined;
-  // enable the html5 autocompletion to the HTML input
-  export let html5autocomplete = undefined;
   // make the input readonly
   export let readonly = undefined;
   // apply a className to the dropdown div
@@ -897,7 +895,8 @@
       type="text"
       class="{inputClassName ? inputClassName : ''} input autocomplete-input"
       id={inputId ? inputId : ""}
-      autocomplete={html5autocomplete ? "on" : "off"}
+      autocomplete="off"
+      spellcheck="false" autocorrect="off"
       {placeholder}
       {name}
       {disabled}

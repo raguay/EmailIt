@@ -97,6 +97,7 @@
     <input
       id="scrptName"
       name="scrptName"
+      autocomplete="off" spellcheck="false" autocorrect="off"
       bind:value={script.name}
       style="border-radius: 5px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       on:blur={changeScript}
@@ -105,6 +106,7 @@
     <input
       id="scrptDes"
       name="scrptDes"
+      autocomplete="off" spellcheck="false" autocorrect="off"
       style="border-radius: 5px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       bind:value={script.description}
       on:blur={changeScript}
@@ -113,6 +115,7 @@
     <input
       id="help"
       name="help"
+      autocomplete="off" spellcheck="false" autocorrect="off"
       style="border-radius: 5px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       bind:value={script.help}
       on:blur={changeScript}
@@ -123,6 +126,7 @@
     <input
       id="scriptScript"
       name="scriptScript"
+      autocomplete="off" spellcheck="false" autocorrect="off"
       style="border-radius: 5px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       bind:value={script.script}
       on:blur={changeScript}
@@ -133,6 +137,7 @@
     <input
       id="scriptPath"
       name="scriptPath"
+      autocomplete="off" spellcheck="false" autocorrect="off"
       style="border-radius: 5px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-name: {$theme.font}; font-size: {$theme.fontSize};"
       bind:value={script.path}
       on:blur={changeScript}

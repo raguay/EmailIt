@@ -204,12 +204,14 @@
       <label for="description"> Description: </label>
       <input
         id="description"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         bind:value={description}
         style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize}"
       />
       <label id="termScriptLab" for="termScriptChk"> Terminal Script? </label>
       <input
         id="termScriptChk"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         name="termScriptChk"
         type="checkbox"
         bind:checked={termscript}

@@ -159,6 +159,7 @@
       <input
         id="description"
         bind:value={templateDescription}
+        autocomplete="off" spellcheck="false" autocorrect="off"
         style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
       />
     </div>

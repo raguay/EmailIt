@@ -126,6 +126,7 @@
       <label for="aename"> Name: </label>
       <input
         type="text"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         id="aename"
         bind:value={name}
         style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
@@ -135,6 +136,7 @@
       <label for="aeemail"> Email: </label>
       <input
         type="text"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         id="aeemail"
         bind:value={email}
         style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"

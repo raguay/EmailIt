@@ -155,6 +155,7 @@
       <input
         id="envName"
         name="envName"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         style="padding-left: 10px; margin-top: -5px; margin-left: 20px; border-radius: 10px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize}; border: solid 3px {$theme.borderColor};"
         on:blur={changeEnv}
         bind:value={env.name}
@@ -193,6 +194,7 @@
                   <input
                     class="inputKV"
                     type="text"
+                    autocomplete="off" spellcheck="false" autocorrect="off"
                     style="padding-left: 10px; border-radius: 10px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-family: {$theme.font}; font-size: {$theme.fontSize};"
                     bind:value={KVname}
                   />
@@ -201,6 +203,7 @@
                   <input
                     class="inputKV"
                     type="text"
+                    autocomplete="off" spellcheck="false" autocorrect="off"
                     style="padding-left: 10px; border-radius: 10px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-family: {$theme.font}; font-size: {$theme.fontSize};"
                     bind:value={KVvalue}
                     on:blur={addKV}

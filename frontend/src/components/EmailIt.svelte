@@ -237,6 +237,8 @@
     } else {
       showInvalidEmails();
     }
+    $showScripts = false;
+    $showTemplates = false;
   }
 
   function makeHtml() {
@@ -387,6 +389,8 @@
     showPreview = false;
     emailState = "edit";
     oldState = "edit";
+    $showScripts = false;
+    $showTemplates = false;
   }
 
   function saveNewAccount() {
@@ -473,7 +477,9 @@
 
   function viewNotes() {
     saveEmailState();
-    state.set("notes");
+    $state = "notes";
+    $showScripts = false;
+    $showTemplates = false;
   }
 
   function saveEmailState() {
@@ -488,10 +494,12 @@
 
   function viewScriptsMenu() {
     $showScripts = !$showScripts;
+    $showTemplates = false;
   }
 
   function viewTemplateMenu() {
     $showTemplates = !$showTemplates;
+    $showScripts = false;
   }
 
   function cumulativeOffset(element) {
@@ -510,6 +518,8 @@
 
   function showAddressBook() {
     showAddressB = !showAddressB;
+    $showTemplates = false;
+    $showScripts = false;
   }
 </script>
 
@@ -529,6 +539,7 @@
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountDefaultInput"
         type="checkbox"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         bind:checked={accountDefault}
       />
       <label for="accountNameInput" class="newAccountLabel">
@@ -537,6 +548,7 @@
       <input
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountNameInput"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         bind:value={accountName}
       />
       <label for="accountFromInput" class="newAccountLabel">
@@ -545,6 +557,7 @@
       <input
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; border-color: {$theme.borderColor}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
         id="accountFromInput"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         bind:value={accountFrom}
       />
       <label for="accountSmptServerInput" class="newAccountLabel">
@@ -553,6 +566,7 @@
       <input
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountSmptServerInput"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         bind:value={accountSmptServer}
       />
       <label for="accountPortInput" class="newAccountLabel">
@@ -561,6 +575,7 @@
       <input
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; border-color: {$theme.borderColor}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
         id="accountPortInput"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         bind:value={accountPort}
       />
       <label for="accountUsernameInput" class="newAccountLabel">
@@ -569,6 +584,7 @@
       <input
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountUsernameInput"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         bind:value={accountUsername}
       />
       <label for="accountPasswordInput" class="newAccountLabel">
@@ -577,6 +593,7 @@
       <input
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountPasswordInput"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         bind:value={accountPassword}
       />
       <label for="accountSigInput" class="newAccountLabel"> Signiture: </label>
@@ -689,6 +706,7 @@
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; border-color: {$theme.borderColor}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
         id="receiverInput"
         class="receiverInput"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         bind:value={receiver}
         bind:this={receiverDOM}
         on:blur={() => {
@@ -736,6 +754,7 @@
       <label for="subject"> Subject: </label>
       <input
         id="subject"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         bind:this={subject}
         on:blur={() => {
           saveEmailState();
@@ -872,6 +891,8 @@
       style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor}; border-color: {$theme.backgroundColor};"
       on:click={() => {
         showAlert = false;
+        $showScripts = false;
+        $showTemplates = false;
       }}
     >
       Close

@@ -15,7 +15,7 @@
     language: "markdown",
     lineNumbers: true,
     lineWrapping: true,
-    lineHighlight: true,
+    lineHighlight: false,
   };
   let initFinished = false;
 
@@ -60,6 +60,8 @@
   function viewEmailIt() {
     storeCurrentCursor();
     $state = "emailit";
+    $showTemplates = false;
+    $showScripts = false;
   }
 
   function storeCurrentCursor() {
@@ -77,21 +79,29 @@
 
   function viewScriptsMenu() {
     $showScripts = !$showScripts;
+    $showTemplates = false;
   }
 
   function viewTemplateMenu() {
     $showTemplates = !$showTemplates;
+    $showScripts = false;
   }
 
   function viewTemplates() {
     $state = "templates";
+    $showTemplates = false;
+    $showScripts = false;
   }
 
   function viewScripts() {
     $state = "scripts";
+    $showTemplates = false;
+    $showScripts = false;
   }
 
   function viewScriptTerm() {
+    $showTemplates = false;
+    $showScripts = false;
     $state = "scriptterm";
   }
 </script>

@@ -168,6 +168,7 @@
 >
   <input
     type="text"
+    autocomplete="off" spellcheck="false" autocorrect="off"
     bind:value={search}
     bind:this={searchInput}
     on:keydown={keyDownProcessor}

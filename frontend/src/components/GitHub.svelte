@@ -283,7 +283,7 @@
 >
   <div id="GitHubHeader">
     <h3>GitHub Themes and Scripts Importer</h3>
-    <input id="inputHidden" bind:this={hiddenInput} on:keydown={inputChange} />
+    <input id="inputHidden" bind:this={hiddenInput} on:keydown={inputChange} autocomplete="off" spellcheck="false" autocorrect="off" />
   </div>
   {#if loading}
     <h1>Loading....</h1>

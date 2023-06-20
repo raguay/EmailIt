@@ -39,6 +39,7 @@
       <input
         bind:this={nameDOM}
         type="text"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         style="padding-left: 10px; border-radius: 10px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-family: '{$theme.font}'; font-size: {$theme.fontSize};"
         bind:value={name}
       />
@@ -46,6 +47,7 @@
     <td>
       <input
         type="text"
+        autocomplete="off" spellcheck="false" autocorrect="off"
         style="padding-left: 10px; border-radius: 10px; border-color: {$theme.borderColor}; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; font-family: {$theme.font}; font-size: {$theme.fontSize};"
         bind:value
         on:blur={changeData}

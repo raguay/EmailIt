@@ -261,6 +261,7 @@
   {#if keepNewInput}
     <input
       class="prefInput"
+      autocomplete="off" spellcheck="false" autocorrect="off"
       style="background-color: {$theme.textAreaColor}; color: {$theme.textColor};"
       bind:value={style}
       on:change={() => {

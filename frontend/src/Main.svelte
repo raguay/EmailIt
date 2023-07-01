@@ -165,9 +165,9 @@
   $sp = {
     text: "",
     data: {
-      result: "",       // Contains the result from the last command.
-      registers: [],    // Temporary storage registers.
-      line: "",         // Running command line.
+      result: "", // Contains the result from the last command.
+      registers: [], // Temporary storage registers.
+      line: "", // Running command line.
       previousLines: [], // former command lines.
     },
     DateTime: DateTime,
@@ -218,7 +218,8 @@
       return result;
     },
     runScript: function (script, text) {
-      let result = 'Script not found! Only JavaScript scripts can be ran this way. No external scripts!';
+      let result =
+        "Script not found! Only JavaScript scripts can be ran this way. No external scripts!";
       let scriptIndex = $userScripts.find((ele) => {
         return ele.name === script;
       });
@@ -226,7 +227,7 @@
         script = scriptIndex.script;
         result = runJavaScript(script, text);
       } else {
-        scriptIndex = $systemScripts.find(ele => {
+        scriptIndex = $systemScripts.find((ele) => {
           return ele.name === script;
         });
         if (typeof scriptIndex !== "undefined") {
@@ -234,7 +235,7 @@
           result = runJavaScript(script, text);
         }
       }
-      return(result);
+      return result;
     },
     returnNote: function (id) {
       var result = "";
@@ -410,19 +411,19 @@
       await rt.WindowSetSize($config.width, $config.height);
       await rt.Show();
       await rt.EventsEmit(msg.returnMsg, "Okay");
-    })
+    });
     rt.EventsOn("ScriptLine", async (msg) => {
       $state = "scriptline";
       await rt.WindowSetSize($config.width, $config.height);
       await rt.Show();
       await rt.EventsEmit(msg.returnMsg, "Okay");
-    })
+    });
     rt.EventsOn("Notes", async (msg) => {
       $state = "notes";
       await rt.WindowSetSize($config.width, $config.height);
       await rt.Show();
       await rt.EventsEmit(msg.returnMsg, "Okay");
-    })
+    });
   });
 
   function makeHtml(acc, text) {
@@ -665,15 +666,15 @@
     // TODO: This fixes old configs and needs to be made more generic. This needs to be
     // made configuratable in the preferences.
     //
-    if(typeof $config.AlfredData === 'undefined') {
+    if (typeof $config.AlfredData === "undefined") {
       $config.AlfredData = "/Library/Application Support/Alfred/Workflow Data";
       await App.WriteFile(configloc, JSON.stringify($config));
     }
-    if(typeof $config.shell === 'undefined') {
+    if (typeof $config.shell === "undefined") {
       $config.shell = "/bin/zsh";
       await App.WriteFile(configloc, JSON.stringify($config));
     }
-    if(typeof $config.height === 'undefined') {
+    if (typeof $config.height === "undefined") {
       $config.height = 608;
       $config.width = 1022;
       await App.WriteFile(configloc, JSON.stringify($config));
@@ -980,7 +981,7 @@
     // Try to evaluate the expression.
     //
     try {
-      var scriptFunction = new Function('SP', `${script} ; return SP;`);
+      var scriptFunction = new Function("SP", `${script} ; return SP;`);
       $sp.text = scriptFunction($sp).text;
     } catch (error) {
       console.error(error);
@@ -1032,10 +1033,10 @@
       }
     }
 
-    // 
+    //
     // Add the $sp.data structure to the environment.
-    // 
-    env['RUNNINGDATA'] = JSON.stringify($sp.data);
+    //
+    env["RUNNINGDATA"] = JSON.stringify($sp.data);
 
     try {
       let args = [];
@@ -1060,20 +1061,32 @@
 
   async function runScript(script, text, env) {
     var result = "Script not found!";
+
+    //
+    // Check to see if it is text or a file or directory name.
+    //
+    let isLongText = text.includes("\n");
+    let isfile = false;
+    let isDir = false;
+    if (!isLongText) {
+      isfile = await App.FileExists(text);
+      isDir = await App.DirExists(text);
+    }
     if (typeof script === "object") {
       if (typeof script.name !== "undefined") {
         script = script.name;
       }
     }
+
+    //
+    // Find the script and run it.
+    //
     var scriptIndex = $userScripts.find((ele) => {
       return ele.name === script;
     });
     if (typeof scriptIndex !== "undefined") {
       script = scriptIndex.script;
-      let tmptext = text;
-      let isfile = await App.FileExists(tmptext);
-      let isDir = await App.DirExists(tmptext);
-      if (isfile && !isDir) {
+      if (isfile && !isDir && !isLongText) {
         result = await runJavaScriptFile(script, text);
       } else {
         result = runJavaScript(script, text);
@@ -1084,10 +1097,7 @@
       });
       if (typeof scriptIndex !== "undefined") {
         script = scriptIndex.script;
-        let tmptext = text;
-        let isfile = await App.FileExists(tmptext);
-        let isDir = await App.DirExists(tmptext);
-        if (isfile && !isDir) {
+        if (isfile && !isDir && !isLongText) {
           result = await runJavaScriptFile(script, text);
         } else {
           result = runJavaScript(script, text);
@@ -1211,7 +1221,7 @@ ${text}
       rt.Quit();
     }}
   >
-  <span style="color: {$theme.Red};">X</span>
+    <span style="color: {$theme.Red};">X</span>
   </div>
 </div>
 
@@ -1252,10 +1262,10 @@ ${text}
   }
   #close {
     font-size: 13px;
-    height:  15px;
-    width:   15px;
-    margin:  0px;
+    height: 15px;
+    width: 15px;
+    margin: 0px;
     padding: 5px 0px 0px 7px;
-    cursor:  pointer;
+    cursor: pointer;
   }
 </style>

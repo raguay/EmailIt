@@ -8,7 +8,7 @@
   import { config } from "../stores/config.js";
   import { theme } from "../stores/theme.js";
   import { sp } from "../stores/sp.js";
-  import * as App from "../../wailsjs/go/main/App.js";    // My application API
+  import * as App from "../../wailsjs/go/main/App.js"; // My application API
   import * as rt from "../../wailsjs/runtime/runtime.js"; // the runtime for Wails2
 
   let showHtmlDiv = false;
@@ -26,6 +26,7 @@
   let containerDiv = null;
   let AltAdj = "";
   let InterActive = true;
+  let inputState = 0;
   let tCommands = {
     cd: {
       command: cdCommand,
@@ -112,10 +113,10 @@
   });
 
   async function AdjustHeight() {
-    if(containerDiv !== null) {
-      let height = containerDiv.clientHeight + 20;  // Have to add the height of the dragbar.
+    if (containerDiv !== null) {
+      let height = containerDiv.clientHeight + 20; // Have to add the height of the dragbar.
       let width = containerDiv.clientWidth;
-      if(height !== oldheight) {
+      if (height !== oldheight) {
         await rt.WindowSetSize(width, height);
         oldheight = height;
       }
@@ -123,7 +124,7 @@
   }
 
   function FocusInput() {
-    if(inputdiv !== null) {
+    if (inputdiv !== null) {
       if (inputTimer !== null) clearTimeout(inputTimer);
       if (!showOutputDiv && !showHtmlDiv) inputdiv.focus();
       else if (showOutputDiv) {
@@ -169,19 +170,47 @@
     htmlOutput.push(data);
   }
 
-  function lineInput(e) {
+  function lineInput() {
     //
     // Get the information from the line input and see if we can expand it to a
     // valid command.
-    // 
+    //
     let curin = inputdiv.value.trim();
-    if(curin.length === 0) {
-      showHint = false;
-    } else {
-      hints = ($aliases.filter(ele => ele.name.includes(curin))
-        .concat($termscripts.filter(ele => ele.name.includes(curin))))
-        .map(ele => ele.name).sort();
-      if(hints.length > 0) showHint = true;
+    switch (inputState) {
+      case 0:
+        //
+        // This state is for finding the right command.
+        //
+        if (curin.length === 0) {
+          showHint = false;
+        } else {
+          hints = $aliases
+            .map((ele) => ele.name)
+            .filter((ele) => ele.includes(curin))
+            .concat(
+              $termscripts
+                .map((ele) => ele.name)
+                .filter((ele) => ele.includes(curin))
+            )
+            .sort();
+          if (hints.length > 0) {
+            showHint = true;
+            hintCursor = 0;
+            if (hints.length === 1) {
+              if (typeof hints[hintCursor] !== "undefined") {
+                inputdiv.value = hints[hintCursor];
+                showHint = false;
+                inputState = 1;
+              }
+            }
+          }
+        }
+        break;
+      case 1:
+        //
+        // This state is for sub command strings. TODO: Figure out how to implement.
+        //
+        break;
     }
   }
 
@@ -197,14 +226,15 @@
     InterActive = true;
     $sp.data.previousLines = [];
     $sp.data.registers = [];
-    $sp.data.line = '';
-    $sp.data.result = '';
- 
+    $sp.data.line = "";
+    $sp.data.result = "";
+    inputState = 0; // An input was actioned. Make sure the state is back to 0.
+
     text = text.trim();
     let chains = text.split(").");
     if (chains.length === 1 && !text.includes("(")) {
-      var commandparts = text.split(';');
-      for(var i=0;i<commandparts.length;i++) {
+      var commandparts = text.split(";");
+      for (var i = 0; i < commandparts.length; i++) {
         //
         // It is a command line style. Get the words of the line.
         //
@@ -245,12 +275,15 @@
           //
           $commands.push($sp.data.line);
 
-          // 
-          // Run the command. 
           //
-          $sp.data.result = await $runscript(scrpt[0].name, words.slice(1).join(" "));
+          // Run the command.
+          //
+          $sp.data.result = await $runscript(
+            scrpt[0].name,
+            words.slice(1).join(" ")
+          );
 
-          // 
+          //
           // Process the results.
           //
           ProcessScriptReturn($sp.data.result);
@@ -260,38 +293,38 @@
       //
       // It is a chaining command style.
       //
-      for(let i=0;i<chains.length;i++) {
-        if(chains[i][chains[i].length-1] === ')') {
-          // 
+      for (let i = 0; i < chains.length; i++) {
+        if (chains[i][chains[i].length - 1] === ")") {
+          //
           // Remove the closing parenthesis.
           //
-          chains[i] = chains[i].slice(0,-1);
+          chains[i] = chains[i].slice(0, -1);
         }
-        let parts = chains[i].split('(');
+        let parts = chains[i].split("(");
         let scrpt = $termscripts.filter((item) => item.name === parts[0]);
         if (scrpt.length > 0) {
-          // 
+          //
           // It's a valid command. Let run it.
           //
-          let args = parts[1].replaceAll(',', ' ');
+          let args = parts[1].replaceAll(",", " ");
           $sp.data.previousLines.push($sp.data.line);
-          $sp.data.line = chains[i] + ')';
+          $sp.data.line = chains[i] + ")";
           //
           // Keep a list of valid commands.
           //
           $commands.push($sp.data.line);
 
-          // 
+          //
           // Run the command.
           //
           $sp.data.result = await $runscript(scrpt[0].name, args);
 
-          // 
+          //
           // Process the results.
           //
           ProcessScriptReturn($sp.data.result);
         } else {
-          // 
+          //
           // An invalid command throws the whole chain out.
           //
           showHtmlDiv = false;
@@ -302,8 +335,8 @@
           InterActive = false;
           $sp.data.previousLines = [];
           $sp.data.registers = [];
-          $sp.data.line = '';
-          $sp.data.result = '';
+          $sp.data.line = "";
+          $sp.data.result = "";
           showErrorHTML(`Command '${parts[0]}' doesn't exist!`);
           break;
         }
@@ -366,7 +399,7 @@
     for (let i = 0; i < parts.length; i++) {
       let words = parts[i].split(" ");
       if (words.length > 0) {
-        if (typeof tCommands[words[0]] !== 'undefined') {
+        if (typeof tCommands[words[0]] !== "undefined") {
           //
           // It's a valid command. Run it.
           //
@@ -716,7 +749,7 @@
     // Get needed variables ready.
     //
     let lines = [];
-    let depth = 999;    // Most likely will not get that deep.
+    let depth = 999; // Most likely will not get that deep.
 
     //
     // See if we were given a depth to show.
@@ -737,7 +770,11 @@
     // Display the command and create the command for it. Don't show the last
     // command as it will be the history command.
     //
-    for (let i = $commands.length - 1; i > $commands.length - (depth + 1); i--) {
+    for (
+      let i = $commands.length - 1;
+      i > $commands.length - (depth + 1);
+      i--
+    ) {
       showOutputText(`${$commands[i]}`, false);
       lines.push({
         name: $commands[i],
@@ -871,7 +908,7 @@
   }
 
   async function viewEmailIt() {
-    // 
+    //
     // Reset the window size to normal.
     //
     await rt.WindowSetSize($config.width, $config.height);
@@ -879,7 +916,7 @@
   }
 
   async function viewNotes() {
-     // 
+    //
     // Reset the window size to normal.
     //
     await rt.WindowSetSize($config.width, $config.height);
@@ -887,7 +924,7 @@
   }
 
   async function viewScriptEditor() {
-    // 
+    //
     // Reset the window size to normal.
     //
     await rt.WindowSetSize($config.width, $config.height);
@@ -895,7 +932,7 @@
   }
 
   async function viewScriptTerminal() {
-    // 
+    //
     // Reset the window size to normal.
     //
     await rt.WindowSetSize($config.width, $config.height);
@@ -962,16 +999,19 @@
         e.stopPropagation();
         e.preventDefault();
         showHint = false;
+        inputState = 0;
         ProcessLine(e.target.value);
         break;
 
       case "Tab":
         //
-        // Expand the suggestion. TODO: Add subcommand hints
+        // Expand the suggestion.
         //
-        if(typeof hints[hintCursor] !== 'undefined') inputdiv.value = hints[hintCursor];
+        if (typeof hints[hintCursor] !== "undefined")
+          inputdiv.value = hints[hintCursor];
         showHint = false;
         hintCursor = 0;
+        inputState = 1;
         e.stopPropagation();
         e.preventDefault();
         break;
@@ -985,27 +1025,28 @@
         showOutputDiv = false;
         showHtmlDiv = false;
         showError = false;
+        inputState = 0;
         e.stopPropagation();
         e.preventDefault();
         break;
 
       case "ArrowUp":
-        if( showHint ) {
+        if (showHint) {
           hintCursor = hintCursor - 1;
-          if(hintCursor < 0) hintCursor = 0;
+          if (hintCursor < 0) hintCursor = 0;
         }
         break;
 
       case "ArrowDown":
-        if( showHint ) {
+        if (showHint) {
           hintCursor = hintCursor + 1;
-          if(hintCursor >= hints.length) hintCursor = hints.length - 1;
+          if (hintCursor >= hints.length) hintCursor = hints.length - 1;
         }
         break;
     }
   }
 
-  function updateScroll(amount) {
+  function updateScroll(scrollDiv, amount) {
     if (scrollDiv !== null) {
       scrollDiv.scrollTop += amount;
       if (scrollDiv.scrollTop < 0) scrollDiv.scrollTop = 0;
@@ -1050,7 +1091,7 @@
     await tick();
     await tick();
     let pos = checkInView(scrollDiv, cursorDiv);
-    if (!pos.istotal) updateScroll(pos.offset);
+    if (!pos.istotal) updateScroll(scrollDiv, pos.offset);
   }
 
   async function outputKeyProcess(e) {
@@ -1119,6 +1160,7 @@
         // The user hit enter, so process the line.
         //
         showHint = false;
+        inputState = 0;
         e.stopPropagation();
         ExecuteLine(currentLine);
         break;
@@ -1132,6 +1174,7 @@
         showOutputDiv = false;
         showHtmlDiv = false;
         showError = false;
+        inputState = 0;
         AltAdj = "";
         e.stopPropagation();
         break;
@@ -1161,6 +1204,7 @@
         // The user hit enter, so process the line.
         //
         showHint = false;
+        inputState = 0;
         e.stopPropagation();
         ExecuteLine(currentLine);
         break;
@@ -1170,6 +1214,7 @@
         // Reset everything.
         //
         showHint = false;
+        inputState = 0;
         inputdiv.value = "";
         showOutputDiv = false;
         showHtmlDiv = false;
@@ -1195,7 +1240,9 @@
   >
     <input
       id="CommandInput"
-      autocomplete="off" spellcheck="false" autocorrect="off"
+      autocomplete="off"
+      spellcheck="false"
+      autocorrect="off"
       on:keydown={processKey}
       on:input={lineInput}
       bind:this={inputdiv}
@@ -1205,7 +1252,9 @@
       <div id="hintDiv" style="border-color: {$theme.Cyan};">
         {#each hints as hint, hindex}
           {#if hindex === hintCursor}
-            <p style="background-color: {$theme.highlightBackgroundColor};">{hint}</p>
+            <p style="background-color: {$theme.highlightBackgroundColor};">
+              {hint}
+            </p>
           {:else}
             <p>{hint}</p>
           {/if}

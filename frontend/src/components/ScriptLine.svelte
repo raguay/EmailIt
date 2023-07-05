@@ -181,6 +181,7 @@
         //
         // This state is for finding the right command.
         //
+        showHint = false;
         if (curin.length === 0) {
           showHint = false;
         } else {
@@ -1014,6 +1015,20 @@
         inputState = 1;
         e.stopPropagation();
         e.preventDefault();
+        break;
+
+      case "Backspace":
+        if (!showHint && inputdiv.value !== "") {
+          inputdiv.value = inputdiv.value[0];
+          showHint = true;
+          e.preventDefault();
+        } else {
+          showHint = false;
+        }
+        inputState = 0;
+        showOutputDiv = false;
+        showHtmlDiv = false;
+        showError = false;
         break;
 
       case "Escape":

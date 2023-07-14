@@ -5,6 +5,7 @@
   import { aliases } from "../stores/aliases.js";
   import { state } from "../stores/state.js";
   import { commands } from "../stores/commands.js";
+  import { filetypes } from "../stores/filetypes.js";
   import { config } from "../stores/config.js";
   import { theme } from "../stores/theme.js";
   import { sp } from "../stores/sp.js";
@@ -14,12 +15,15 @@
   let showHtmlDiv = false;
   let showOutputDiv = false;
   let showHint = false;
+  let showListSearch = false;
+  let listSearchInput = null;
   let hints = [];
   let hintCursor = 0;
   let scrollDiv = null;
   let showError = false;
   let errorOutput = "";
   let textOutput = [];
+  let origTextOutput = [];
   let htmlOutput = [];
   let inputdiv = null;
   let cursorDiv = null;
@@ -108,8 +112,8 @@
 
   afterUpdate(async () => {
     await tick();
-    FocusInput();
     await AdjustHeight();
+    await FocusInput();
   });
 
   async function AdjustHeight() {
@@ -123,12 +127,18 @@
     }
   }
 
-  function FocusInput() {
+  async function FocusInput() {
     if (inputdiv !== null) {
       if (inputTimer !== null) clearTimeout(inputTimer);
-      if (!showOutputDiv && !showHtmlDiv) inputdiv.focus();
+      if (!showOutputDiv && !showHtmlDiv && !showListSearch) inputdiv.focus();
       else if (showOutputDiv) {
-        outputDivInput.focus();
+        if (showListSearch) {
+          listSearchInput.focus();
+        } else {
+          outputDivInput.focus();
+          await tick();
+          await checkPosition();
+        }
       } else {
         htmlDivInput.focus();
       }
@@ -566,21 +576,56 @@
   async function openCommand(text) {
     InterActive = false;
     //
+    // Clean it up and make sure it's a string.
+    //
+    text = new String(text).toString().trim();
+
+    //
     // Fix up the file path given to the open command.
     //
     if (text[0] === '"' || text[0] === "'") {
+      //
+      // Remove the quotes.
+      //
       text = text.slice(1, text.length - 1);
     }
+
+    //
+    // Get the extension of the file to open.
+    //
+    let extension = "";
+    let parts = text.split(".");
+    if (parts.length > 1) extension = parts[parts.length - 1];
+
+    //
+    // Get the full path to the file.
+    //
     if (text[0] !== "/") {
       text = await App.AppendPath(wd, text);
     }
-    text = new String(text.trim()).toString();
 
     //
-    // Run the open command on the file.
+    // If it is a text file, edit it.
     //
-    await runCommandLine(`/usr/bin/open -t ${text}`, [], () => {}, wd);
+    if (isTextFile(extension)) {
+      //
+      // Use the edit command to open it.
+      //
+      editCommand(text);
+    } else {
+      //
+      // Run the open command on the file.
+      //
+      await runCommandLine(`/usr/bin/open -t ${text}`, [], () => {}, wd);
+    }
     lastData.valid = false;
+  }
+
+  function isTextFile(extension) {
+    //
+    // Look for the extension in the possible text file types.
+    //
+    return $filetypes.includes(extension);
   }
 
   async function runscriptCommand(text) {
@@ -675,6 +720,21 @@
             (err, result) => {},
             wd
           );
+        } else if (editor === "vim" || editor === "nvim") {
+          //
+          // Open the neovim editor using the server.
+          //
+          await runCommandLine(
+            'nvr "' + text + '"',
+            [],
+            (err, result) => {},
+            wd
+          );
+        } else {
+          //
+          // Not sure what to do with the editor.
+          //
+          showErrorHTML(`I don't know the editor ${editor}!`);
         }
       }
     }
@@ -1069,37 +1129,53 @@
   }
 
   function checkInView(container, element) {
-    //Get container properties
-    let Offset = 0;
-    let cTop = container.scrollTop + 140;
-    let cBottom = cTop + container.clientHeight;
-    cTop += 5; // take into account the padding on the top. Not needed for the bottom calculations.
+    if (container !== null && element !== null) {
+      //Get container properties
+      let Offset = 0;
+      let cTop = container.scrollTop + 140;
+      let cBottom = cTop + container.clientHeight;
+      cTop += 5; // take into account the padding on the top. Not needed for the bottom calculations.
 
-    //Get element properties
-    let eTop = element.offsetTop;
-    let eBottom = eTop + element.clientHeight;
+      //Get element properties
+      let eTop = element.offsetTop;
+      let eBottom = eTop + element.clientHeight;
 
-    //Check if in view
-    let isTotal = eTop >= cTop && eBottom <= cBottom;
-    let isPartial =
-      (eTop < cTop && eBottom > cTop) || (eBottom > cBottom && eTop < cBottom);
+      //Check if in view
+      let isTotal = eTop >= cTop && eBottom <= cBottom;
+      let isPartial =
+        (eTop < cTop && eBottom > cTop) ||
+        (eBottom > cBottom && eTop < cBottom);
 
-    if (eBottom > cBottom) {
-      Offset = eBottom - cBottom;
-    } else if (eTop < cTop) {
-      Offset = eTop - cTop;
+      if (eBottom > cBottom) {
+        Offset = eBottom - cBottom;
+      } else if (eTop < cTop) {
+        Offset = eTop - cTop;
+      }
+
+      //Return outcome
+      return {
+        cTop: cTop,
+        cBottom: cBottom,
+        eTop: eTop,
+        eBottom: eBottom,
+        istotal: isTotal,
+        ispartial: isPartial,
+        offset: Offset,
+      };
+    } else {
+      //
+      // The elements were not in focus. Next time. Return an zero result.
+      //
+      return {
+        cTop: 0,
+        cBottom: 0,
+        eTop: 0,
+        eBottom: 0,
+        istotal: 0,
+        ispartial: 0,
+        offset: 0,
+      };
     }
-
-    //Return outcome
-    return {
-      cTop: cTop,
-      cBottom: cBottom,
-      eTop: eTop,
-      eBottom: eBottom,
-      istotal: isTotal,
-      ispartial: isPartial,
-      offset: Offset,
-    };
   }
 
   async function checkPosition() {
@@ -1133,7 +1209,12 @@
           currentLine = currentLine - 1;
         }
         if (currentLine < 0) currentLine = 0;
-        await checkPosition();
+        if (InterActive) {
+          await checkPosition();
+        } else {
+          if (AltAdj === "") AltAdj = "1";
+          updateScroll(scrollDiv, -20 * parseInt(AltAdj));
+        }
         AltAdj = "";
         break;
 
@@ -1148,7 +1229,12 @@
         if (currentLine >= lastData.data.length) {
           currentLine = lastData.data.length - 1;
         }
-        await checkPosition();
+        if (InterActive) {
+          await checkPosition();
+        } else {
+          if (AltAdj === "") AltAdj = "1";
+          updateScroll(scrollDiv, 20 * parseInt(AltAdj));
+        }
         AltAdj = "";
         break;
 
@@ -1192,6 +1278,15 @@
         inputState = 0;
         AltAdj = "";
         e.stopPropagation();
+        break;
+
+      case "/":
+        //
+        // Open the list search.
+        //
+        showListSearch = true;
+        origTextOutput = textOutput;
+        currentLine = 0;
         break;
     }
   }
@@ -1245,6 +1340,60 @@
 
   async function quit() {
     App.Quit();
+  }
+
+  function listSearchProcess(e) {
+    if (e.key === "Escape" || e.key === "Enter") {
+      currentLine = origTextOutput.findIndex((item) =>
+        item.match(`${textOutput[currentLine]}`)
+      );
+      textOutput = origTextOutput;
+      if (currentLine === -1) currentLine = 0;
+      showListSearch = false;
+    } else {
+      if (e.ctrlKey) {
+        switch (e.key) {
+          case "j":
+            currentLine = currentLine + 1;
+            if (currentLine >= textOutput.length) {
+              currentLine = textOutput.length - 1;
+            }
+            e.stopPropagation();
+            break;
+
+          case "k":
+            currentLine = currentLine - 1;
+            if (currentLine < 0) currentLine = 0;
+            e.stopPropagation();
+            break;
+
+          default:
+            break;
+        }
+      } else {
+        switch (e.key) {
+          case "ArrowDown":
+            currentLine = currentLine + 1;
+            if (currentLine >= textOutput.length) {
+              currentLine = textOutput.length - 1;
+            }
+            e.stopPropagation();
+            break;
+
+          case "ArrowUp":
+            currentLine = currentLine - 1;
+            if (currentLine < 0) currentLine = 0;
+            e.stopPropagation();
+            break;
+
+          default:
+            textOutput = origTextOutput.filter((item) =>
+              item.toLowerCase().match(`${listSearchInput.value.toLowerCase()}`)
+            );
+            break;
+        }
+      }
+    }
   }
 </script>
 
@@ -1334,6 +1483,20 @@
         {:else}
           {@html textOutput.join("\n")}
         {/if}
+        {#if showListSearch}
+          <div id="ListSearchDiv">
+            <input
+              id="listSearchIn"
+              autocomplete="off"
+              style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; font-size: {$theme.fontSize}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
+              spellcheck="false"
+              autocorrect="off"
+              bind:this={listSearchInput}
+              on:keydown={listSearchProcess}
+              on:input={listSearchProcess}
+            />
+          </div>
+        {/if}
       </div>
     {/if}
     {#if showHtmlDiv}
@@ -1359,6 +1522,14 @@
     height: 70%;
     border: 0px;
     border-color: transparent;
+  }
+
+  #listSearchIn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    border-radius: 10px;
+    padding-left: 10px;
   }
 
   #errorContainer {

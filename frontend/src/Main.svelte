@@ -1197,42 +1197,52 @@ ${text}
 
         case "1":
           openNote(0);
+          if ($state === "notes") $noteEditor.focus();
           break;
 
         case "2":
           openNote(1);
+          if ($state === "notes") $noteEditor.focus();
           break;
 
         case "3":
           openNote(2);
+          if ($state === "notes") $noteEditor.focus();
           break;
 
         case "4":
           openNote(3);
+          if ($state === "notes") $noteEditor.focus();
           break;
 
         case "5":
           openNote(4);
+          if ($state === "notes") $noteEditor.focus();
           break;
 
         case "6":
           openNote(5);
+          if ($state === "notes") $noteEditor.focus();
           break;
 
         case "7":
           openNote(6);
+          if ($state === "notes") $noteEditor.focus();
           break;
 
         case "8":
           openNote(7);
+          if ($state === "notes") $noteEditor.focus();
           break;
 
         case "9":
           openNote(8);
+          if ($state === "notes") $noteEditor.focus();
           break;
 
         case "0":
           openNote(9);
+          if ($state === "notes") $noteEditor.focus();
           break;
       }
     }

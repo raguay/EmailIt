@@ -186,9 +186,7 @@
         // This state is for finding the right command.
         //
         showHint = false;
-        if (curin.length === 0) {
-          showHint = false;
-        } else {
+        if (curin.length !== 0) {
           hints = $aliases
             .map((ele) => ele.name)
             .filter((ele) => ele.includes(curin))

@@ -163,9 +163,9 @@
     showChangeAccount = !showChangeAccount;
   }
 
-  function saveAccount() {
+  async function saveAccount() {
     if (emailState === "preview") {
-      makeHtml();
+      await makeHtml();
     }
     showChangeAccount = false;
   }
@@ -188,17 +188,17 @@
     showNewAccount = true;
   }
 
-  function cancelAccountChange() {
+  async function cancelAccountChange() {
     $account = origAccount;
     if (emailState === "edit") {
       bodyValue = $emailEditor.getValue();
     } else {
-      makeHtml();
+      await makeHtml();
     }
     showChangeAccount = false;
   }
 
-  function changeActiveAccount(acc) {
+  async function changeActiveAccount(acc) {
     //
     // Set new account and create previews.
     //
@@ -206,11 +206,11 @@
     if (emailState === "edit") {
       bodyValue = $emailEditor.getValue();
     } else {
-      makeHtml();
+      await makeHtml();
     }
   }
 
-  function createPreview() {
+  async function createPreview() {
     var toAddress;
     toAddress = document.getElementById("receiverInput").value;
     if (validate(toAddress)) {
@@ -228,7 +228,7 @@
       //
       // Creat a preview of the email.
       //
-      makeHtml();
+      await makeHtml();
 
       //
       // Show the preview.
@@ -241,12 +241,12 @@
     $showTemplates = false;
   }
 
-  function makeHtml() {
+  async function makeHtml() {
     var converter = new showdown.Converter({
       extensions: [],
     });
     converter.setOption("tables", true);
-    let newBody = $runtemplate("given", bodyValue);
+    let newBody = await $runtemplate("given", bodyValue);
     previewHTML = converter.makeHtml(newBody + $account.signiture);
     if (typeof $account.headerHTML !== "undefined") {
       previewHTML = $account.headerHTML + previewHTML + $account.footerHTML;
@@ -264,7 +264,11 @@
 
   async function sendEmail() {
     var toAddress;
-    if (typeof $email.to !== "undefined") {
+    if (
+      typeof $email.to !== "undefined" &&
+      $email.to !== "" &&
+      $email.to !== null
+    ) {
       toAddress = $email.to;
     } else {
       var em = document.getElementById("receiverInput").value;
@@ -273,7 +277,7 @@
     if (validate(toAddress)) {
       addToEmails(toAddress);
       var bodyText = bodyValue + cleanTags($account.signiture);
-      bodyText = $runtemplate("given", bodyText);
+      bodyText = await $runtemplate("given", bodyText);
       showPreview = false;
       emailState = "edit";
 
@@ -334,14 +338,14 @@
       const matches = email.match(nameRegexp);
       email = matches[1];
     }
-
     //
     // Check the email itself.
     //
     const emailRegexp = new RegExp(
       /^[a-zA-Z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1}([a-zA-Z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1})*[a-zA-Z0-9]@[a-zA-Z0-9][-\.]{0,1}([a-zA-Z][-\.]{0,1})*[a-zA-Z0-9]\.[a-zA-Z0-9]{1,}([\.\-]{0,1}[a-zA-Z]){0,}[a-zA-Z0-9]{0,}$/i
     );
-    return emailRegexp.test(email);
+    const isEmail = emailRegexp.test(email);
+    return isEmail;
   }
 
   function addToEmails(emailLine) {
@@ -393,7 +397,7 @@
     $showTemplates = false;
   }
 
-  function saveNewAccount() {
+  async function saveNewAccount() {
     var acc = {
       name: accountName,
       default: accountDefault,
@@ -425,18 +429,18 @@
     $account = acc;
     $emailaccounts = $emailaccounts;
     saveAccounts();
-    if (emailState === "preview") makeHtml();
+    if (emailState === "preview") await makeHtml();
     clearFormData();
     showNewAccount = false;
   }
 
-  function deleteAccount() {
+  async function deleteAccount() {
     var acc = $account;
     $emailaccounts = $emailaccounts.filter((item) => item.name !== acc.name);
     if ($emailaccounts.length > 0) {
       $account = $emailaccounts[0];
       origAccount = $emailaccounts[0];
-      if (emailState === "preview") makeHtml();
+      if (emailState === "preview") await makeHtml();
     } else {
       showNewAccount = false;
       $account = undefined;
@@ -539,7 +543,9 @@
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountDefaultInput"
         type="checkbox"
-        autocomplete="off" spellcheck="false" autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
         bind:checked={accountDefault}
       />
       <label for="accountNameInput" class="newAccountLabel">
@@ -548,7 +554,9 @@
       <input
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountNameInput"
-        autocomplete="off" spellcheck="false" autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
         bind:value={accountName}
       />
       <label for="accountFromInput" class="newAccountLabel">
@@ -557,7 +565,9 @@
       <input
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; border-color: {$theme.borderColor}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
         id="accountFromInput"
-        autocomplete="off" spellcheck="false" autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
         bind:value={accountFrom}
       />
       <label for="accountSmptServerInput" class="newAccountLabel">
@@ -566,7 +576,9 @@
       <input
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountSmptServerInput"
-        autocomplete="off" spellcheck="false" autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
         bind:value={accountSmptServer}
       />
       <label for="accountPortInput" class="newAccountLabel">
@@ -575,7 +587,9 @@
       <input
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; border-color: {$theme.borderColor}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
         id="accountPortInput"
-        autocomplete="off" spellcheck="false" autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
         bind:value={accountPort}
       />
       <label for="accountUsernameInput" class="newAccountLabel">
@@ -584,7 +598,9 @@
       <input
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountUsernameInput"
-        autocomplete="off" spellcheck="false" autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
         bind:value={accountUsername}
       />
       <label for="accountPasswordInput" class="newAccountLabel">
@@ -593,7 +609,9 @@
       <input
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountPasswordInput"
-        autocomplete="off" spellcheck="false" autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
         bind:value={accountPassword}
       />
       <label for="accountSigInput" class="newAccountLabel"> Signiture: </label>
@@ -706,7 +724,9 @@
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; border-color: {$theme.borderColor}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
         id="receiverInput"
         class="receiverInput"
-        autocomplete="off" spellcheck="false" autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
         bind:value={receiver}
         bind:this={receiverDOM}
         on:blur={() => {
@@ -754,7 +774,9 @@
       <label for="subject"> Subject: </label>
       <input
         id="subject"
-        autocomplete="off" spellcheck="false" autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
         bind:this={subject}
         on:blur={() => {
           saveEmailState();

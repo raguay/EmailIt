@@ -8,7 +8,6 @@
   import ScriptsEditor from "./components/ScriptsEditor.svelte";
   import TemplatesEditor from "./components/TemplatesEditor.svelte";
   import Preferences from "./components/Preferences.svelte";
-  import ScriptTerminal from "./components/ScriptTerminal.svelte";
   import ScriptLine from "./components/ScriptLine.svelte";
   import { commands } from "./stores/commands.js";
   import { state } from "./stores/state.js";
@@ -615,6 +614,11 @@
     return obj1;
   }
 
+  function openNote(id) {
+    $currentNote = id;
+    $noteEditor.setValue($notes.notes[$currentNote]);
+  }
+
   function wait(ms) {
     return new Promise((resolve, reject) => {
       setTimeout(() => {
@@ -1162,12 +1166,6 @@ ${text}
           e.preventDefault();
           break;
 
-        case "v":
-          $state = "viewlog";
-          await rt.WindowSetSize($config.width, $config.height);
-          e.preventDefault();
-          break;
-
         case "n":
           $state = "notes";
           await rt.WindowSetSize($config.width, $config.height);
@@ -1186,12 +1184,6 @@ ${text}
           e.preventDefault();
           break;
 
-        case "l":
-          $state = "scriptterm";
-          await rt.WindowSetSize($config.width, $config.height);
-          e.preventDefault();
-          break;
-
         case "p":
           $state = "preferences";
           await rt.WindowSetSize($config.width, $config.height);
@@ -1201,6 +1193,46 @@ ${text}
         case "s":
           $state = "scriptline";
           e.preventDefault();
+          break;
+
+        case "1":
+          openNote(0);
+          break;
+
+        case "2":
+          openNote(1);
+          break;
+
+        case "3":
+          openNote(2);
+          break;
+
+        case "4":
+          openNote(3);
+          break;
+
+        case "5":
+          openNote(4);
+          break;
+
+        case "6":
+          openNote(5);
+          break;
+
+        case "7":
+          openNote(6);
+          break;
+
+        case "8":
+          openNote(7);
+          break;
+
+        case "9":
+          openNote(8);
+          break;
+
+        case "0":
+          openNote(9);
           break;
       }
     }
@@ -1235,8 +1267,6 @@ ${text}
   <TemplatesEditor />
 {:else if $state === "preferences"}
   <Preferences />
-{:else if $state === "scriptterm"}
-  <ScriptTerminal />
 {:else if $state === "scriptline"}
   <ScriptLine />
 {:else}

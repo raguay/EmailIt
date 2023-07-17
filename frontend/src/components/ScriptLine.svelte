@@ -68,17 +68,11 @@
     rmalias: {
       command: removeAliasCommand,
     },
-    term: {
-      command: viewScriptTerminal,
-    },
     notes: {
       command: viewNotes,
     },
     emailit: {
       command: viewEmailIt,
-    },
-    scriptline: {
-      command: viewScriptLine,
     },
     editscript: {
       command: viewScriptEditor,
@@ -990,18 +984,6 @@
     //
     await rt.WindowSetSize($config.width, $config.height);
     $state = "scripts";
-  }
-
-  async function viewScriptTerminal() {
-    //
-    // Reset the window size to normal.
-    //
-    await rt.WindowSetSize($config.width, $config.height);
-    $state = "scriptterm";
-  }
-
-  function viewScriptLine() {
-    $state = "scriptline";
   }
 
   async function runCommandLine(line, rEnv, callback, dir) {

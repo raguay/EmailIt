@@ -496,23 +496,6 @@ export const systemScripts = writable([
     termscript: true,
   },
   {
-    name: "term",
-    insert: false,
-    description: "Show the Script Terminal.",
-    help: "Go to the Script Terminal",
-    script: "SP.text = JSON.stringify({\n  tcommand: 'term',\n  lines: []\n});",
-    termscript: true,
-  },
-  {
-    name: "scriptline",
-    insert: false,
-    description: "Show the Script Line.",
-    help: "Go to the Script Line",
-    script:
-      "SP.text = JSON.stringify({\n  tcommand: 'scriptline',\n  lines: []\n});",
-    termscript: true,
-  },
-  {
     name: "editscript",
     insert: false,
     description: "Show the Script Editor.",

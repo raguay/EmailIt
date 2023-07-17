@@ -10,8 +10,8 @@
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.4.2",
-    "svelte": "^4.0.1",
-    "vite": "^4.3.9"
+    "svelte": "^4.0.5",
+    "vite": "^4.4.4"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.8.1",
@@ -19,15 +19,15 @@
     "@codemirror/lang-javascript": "^6.1.9",
     "@codemirror/lang-markdown": "^6.2.0",
     "@codemirror/language": "^6.8.0",
-    "@codemirror/lint": "^6.3.0",
+    "@codemirror/lint": "^6.4.0",
     "@codemirror/search": "^6.5.0",
     "@codemirror/state": "^6.2.1",
-    "@codemirror/view": "^6.14.0",
+    "@codemirror/view": "^6.14.1",
     "handlebars": "^4.7.7",
     "install": "^0.13.0",
     "luxon": "^3.3.0",
     "mathjs": "^11.8.2",
-    "npm": "^9.7.2",
+    "npm": "^9.8.0",
     "showdown": "^2.1.0",
     "superagent": "^8.0.9",
     "xterm": "^5.2.1",

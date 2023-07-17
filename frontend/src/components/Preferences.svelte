@@ -37,10 +37,6 @@
   function viewNotes() {
     $state = "notes";
   }
-
-  function viewScriptTerminal() {
-    $state = "scriptterm";
-  }
 </script>
 
 <div
@@ -98,14 +94,6 @@
       }}
     >
       Notes
-    </button>
-    <button
-      style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
-      on:click={(event) => {
-        viewScriptTerminal();
-      }}
-    >
-      Script Terminal
     </button>
   </div>
 </div>

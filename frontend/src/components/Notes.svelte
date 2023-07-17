@@ -98,12 +98,6 @@
     $showTemplates = false;
     $showScripts = false;
   }
-
-  function viewScriptTerm() {
-    $showTemplates = false;
-    $showScripts = false;
-    $state = "scriptterm";
-  }
 </script>
 
 <div
@@ -149,12 +143,6 @@
       style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
     >
       EmailIt
-    </button>
-    <button
-      on:click={viewScriptTerm}
-      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
-    >
-      Script Terminal
     </button>
     <button
       on:click={viewScriptsMenu}

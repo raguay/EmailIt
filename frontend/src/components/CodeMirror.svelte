@@ -1,6 +1,7 @@
 <script>
   import { onMount } from "svelte";
   import { createEventDispatcher } from "svelte";
+  import { vim } from "@replit/codemirror-vim";
   import {
     lineNumbers,
     highlightActiveLineGutter,
@@ -146,6 +147,7 @@
     // Setup the extensions array.
     //
     const exts = [
+      vim(),
       highlightSpecialChars(),
       history(),
       drawSelection(),

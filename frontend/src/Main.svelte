@@ -13,6 +13,7 @@
   import { state } from "./stores/state.js";
   import { sp } from "./stores/sp.js";
   import { email } from "./stores/email.js";
+  import { wd } from "./stores/wd.js";
   import { scripts } from "./stores/scripts.js";
   import { termscripts } from "./stores/termscripts.js";
   import { showScripts } from "./stores/showScripts.js";
@@ -289,6 +290,10 @@
     //
     // Start the listeners from the Server.
     //
+    rt.EventsOn("changewd", async (msg) => {
+      $wd = msg.wd;
+    });
+
     rt.EventsOn("notechange", async (msg) => {
       let nid = parseInt(msg.noteid);
       let result = await $notes.getNote(nid);

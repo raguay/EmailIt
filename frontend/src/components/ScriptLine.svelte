@@ -8,6 +8,7 @@
   import { filetypes } from "../stores/filetypes.js";
   import { config } from "../stores/config.js";
   import { theme } from "../stores/theme.js";
+  import { wd } from "../stores/wd.js";
   import { sp } from "../stores/sp.js";
   import * as App from "../../wailsjs/go/main/App.js"; // My application API
   import * as rt from "../../wailsjs/runtime/runtime.js"; // the runtime for Wails2
@@ -31,6 +32,7 @@
   let AltAdj = "";
   let InterActive = true;
   let inputState = 0;
+  let shortwd = "";
   let tCommands = {
     cd: {
       command: cdCommand,
@@ -81,7 +83,6 @@
       command: quit,
     },
   };
-  let wd = "~";
   let lastData = {
     line: "",
     data: [],
@@ -94,9 +95,11 @@
   let inputTimer = null;
   let oldheight = 0;
 
+  $: shortwd = shortenPath($wd);
+
   onMount(async () => {
     homeDir = await App.GetHomeDir();
-    wd = homeDir;
+    $wd = homeDir;
 
     //
     // Load the aliases.
@@ -110,6 +113,19 @@
     await FocusInput();
   });
 
+  function shortenPath(oldpath) {
+    let result = oldpath;
+
+    //
+    // Determine if it is too long and shorten it by making the topmost directories
+    // single letters.
+    //
+
+    //
+    // Return the results.
+    //
+    return result;
+  }
   async function AdjustHeight() {
     if (containerDiv !== null) {
       let height = containerDiv.clientHeight + 20; // Have to add the height of the dragbar.
@@ -429,12 +445,12 @@
       let path = new String(text).toString();
       if (text[0] !== "/") {
         let ndir = new String(text).toString();
-        let nwd = new String(wd).toString();
+        let nwd = new String($wd).toString();
         path = await App.AppendPath(nwd, ndir);
       }
       let exists = await App.DirExists(path);
       if (exists) {
-        wd = path;
+        $wd = path;
       } else {
         //
         // Error message
@@ -442,7 +458,7 @@
         showErrorHTML(`The Path doesn't exist!`);
       }
     } else {
-      wd = homeDir;
+      $wd = homeDir;
     }
     lastData.valid = false;
   }
@@ -510,7 +526,7 @@
       text = text.slice(1, text.length - 1);
     }
     text = new String(text.trim()).toString();
-    var path = new String(wd).toString();
+    var path = new String($wd).toString();
     if (text !== "") {
       if (text[0] === "/") {
         path = text;
@@ -593,7 +609,7 @@
     // Get the full path to the file.
     //
     if (text[0] !== "/") {
-      text = await App.AppendPath(wd, text);
+      text = await App.AppendPath($wd, text);
     }
 
     //
@@ -608,7 +624,7 @@
       //
       // Run the open command on the file.
       //
-      await runCommandLine(`/usr/bin/open -t ${text}`, [], () => {}, wd);
+      await runCommandLine(`/usr/bin/open -t ${text}`, [], () => {}, $wd);
     }
     lastData.valid = false;
   }
@@ -644,7 +660,7 @@
         text = text.slice(1, text.length - 1);
       }
 
-      let textfile = await App.AppendPath(wd, text);
+      let textfile = await App.AppendPath($wd, text);
       if (await App.FileExists(textfile)) {
         text = textfile;
       }
@@ -669,7 +685,7 @@
       text = text.slice(1, text.length - 1);
     }
     if (text[0] !== "/") {
-      text = await App.AppendPath(wd, text);
+      text = await App.AppendPath($wd, text);
     }
 
     //
@@ -681,7 +697,7 @@
       //
       // They don't have this file setup. Open in the system's default editor.  TODO: Not usable on non-macOS systems.
       //
-      await runCommandLine(`/usr/bin/open '${text}'`, [], () => {}, wd);
+      await runCommandLine(`/usr/bin/open '${text}'`, [], () => {}, $wd);
     } else {
       //
       // Get the user editor.
@@ -696,7 +712,7 @@
           `/usr/bin/open -a ${editor} '${text}'`,
           [],
           () => {},
-          wd
+          $wd
         );
       } else {
         //
@@ -710,7 +726,7 @@
             'emacsclient -n -q "' + text + '"',
             [],
             (err, result) => {},
-            wd
+            $wd
           );
         } else if (editor === "vim" || editor === "nvim") {
           //
@@ -720,7 +736,7 @@
             'nvr "' + text + '"',
             [],
             (err, result) => {},
-            wd
+            $wd
           );
         } else {
           //
@@ -845,7 +861,7 @@
       text = text.slice(1, text.length - 1);
     }
     text = text.trim();
-    var path = new String(wd).toString();
+    var path = new String($wd).toString();
     if (text !== "") {
       textblank = false;
       text = new String(text).toString();
@@ -901,7 +917,7 @@
       text = text.slice(1, text.length - 1);
     }
     text = text.trim();
-    var path = new String(wd).toString();
+    var path = new String($wd).toString();
     if (text !== "") {
       textblank = false;
       text = new String(text).toString();
@@ -934,7 +950,7 @@
       text = text.slice(1, text.length - 1);
     }
     text = text.trim();
-    var path = new String(wd).toString();
+    var path = new String($wd).toString();
     if (text !== "") {
       textblank = false;
       text = new String(text).toString();
@@ -1409,7 +1425,7 @@
       id="statusline"
       style="background-color: {$theme.backgroundColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
     >
-      WD: {wd}
+      WD: {shortwd}
     </div>
     {#if showError}
       <div id="errorContainer">

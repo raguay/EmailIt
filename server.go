@@ -15,6 +15,14 @@ import (
 	rt "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
+type WdMsg struct {
+	Wd string `json:"wd" binding:"required"`
+}
+
+type ChangeWdMsg struct {
+	Wd string `json:"wd" binding:"required"`
+}
+
 type NoteMsg struct {
 	Message string `json:"note" binding:"required"`
 }
@@ -88,6 +96,24 @@ func backend(app *App, ctx context.Context) {
 				"note": notes[nid],
 			})
 		}
+	})
+
+	r.PUT("/api/wd", func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{
+			"msg": "okay",
+		})
+		var json WdMsg
+		if err := c.ShouldBindJSON(&json); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		//
+		// Send it to the frontend.
+		//
+		rt.EventsEmit(ctx, "changewd", ChangeWdMsg{
+			Wd: json.Wd,
+		})
 	})
 
 	r.PUT("/api/note/:noteid/:type", func(c *gin.Context) {
@@ -272,16 +298,16 @@ func backend(app *App, ctx context.Context) {
 		close(ch)
 	})
 
-  r.GET("/api/emailit/open", func(c *gin.Context) {
+	r.GET("/api/emailit/open", func(c *gin.Context) {
 		//
 		// Tell the main program to show the EmailIt program.
 		//
-    json := CommandMsg{ Action: "EmailIt" }
+		json := CommandMsg{Action: "EmailIt"}
 		ch := make(chan int)
 
-    umicro := time.Now().UnixMicro()
+		umicro := time.Now().UnixMicro()
 		json.ReturnMsg = fmt.Sprintf("%s%d", "commandSend", umicro)
-	
+
 		rt.EventsEmit(ctx, "EmailIt", json)
 		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
@@ -292,16 +318,16 @@ func backend(app *App, ctx context.Context) {
 		close(ch)
 	})
 
-  r.GET("/api/notes/open", func(c *gin.Context) {
+	r.GET("/api/notes/open", func(c *gin.Context) {
 		//
 		// Tell the main program to show the EmailIt program.
 		//
-    json := CommandMsg{ Action: "Notes" }
+		json := CommandMsg{Action: "Notes"}
 		ch := make(chan int)
 
-    umicro := time.Now().UnixMicro()
+		umicro := time.Now().UnixMicro()
 		json.ReturnMsg = fmt.Sprintf("%s%d", "commandSend", umicro)
-	
+
 		rt.EventsEmit(ctx, "Notes", json)
 		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
@@ -316,12 +342,12 @@ func backend(app *App, ctx context.Context) {
 		//
 		// Tell the main program to show the EmailIt program.
 		//
-    json := CommandMsg{ Action: "ScriptLine" }
+		json := CommandMsg{Action: "ScriptLine"}
 		ch := make(chan int)
 
-    umicro := time.Now().UnixMicro()
+		umicro := time.Now().UnixMicro()
 		json.ReturnMsg = fmt.Sprintf("%s%d", "commandSend", umicro)
-	
+
 		rt.EventsEmit(ctx, "ScriptLine", json)
 		rt.EventsOnce(ctx, json.ReturnMsg, func(optionalData ...interface{}) {
 			c.JSON(http.StatusOK, optionalData[0])
@@ -332,7 +358,7 @@ func backend(app *App, ctx context.Context) {
 		close(ch)
 	})
 
-  //
+	//
 	// Run the server.
 	//
 	err := r.Run(":9978")

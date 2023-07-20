@@ -99,7 +99,7 @@
 
   onMount(async () => {
     homeDir = await App.GetHomeDir();
-    $wd = homeDir;
+    if ($wd === "") $wd = homeDir;
 
     //
     // Load the aliases.

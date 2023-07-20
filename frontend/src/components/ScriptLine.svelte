@@ -113,6 +113,13 @@
     await FocusInput();
   });
 
+  function determineWidth(str) {
+    var canvas = document.createElement("canvas");
+    var ctx = canvas.getContext("2d");
+    ctx.font = `${$theme.fontSize} ${$theme.font}`;
+    return ctx.measureText(str).width;
+  }
+
   function shortenPath(oldpath) {
     let result = oldpath;
 
@@ -120,6 +127,20 @@
     // Determine if it is too long and shorten it by making the topmost directories
     // single letters.
     //
+    let shortenIndex = 0;
+    while (determineWidth(result) + 40 >= $config.width) {
+      result = "/";
+      oldpath.split("/").forEach((element, index) => {
+        if (element !== "") {
+          if (index <= shortenIndex) {
+            result += `${element[0]}/`;
+          } else {
+            result += `${element}/`;
+          }
+        }
+      });
+      shortenIndex++;
+    }
 
     //
     // Return the results.

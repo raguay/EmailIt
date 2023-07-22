@@ -128,6 +128,10 @@
     // single letters.
     //
     let shortenIndex = 0;
+
+    //
+    // Add 40 to the width to account for the padding on each side.
+    //
     while (determineWidth(result) + 40 >= $config.width) {
       result = "/";
       oldpath.split("/").forEach((element, index) => {
@@ -147,6 +151,7 @@
     //
     return result;
   }
+
   async function AdjustHeight() {
     if (containerDiv !== null) {
       let height = containerDiv.clientHeight + 20; // Have to add the height of the dragbar.

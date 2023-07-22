@@ -71,7 +71,7 @@ func backend(app *App, ctx context.Context) {
 	// This will have the web server backend for EmailIt
 	//
 	r := gin.Default()
-	r.Use(gin.Recovery())
+	//r.Use(gin.Recovery())
 
 	//
 	// Define the routes needed.

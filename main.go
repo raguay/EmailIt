@@ -11,14 +11,13 @@ import (
 	"strings"
 	"time"
 
-	rt "github.com/wailsapp/wails/v2/pkg/runtime"
 	"github.com/urfave/cli/v2"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/logger"
 	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/linux"
 	"github.com/wailsapp/wails/v2/pkg/options/mac"
-  "github.com/wailsapp/wails/v2/pkg/options/windows"
-  "github.com/wailsapp/wails/v2/pkg/options/linux"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 var wailsapp = NewApp()
@@ -111,78 +110,36 @@ func main() {
 					return BuildEmail()
 				},
 			},
-      {
-        Name: "notes",
-        Aliases: []string{"n"},
-        Usage: "Open the notes.",
-        Action: func(cCtx *cli.Context) error {
-      		//
-      		// Tell the main program to show the Notes program.
-      		//
-          json := CommandMsg{ Action: "Notes" }
-      		ch := make(chan int)
-
-          umicro := time.Now().UnixMicro()
-      		json.ReturnMsg = fmt.Sprintf("%s%d", "commandSend", umicro)
-	
-      		rt.EventsEmit(wailsapp.ctx, "Notes", json)
-      		rt.EventsOnce(wailsapp.ctx, json.ReturnMsg, func(optionalData ...interface{}) {
-      			nwdata := 1
-      			ch <- nwdata
-      		})
-      		<-ch
-      		close(ch)
-          return(nil)
-        },
-      },
-      {
-        Name: "emailit",
-        Aliases: []string{"e"},
-        Usage: "Open the EmailIt email sending application.",
-        Action: func(cCtx *cli.Context) error {
-      		//
-      		// Tell the main program to show the Notes program.
-      		//
-          json := CommandMsg{ Action: "EmailIt" }
-      		ch := make(chan int)
-
-          umicro := time.Now().UnixMicro()
-      		json.ReturnMsg = fmt.Sprintf("%s%d", "commandSend", umicro)
-	
-      		rt.EventsEmit(wailsapp.ctx, "EmailIt", json)
-      		rt.EventsOnce(wailsapp.ctx, json.ReturnMsg, func(optionalData ...interface{}) {
-      			nwdata := 1
-      			ch <- nwdata
-      		})
-      		<-ch
-      		close(ch)
-          return(nil)
-        },
-      },
-      {
-        Name: "scriptline",
-        Aliases: []string{"sl"},
-        Usage: "Open the ScriptLine application.",
-        Action: func(cCtx *cli.Context) error {
-      		//
-      		// Tell the main program to show the Notes program.
-      		//
-          json := CommandMsg{ Action: "ScriptLine" }
-      		ch := make(chan int)
-
-          umicro := time.Now().UnixMicro()
-      		json.ReturnMsg = fmt.Sprintf("%s%d", "commandSend", umicro)
-	
-      		rt.EventsEmit(wailsapp.ctx, "ScriptLine", json)
-      		rt.EventsOnce(wailsapp.ctx, json.ReturnMsg, func(optionalData ...interface{}) {
-      			nwdata := 1
-      			ch <- nwdata
-      		})
-      		<-ch
-      		close(ch)
-          return(nil)
-        },
-      },
+			{
+				Name:    "notes",
+				Aliases: []string{"n"},
+				Usage:   "Open the notes.",
+				Action: func(cCtx *cli.Context) error {
+					result := getRequest("http://localhost:9978/api/notes/open", strings.NewReader(""))
+					fmt.Printf("\nThe server returned: %s\n", result[1:len(result)-1])
+					return (nil)
+				},
+			},
+			{
+				Name:    "emailit",
+				Aliases: []string{"e"},
+				Usage:   "Open the EmailIt email sending application.",
+				Action: func(cCtx *cli.Context) error {
+					result := getRequest("http://localhost:9978/api/emailit/open", strings.NewReader(""))
+					fmt.Printf("\nThe server returned: %s\n", result[1:len(result)-1])
+					return (nil)
+				},
+			},
+			{
+				Name:    "scriptline",
+				Aliases: []string{"sl"},
+				Usage:   "Open the ScriptLine application.",
+				Action: func(cCtx *cli.Context) error {
+					result := getRequest("http://localhost:9978/api/scriptline/open", strings.NewReader(""))
+					fmt.Printf("\nThe server returned: %s\n", result[1:len(result)-1])
+					return (nil)
+				},
+			},
 		},
 	}
 	if err := app.Run(os.Args); err != nil {
@@ -224,7 +181,7 @@ func runFrontEnd() {
 			WindowIsTranslucent:  false,
 			DisableWindowIcon:    false,
 		},
-    // macOS platform specific items.
+		// macOS platform specific items.
 		Mac: &mac.Options{
 			TitleBar:             mac.TitleBarHiddenInset(),
 			Appearance:           mac.NSAppearanceNameDarkAqua,
@@ -235,13 +192,13 @@ func runFrontEnd() {
 				Message: "Version 2.0.0 © 2022 Richard Guay <raguay@customct.com>",
 				Icon:    icon,
 			},
-    },
-    // Linux platform specific items.
-    Linux: &linux.Options{
-      Icon: icon,
-      WindowIsTranslucent: true,
-      WebviewGpuPolicy: linux.WebviewGpuPolicyAlways,
-    },
+		},
+		// Linux platform specific items.
+		Linux: &linux.Options{
+			Icon:                icon,
+			WindowIsTranslucent: true,
+			WebviewGpuPolicy:    linux.WebviewGpuPolicyAlways,
+		},
 	})
 	if err != nil {
 		log.Fatal(err)

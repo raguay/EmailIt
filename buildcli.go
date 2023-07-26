@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	//"github.com/erikgeiser/promptkit/selection"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -136,6 +137,9 @@ func initialModel() model {
 	m.to.TextStyle = inputStyle
 	m.to.Cursor.Style = cursorStyle
 	m.to.Width = m.inputWidth
+	if cliemail.To != "" {
+		m.to.SetValue(cliemail.To)
+	}
 
 	m.subject = textinput.New()
 	m.subject.Placeholder = ""
@@ -145,6 +149,9 @@ func initialModel() model {
 	m.subject.TextStyle = inputStyle
 	m.subject.Cursor.Style = cursorStyle
 	m.subject.Width = m.inputWidth
+	if cliemail.Subject != "" {
+		m.subject.SetValue(cliemail.Subject)
+	}
 
 	m.account = textinput.New()
 	m.account.Placeholder = ""
@@ -160,6 +167,9 @@ func initialModel() model {
 	m.body.BlurredStyle = textareaStyle
 	m.body.Prompt = ""
 	m.body.SetWidth(m.textareaWidth)
+	if cliemail.Body != "" {
+		m.body.SetValue(cliemail.Body)
+	}
 
 	//
 	// Set up the rest of the default values.

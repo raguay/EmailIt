@@ -2,6 +2,7 @@ package main
 
 import (
 	"embed"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -27,6 +28,8 @@ var assets embed.FS
 
 //go:embed build/appicon.png
 var icon []byte
+
+var cliemail HttpEmailMsg
 
 // Function:     getRequest
 //
@@ -68,6 +71,7 @@ func main() {
 	//
 	// Process the Command Line.
 	//
+	cliemail.Account = "Default" // Set the default value for account.
 	app := &cli.App{
 		Name:     "EmailIt",
 		Usage:    "A program for sending emails, working with text, and scripts.",
@@ -82,6 +86,26 @@ func main() {
 		Copyright: "(c) 2022 Richard Guay",
 		HelpName:  "EmailIt",
 		UsageText: "",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:        "a",
+				Value:       "",
+				Usage:       "Address to send an email",
+				Destination: &cliemail.To,
+			},
+			&cli.StringFlag{
+				Name:        "s",
+				Value:       "",
+				Usage:       "Subject for the email",
+				Destination: &cliemail.Subject,
+			},
+			&cli.StringFlag{
+				Name:        "b",
+				Value:       "",
+				Usage:       "Body of the email",
+				Destination: &cliemail.Body,
+			},
+		},
 		Action: func(cCtx *cli.Context) error {
 			if cCtx.Args().Len() == 0 {
 				//
@@ -138,6 +162,33 @@ func main() {
 				Action: func(cCtx *cli.Context) error {
 					result := getRequest("http://localhost:9978/api/scriptline/open", strings.NewReader(""))
 					fmt.Printf("\nThe server returned: %s\n", result[1:len(result)-1])
+					return (nil)
+				},
+			},
+			{
+				Name:    "sendemail",
+				Aliases: []string{"se"},
+				Usage:   "Send the email directly. No GUI or TUI.",
+				Action: func(cCtx *cli.Context) error {
+					//
+					// Create and send the email. Then quit.
+					//
+					bodyJson := HttpEmailMsg{
+						Account: cliemail.Account,
+						From:    "Default",
+						To:      cliemail.To,
+						Subject: cliemail.Subject,
+						Body:    cliemail.Body,
+					}
+					body, err := json.Marshal(bodyJson)
+					bodyStr := string(body[:])
+					if err == nil {
+						//
+						// Send the email then!
+						//
+						SendHTTPQuery("PUT", "http://localhost:9978/api/emailit/send", bodyStr)
+					}
+
 					return (nil)
 				},
 			},

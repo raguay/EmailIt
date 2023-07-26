@@ -6,7 +6,11 @@
 
 A simple program for sending markdown formatted emails quickly. It also has notes, scripts to act on the text, and templates. I'm still actively developing this program, but the basics are functional. I've only built it as a macOS universal build. I'll be adding other builds in the future. This program is built with [Wails](https://wails.io/) and [Svelte](https://svelte.dev/).
 
-I just launched the V2.0.0 release candidate that has no outside requirements to run. It is now completely a Wails 2.0 program that stands on it's own. Many more features to come.
+It also has a easy to use TUI for sending emails from the command line. It also takes flags to fill in the address for sending, subject line, and body. It will then open in a TUI or you can have it send it directly. This is what the TUI looks like:
+
+![EmailIt TUI](/images/emailTUIdemo.gif)
+
+I still need to get these documents up to speed with all of the recent changes.
 
 If you have questions, you can ask them in the [Discussions](https://github.com/raguay/EmailIt/discussions). If you have a bug, please create an [Issue](https://github.com/raguay/EmailIt/issues) for it. Thanks.
 
@@ -128,7 +132,7 @@ Here, you can easily type in an email address, a subject line, and the text body
 
 Before you can send an email, the email SMPT servers need to be setup. When you first run the program without any server, the button that says `CustomCT` will say `Create a New Account`. When you click it, you will be shown the accounts dialog.
 
-![EmailIt Accounts Dialog](/images/account.png)
+:![EmailIt Accounts Dialog](/images/account.png)
 
 I have several accounts setup, but for your first time, it will only have the buttons on the bottom. When you click on of the account buttons, that account is set to the `Current Account`. If you click `Cancel`, the current account will go back to the one when you first entered this dialog. If you click `Delete`, the `Current Account` will be deleted and changed to the topmost account in the list. If you click `Save`, you will go to the main screen with the account button showing the name of the account you selected. If you click `New`, the New Account dialog will be shown.
 

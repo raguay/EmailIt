@@ -3,10 +3,10 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	// "encoding/json"
 	"fmt"
+	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/bubbletea"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"io"
 	"io/ioutil"
@@ -15,6 +15,9 @@ import (
 	"strings"
 )
 
+// Function:      BuildEmail()
+//
+// Description:   the main program loop for the TUI.
 func BuildEmail() error {
 	//
 	// create the Bubbletea interface for building an email.
@@ -29,18 +32,28 @@ func BuildEmail() error {
 
 // Struct:		model
 //
-// description: The structure for the bubbletea interface for building a dialog.
+// description: The structure for the bubbletea interface for the email sending TUI.
 type model struct {
-	inputs  []textinput.Model // This contains the input fields for the labels
-	focused int               // This is the currently focused input
-	err     error             // this will contain any errors from the validators
+	account       textinput.Model // This is for the account.
+	to            textinput.Model // this is for the to address
+	subject       textinput.Model // this is the subject line
+	body          textarea.Model  // The body of the message.
+	focused       int             // This is the currently focused input
+	err           string          // this will contain any errors from the validators
+	inputWidth    int             // Text Input width
+	textareaWidth int             // Text Area width
 }
 
+// Type:          errMsg
+//
+// Description:   This is the error message type.
 type (
-	tickMsg struct{}
-	errMsg  error
+	errMsg error
 )
 
+// Type:          HttpEmailMsg
+//
+// Description:   This is the structure for sending an email to the EmailIt program.
 type HttpEmailMsg struct {
 	Account   string `json:"account"`
 	To        string `json:"to" binding:"required"`
@@ -50,93 +63,134 @@ type HttpEmailMsg struct {
 	ReturnMsg string `json:"returnMsg"`
 }
 
+// Constants:     These are the different constants for the currently focused field.
 const (
-	tofield = iota
-	fromfield
-	accountfield
+	accountfield = iota
+	tofield
 	subjectfield
 	bodyfield
+	sendfield
 )
 
-const (
-	purple   = lipgloss.Color("#9580FF")
-	darkGray = lipgloss.Color("#767676")
-)
-
+// Variables:     These are the different styling options for the program.
 var (
-	inputStyle    = lipgloss.NewStyle().Foreground(purple)
-	continueStyle = lipgloss.NewStyle().Foreground(darkGray)
+	labelStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#9580FF"))
+	inputStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("#9F70A9"))
+	cursorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#80FFEA"))
+
+	continueStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("#F8F8F2"))
+	textareaStyle = textarea.Style{
+		Base:             lipgloss.NewStyle().Foreground(lipgloss.Color("#9580FF")).BorderStyle(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("#9580FF")),
+		CursorLine:       lipgloss.NewStyle().Foreground(lipgloss.Color("#80FFEA")),
+		CursorLineNumber: lipgloss.NewStyle().Foreground(lipgloss.Color("#80FFEA")),
+		EndOfBuffer:      lipgloss.NewStyle().Foreground(lipgloss.Color("#FFFF80")),
+		LineNumber:       lipgloss.NewStyle().Foreground(lipgloss.Color("#544158")),
+		Placeholder:      lipgloss.NewStyle().Foreground(lipgloss.Color("#9580FF")),
+		Prompt:           lipgloss.NewStyle().Foreground(lipgloss.Color("#9580FF")),
+		Text:             lipgloss.NewStyle().Foreground(lipgloss.Color("#9F70A9")),
+	}
 )
 
-// Validator functions to ensure valid input
+// Function:          nameValidator
+//
+// Description:       This is a validator functions to ensure valid input.
+//
+// Inputs:
+//
+//	s       string to validate.
 func nameValidator(s string) error {
 	return nil
 }
 
+// Function:          stringValidator
+//
+// Description:       This is a validator functions to ensure valid input.
+//
+// Inputs:
+//
+//	s       string to validate.
 func stringValidator(s string) error {
 	return nil
 }
 
+// Function:        initialModel()
+//
+// Description:     This will create and initialize the model for our TUI.
 func initialModel() model {
-	var inputs []textinput.Model = make([]textinput.Model, 5)
+	var m model
 
-	inputs[tofield] = textinput.New()
-	inputs[tofield].Placeholder = ""
-	inputs[tofield].CharLimit = 100
-	inputs[tofield].Width = 102
-	inputs[tofield].Prompt = ""
-	inputs[tofield].Validate = nameValidator
+	//
+	// Set th different widths. Should be based on terminal size.
+	//
+	m.inputWidth = 92
+	m.textareaWidth = 100
 
-	inputs[fromfield] = textinput.New()
-	inputs[fromfield].Placeholder = ""
-	inputs[fromfield].CharLimit = 100
-	inputs[fromfield].Width = 102
-	inputs[fromfield].Prompt = ""
-	inputs[fromfield].Validate = nameValidator
+	//
+	// Create the different inputs.
+	//
+	m.to = textinput.New()
+	m.to.Placeholder = ""
+	m.to.CharLimit = 0
+	m.to.Prompt = ""
+	m.to.Validate = nameValidator
+	m.to.TextStyle = inputStyle
+	m.to.Cursor.Style = cursorStyle
+	m.to.Width = m.inputWidth
 
-	inputs[subjectfield] = textinput.New()
-	inputs[subjectfield].Placeholder = ""
-	inputs[subjectfield].CharLimit = 100
-	inputs[subjectfield].Width = 102
-	inputs[subjectfield].Prompt = ""
-	inputs[subjectfield].Validate = nameValidator
+	m.subject = textinput.New()
+	m.subject.Placeholder = ""
+	m.subject.CharLimit = 0
+	m.subject.Prompt = ""
+	m.subject.Validate = nameValidator
+	m.subject.TextStyle = inputStyle
+	m.subject.Cursor.Style = cursorStyle
+	m.subject.Width = m.inputWidth
 
-	inputs[accountfield] = textinput.New()
-	inputs[accountfield].Placeholder = ""
-	inputs[accountfield].CharLimit = 100
-	inputs[accountfield].Width = 102
-	inputs[accountfield].Prompt = ""
-	inputs[accountfield].Validate = stringValidator
+	m.account = textinput.New()
+	m.account.Placeholder = ""
+	m.account.CharLimit = 0
+	m.account.Prompt = ""
+	m.account.Validate = stringValidator
+	m.account.TextStyle = inputStyle
+	m.account.Cursor.Style = cursorStyle
+	m.account.Width = m.inputWidth
 
-	inputs[bodyfield] = textinput.New()
-	inputs[bodyfield].Placeholder = ""
-	inputs[bodyfield].CharLimit = 100
-	inputs[bodyfield].Width = 102
-	inputs[bodyfield].Prompt = ""
-	inputs[bodyfield].Validate = nameValidator
+	m.body = textarea.New()
+	m.body.FocusedStyle = textareaStyle
+	m.body.BlurredStyle = textareaStyle
+	m.body.Prompt = ""
+	m.body.SetWidth(m.textareaWidth)
 
-	return model{
-		// Our list of acctions
-		inputs:  inputs,
-		focused: 0,
-		err:     nil,
-	}
+	//
+	// Set up the rest of the default values.
+	//
+	m.account.SetValue("Default")
+	m.focused = tofield
+	m.err = ""
+	return m
 }
 
+// Function:      Init()
+//
+// Description:   This initializes the TUI.
 func (m model) Init() tea.Cmd {
 	return textinput.Blink
 }
 
-// nextInput focuses the next input field
+// Function:      nextInput()
+//
+// Description:   focuses the next input field
 func (m *model) nextInput() {
 	//
 	// Increment the focused item and wrap around if
 	// too large.
 	//
-	m.focused = (m.focused + 1) % 6
+	m.focused = (m.focused + 1) % (sendfield + 1)
 }
 
-// prevInput focuses the previous input field
+// Function:      prevInput()
+//
+// Description:   focuses the previous input field with proper underflow.
 func (m *model) prevInput() {
 	//
 	// Decrement the focused item.
@@ -144,33 +198,45 @@ func (m *model) prevInput() {
 	m.focused--
 
 	//
-	// If less than zero, wrap around to the highest number.
+	// If less than zero, wrap around to the subject field.
 	//
 	if m.focused < 0 {
-		m.focused = 4
+		m.focused = subjectfield
 	}
 }
 
+// Function:      SendMessage()
+//
+// Description:   This is the tea message to actually send the email.
 func (m model) SendMessage() tea.Msg {
 	//
 	// Create and send the email. Then quit.
 	//
 	bodyJson := HttpEmailMsg{
-		Account: m.inputs[accountfield].Value(),
-		From:    m.inputs[fromfield].Value(),
-		To:      m.inputs[tofield].Value(),
-		Subject: m.inputs[subjectfield].Value(),
-		Body:    m.inputs[bodyfield].Value(),
+		Account: m.account.Value(),
+		From:    "Default",
+		To:      m.to.Value(),
+		Subject: m.subject.Value(),
+		Body:    m.body.Value(),
 	}
 	body, err := json.Marshal(bodyJson)
 	bodyStr := string(body[:])
 	if err != nil {
+		m.err = err.Error()
 	} else {
-		result := SendHTTPQuery("PUT", "http://localhost:9978/api/emailit/send", bodyStr)
+		//
+		// Send the email then!
+		//
+		SendHTTPQuery("PUT", "http://localhost:9978/api/emailit/send", bodyStr)
 	}
 	return tea.QuitMsg{}
 }
 
+// Function:      Update()
+//
+// Description:   This is the bubbletea function to update the graphics based
+//
+//	on the different messages received.
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd = make([]tea.Cmd, 5)
 
@@ -178,13 +244,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.Type {
 		case tea.KeyEnter:
-			if m.focused == 5 {
+			if m.focused == sendfield {
 				//
 				// This is the last input, save the inputs
 				//
 				return m, m.SendMessage
-			} else {
+			} else if m.focused < bodyfield {
 				m.nextInput()
+				return m, nil
 			}
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
@@ -196,40 +263,49 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	// We handle errors just like any other message
 	case errMsg:
-		m.err = msg
+		m.err = msg.Error()
 		return m, nil
 	}
 
-	for i := 0; i < 5; i++ {
-		m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
-	}
-	return m, tea.Batch(cmds...)
-}
+	//
+	// Focus the current input.
+	//
+	switch m.focused {
+	case tofield:
+		m.to.Focus()
+		m.account.Blur()
+		m.subject.Blur()
+		m.body.Blur()
 
-func viewEmail(m model) string {
-	result := fmt.Sprintf(
-		` 
- %s  %s
- %s  %s
- %s  %s
- %s  %s
- %s  %s
- `,
-		inputStyle.Width(8).Render("     To"),
-		m.inputs[tofield].View(),
-		inputStyle.Width(8).Render("   From"),
-		m.inputs[fromfield].View(),
-		inputStyle.Width(8).Render("Account"),
-		m.inputs[accountfield].View(),
-		inputStyle.Width(8).Render("Subject"),
-		m.inputs[subjectfield].View(),
-		inputStyle.Width(8).Render("   Body"),
-		m.inputs[bodyfield].View())
-	if m.focused == 5 {
-		result += continueStyle.Render("Send Email ->")
+	case accountfield:
+		m.account.Focus()
+		m.to.Blur()
+		m.subject.Blur()
+		m.body.Blur()
+
+	case subjectfield:
+		m.subject.Focus()
+		m.to.Blur()
+		m.account.Blur()
+		m.body.Blur()
+
+	case bodyfield:
+		m.body.Focus()
+		m.to.Blur()
+		m.account.Blur()
+		m.subject.Blur()
+
 	}
-	result += "\n"
-	return result
+
+	//
+	// Send the update message.
+	//
+	m.to, cmds[tofield] = m.to.Update(msg)
+	m.subject, cmds[subjectfield] = m.subject.Update(msg)
+	m.account, cmds[accountfield] = m.account.Update(msg)
+	m.body, cmds[bodyfield] = m.body.Update(msg)
+
+	return m, tea.Batch(cmds...)
 }
 
 // Function:    View
@@ -238,27 +314,40 @@ func viewEmail(m model) string {
 //
 //	for displaying to the user.
 func (m model) View() string {
-
 	//
-	// Make sure the inputs are not selected.
+	// Create the actual view string.
 	//
-	for i := 0; i < 5; i++ {
-		m.inputs[i].Blur()
+	result := fmt.Sprintf(`%s  %s
+%s  %s
+%s  %s
+%s`,
+		labelStyle.Width(7).Render("Account"),
+		m.account.View(),
+		labelStyle.Width(7).Render("     To"),
+		m.to.View(),
+		labelStyle.Width(7).Render("Subject"),
+		m.subject.View(),
+		m.body.View())
+	if m.focused == sendfield {
+		result += continueStyle.Render("\nSend Email ->")
 	}
+	result += "\n"
 
 	//
-	// Focus the current input.
+	// return the result.
 	//
-	if m.focused != 5 {
-		m.inputs[m.focused].Focus()
-	}
-
-	//
-	// Generate the view and return the result.
-	//
-	return viewEmail(m)
+	return result
 }
 
+// Function:        SendHTTPQuery()
+//
+// Description:     Send a HTTP request
+//
+// Inputs:
+//
+//	method      The HTTP method to use
+//	uri         The URI to send the request.
+//	body        The body of the request. The body is assumed to be JSON structure.
 func SendHTTPQuery(method string, uri string, body string) string {
 	var result string
 	switch strings.Trim(method, " ") {

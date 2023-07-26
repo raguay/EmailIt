@@ -368,6 +368,23 @@
           processText,
           msg.subject
         );
+      } else if (msg.account === "Default") {
+        //
+        // Get the default account.
+        //
+        let acc = $emailaccounts.filter((item) => item.default)[0];
+        let processHTML = makeHtml(acc, processText);
+        result = await App.SendEmail(
+          acc.username,
+          acc.from,
+          acc.password,
+          acc.smtpserver,
+          acc.port,
+          msg.to,
+          processHTML,
+          processText,
+          msg.subject
+        );
       } else {
         //
         // It has a different account to send by. Look it up and use it.

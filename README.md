@@ -10,6 +10,10 @@ It also has a easy to use TUI for sending emails from the command line. It also 
 
 ![EmailIt TUI](/images/emailTUIdemo.gif)
 
+The email that was sent by this recording is shown here in my Gmail account:
+
+![EmailIt TUI email result](/images/EmailSentByTUI.png)
+
 I still need to get these documents up to speed with all of the recent changes.
 
 If you have questions, you can ask them in the [Discussions](https://github.com/raguay/EmailIt/discussions). If you have a bug, please create an [Issue](https://github.com/raguay/EmailIt/issues) for it. Thanks.

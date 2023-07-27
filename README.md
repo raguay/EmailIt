@@ -350,6 +350,8 @@ The Scriptline is a terminal that runs scripts in the EmailIt program on text gi
 
 ![Scriptline](/images/scriptline.png)
 
+The list under the output list is traversable using the `j` and `k` or the `up arrow` or the `down arrow` keys. When you press `Enter`, it will execute the command for that line. The list can be filtered by pressing the `/` key and typing a string in the search box on the lower right of the list. You can use the `<ctrl>-j` and `<ctrol>-k` keys to move the selection up and down while the filter box is visible. Pressing `Enter` key will close the filter box and return the list to normal with the selection still highlighted as when filtering.
+
 By typing help, you will see all script commands and scripts. The current list of builtin commands are:
 
 |  |  |
@@ -390,7 +392,7 @@ All scripts for use in the Scriptline have to take in a JSON structure called `S
 
 The `tcommand` is a builtin command that is ran directly when the command is ran.
 
-The `lines` structure is an array of objects containing a `text` field with the text to be printed to the terminal, `color` field is the color to print the output in, and a `command` field to be executed when the `r` key is pressed in Command state.
+The `lines` structure is an array of objects containing a `text` field with the text to be printed to the terminal, `color` field is the color to print the output in, and a `command` field to be executed when the `Enter` key is pressed on the line.
 
 The valid colors are: red, black, green, orange, blue, magenta, cyan, gray, and default. These colors are controlled by the current theme for EmailIt. The default color is the text color.
 
@@ -436,6 +438,10 @@ COPYRIGHT:
    (c) 2022 Richard Guay
  ```
 
+The `-a` flag will take the `value` and put it for the address to which to email. The `-s` flage will take the `value` and place it in the `Subject` field of the email. The `-b` flag will take the `value` and place it in the body of the email. The `mkemail` or `me` command will then open the TUI for creating the email. The `sendemail` or `se` command will take the command line information and send the email directly without using the TUI. The `notes` or `n` command will open EmailIt to the notes screen. The `scriptline` or 'sl' command will open the Scriptline screen. The `emailit` or `em` command will open the EmailIt screen.
+
+The TUI looks like this:
+![EmailIt TUI](/images/emailTUIdemo.gif)
 
 ## Preferences
 

@@ -375,7 +375,7 @@ This is in no way a full terminal emulator. It is a simple line based command ru
 
 All scripts for use in the Scriptline have to take in a JSON structure called `SP` (same structure described in the scripts section but with some added fields) and output a JSON structure that tells the script terminal what to do. The JSON output structure is:
 
-```JSON
+```json
 {
   tcommand: <terminal command to run>
   lines: [{

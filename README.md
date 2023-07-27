@@ -12,6 +12,8 @@ It also has a easy to use TUI for sending emails from the command line. By using
 
 ![EmailIt TUI](/images/emailTUIdemo.gif)
 
+###### This gif was created using [vhs](https://github.com/charmbracelet/vhs).
+
 The email that was sent by this recording is shown here in my Gmail account:
 
 ![EmailIt TUI email result](/images/EmailSentByTUI.png)

@@ -72,19 +72,19 @@ I use this program everyday and is very helpful to my workflow. I hope you enjoy
 
 - [Setup as Mailto Protocal Handler](#setup-as-mailto-protocal-handler)
 - [How To Use](#how-to-use)
-	- [Address Book](#address-book)
-	- [Notes](#notes)
-	- [Scripts](#scripts)
-	- [Templates](#templates)
-	- [ScriptLine](#scriptline)
+  - [Address Book](#address-book)
+  - [Notes](#notes)
+  - [Scripts](#scripts)
+  - [Templates](#templates)
+  - [ScriptLine](#scriptline)
   - [TUI and the command line](#tui-and-the-command-line)
-	- [Preferences](#preferences)
-	  - [General](#general)
-	  - [Theme](#theme)
-	  - [External Scripts](#external-scripts)
-	  - [Environments](#environments)
-	  - [GitHub](#github)
-	- [Change Log](#change-log)
+  - [Preferences](#preferences)
+    - [General](#general)
+    - [Theme](#theme)
+    - [External Scripts](#external-scripts)
+    - [Environments](#environments)
+    - [GitHub](#github)
+- [Change Log](#change-log)
 	
 ## Setup as Mailto Protocal Handler
 
@@ -441,7 +441,9 @@ COPYRIGHT:
 The `-a` flag will take the `value` and put it for the address to which to email. The `-s` flage will take the `value` and place it in the `Subject` field of the email. The `-b` flag will take the `value` and place it in the body of the email. The `mkemail` or `me` command will then open the TUI for creating the email. The `sendemail` or `se` command will take the command line information and send the email directly without using the TUI. The `notes` or `n` command will open EmailIt to the notes screen. The `scriptline` or 'sl' command will open the Scriptline screen. The `emailit` or `em` command will open the EmailIt screen.
 
 The TUI looks like this:
+
 ![EmailIt TUI](/images/emailTUIdemo.gif)
+
 
 ## Preferences
 
@@ -543,11 +545,18 @@ command line tools, or whatever else would help. The base address for the APIs i
 
 | Endpoint | Description |
 | --- | ------ |
-| /note/<number>/(a or w) | A PUT request will assert the note value while the GET request will return the note. Both use a JSON structure with the element `note`. The `a` on the end will append to the note while a `w` will over write. |
-| /script/list | A GET request will return a list of scripts that can be ran on EmailIt. |
-| /script/run | A PUT request requires a JSON body with a `script` element and a `text` element. The `script` script will be ran with the `text` and returned in a JSON structure with a `text` element. |
-| /template/list | A GET request will return the name of all the templates in EmailIt. |
-| /template/run | A PUT request requires a JSON body with a 'template' element and a 'text' element. The `template` will be ran with the `text` as an input. The results are return in a JSON structure with the result in the 'text' element. |
+| /api/note/:noteid/:type | For a `PUT` method, if the `type` is `a`, the given text in the body JSON structure with the index `note` is appended to the note `noteid`. If the `type` is `w`, it will overright. For a `GET` method, it will return the note in question. |
+| /api/wd | This is a `PUT` endpoint with a directory path given in the JSON body with the index `Wd`. Scriptline will then be at that directory. |
+| /api/script/env/list | This is a `GET` endpoint that returns a list of environments. |
+| /api/scripts/list |  This is a `GET` endpoint that returns a list of scripts. |
+| /api/script/run | This `PUT` endpoint that will run the given script. |
+| /api/template/list | This is a `GET` endpoint that returns a list of scripts. |
+| /api/template/run | This is a `PUT` endpoint that will run the given template. |
+| /api/emailit/mailto | This is a `GET` endpoint that will set the `To`, `Subject`, and `Body` field of an email and open the EmailIt screen. |
+| /api/emailit/send | This is a `PUT` endpoint that will send and email. |
+| /api/emailit/open | This is a `GET` endpoint that will open the EmailIt screen. |
+| /api/notes/open | This is a `GET` endpoint that will open the notes screen. |
+| /api/scriptline/open | This is a `GET` endpoint that will open the Scriptline screen. |
 
 All the endpoints are used to make the plugins for Alfred, Keyboard Maestro, Dropzone, PopClip, and Launchpad. Also, the ScriptBar program uses these endpoints as well. I'm planning to add serving pages on the user's computer and other functionality as well. I have lots of ideas.
 
@@ -556,18 +565,20 @@ All the endpoints are used to make the plugins for Alfred, Keyboard Maestro, Dro
 ### Features to add/fix - not in order
 
 - Finish and update existing Help pages.
-- Running a script from inside of a script isn't working.
 - Add the ability to get a web page from the server to launch scripts. ScriptServer in the works.
-- Add scripts from GitHub that are marked for EmailIt.
-- Add themes from GitHub that are marked for EmailIt.
 - Get it working on Linux and Windows.
 - Add in the regular expressions editor and runner.
 - Launching the adding of different workflows/extensions to other programs
-- Test running on a new system.
 - User created handlebar helpers and macros.
 - Undo history working. 
 
 ### Change Log:
+
+#### July 27, 2023 - Version 2.1 
+- Added the emailit TUI
+- Changed Script Terminal to Scriptline 
+- Many bug fixes and other changes
+
 
 #### October 27, 2022 - Version 2.0.0 Release Candidate 1
 - Currently, if external program changes a note, EmailIt doesn't know about it. -- Fixed

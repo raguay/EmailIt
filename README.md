@@ -221,7 +221,18 @@ The are some predefined function available as well:
 | SP.ProcessMathSelection(`<text>`) | Runs the given text through the Math.js parser. |
 | SP.ProcessMathNote(`<id>`) | Run the given note id through the Math.js parser. |
 
-I have plans for creating more functions to be used. Stay tuned!
+These functions will not be usable for external scripts. They are for internal JavaScript scripts and internal Scriptline commands.
+
+When creating terminal commands for Scriptline, the `SP` structure will have these added data points:
+
+| | |
+| -- | ---- |
+| SP.data.previousLines | This will contain the previously ran command. |
+  SP.data.registers | This is an array of text registers that can hold information from one chained command to the next. |
+  SP.data.line | This is the command line for the currently executing command. |
+  SP.data.result | This is the previous commands result. |
+
+This structure can change over time. I'm still experimenting with many ideas for it. I have plans for creating more functions to be used with this scheme. Stay tuned!
 
 You can create script in one note and use a different note for the input.  For example, in a note, place the following code:
 
@@ -354,8 +365,13 @@ By typing help, you will see all script commands and scripts. The current list o
 | rm    |  The rm command will delete the given file or directory. If nothing is given, it will list the current directory and an item can be delete using the command mode and r. |
 | mkdir |   The mkdir command makes the given directory if it doesn't already exist. |
 | mkfile |  The mkfile command makes the given file if it doesn't already exist. |
+| rmalias | This command removes the given alias. |
+| notes | This command will go to the notes. |
+| scripteditor | This command will go to the Script Editor. |
+| emailit | This command will go to the EmailIt. |
+| quit | This command will quit the EmailIt program. |
 
-This is in no way a full terminal emulator. It is a simple line based command running. No pipes, redirections, flow control, etc. I mostly use this to run scripts on text files. You can run several commands at once by separating them with a `;` or by using functional programming style of function chaining. Only the last command ran can be used for showing results. The semicolon can be used in the commands for the Command state or `tcommand` fields in the terminal script JSON output.
+This is in no way a full terminal emulator. It is a simple line based command runner. No pipes, redirections, flow control, etc using glyphs, but Scriptline commands can use some flow control by taking advantage of the data given. I mostly use this to run scripts on text files. You can run several commands at once by separating them with a `;` or by using functional programming style of function chaining. When you have a series of commands, each command can access what the previous command was and it's output in the `SP` data structure. Even external commands can get this information. Only the last command ran can be used for showing results. The command chaining can be used in the commands for the Command state or `tcommand` fields in the terminal script JSON output.
 
 All scripts for use in the Scriptline have to take in a JSON structure called `SP` (same structure described in the scripts section but with some added fields) and output a JSON structure that tells the script terminal what to do. The JSON output structure is:
 
@@ -365,7 +381,7 @@ All scripts for use in the Scriptline have to take in a JSON structure called `S
   lines: [{
     text: <text to display>,
     color: <color to show>,
-    command: <command line string to run>
+    command: <command line string to run when selected>
   }, {
      <next line structure>
   }, ...]

@@ -398,6 +398,24 @@ The `lines` structure is an array of objects containing a `text` field with the 
 
 The valid colors are: red, black, green, orange, blue, magenta, cyan, gray, and default. These colors are controlled by the current theme for EmailIt. The default color is the text color.
 
+If you add the following to your `.zshrc` file (for the zsh shell. You will have to adapt it for your particular shell.):
+
+```bash
+
+function changewd() {
+  wget -O /dev/null -q -nv --method=PUT --body-data="{\"wd\": \"$1\"}" --header='Content-Type:application/json' 'http://localhost:9978/api/wd' 2>&1 > /dev/null
+}
+
+function cd() { builtin cd "$@" && changewd "$(pwd)"; }
+
+```
+
+This will use the server API endpoint for changing Scriptline current directory each time you use the `cd` command. You have to have the `wget` command line tool installed as well. This is easily installed with [Homebrew](https://brew.sh) with this command: 
+
+```bash
+brew install wget
+```
+
 ## TUI and the command line
 
 You can enter act with EmailIt from the command line. It has some TUI programs that make using the overall program from the command line easy. The command line for EmailIt has flags and commands. In order to use the program from the command line, you need to make an alias to the programs executable file for the macOS:

@@ -4,9 +4,11 @@
 
 # EmailIt
 
-A simple program for sending markdown formatted emails quickly. It also has notes, scripts to act on the text, and templates. I'm still actively developing this program, but the basics are functional. I've only built it as a macOS universal build. I'll be adding other builds in the future. This program is built with [Wails](https://wails.io/) and [Svelte](https://svelte.dev/).
+A simple program for sending markdown formatted emails quickly. It can expand macros defined using [Handlebars](https:///handlebarsjs.com/). It also has notes, scripts to act on the text, and Handlebar templates. You can set default data to be used in the expansions. I'm still actively developing this program, but the basics are functional. I've only built it as a macOS universal build. I'll be adding other builds in the future. This program is built with [Wails](https://wails.io/) and [Svelte](https://svelte.dev/).
 
-It also has a easy to use TUI for sending emails from the command line. It also takes flags to fill in the address for sending, subject line, and body. It will then open in a TUI or you can have it send it directly. This is what the TUI looks like:
+![EmailIt Main Screen](/images/mainscreen.png)
+
+It also has a easy to use TUI for sending emails from the command line. By using flags to fill in the address for sending, subject line, and body, you can quickly send an email. It will then open in a TUI or you can have it send it directly. This is what the TUI looks like:
 
 ![EmailIt TUI](/images/emailTUIdemo.gif)
 
@@ -14,7 +16,9 @@ The email that was sent by this recording is shown here in my Gmail account:
 
 ![EmailIt TUI email result](/images/EmailSentByTUI.png)
 
-I still need to get these documents up to speed with all of the recent changes.
+Along with all of this, it has a command prompt that is easily set to follow your directory changes in the terminal for allowing you to run scripts on files or simply launch files with your editor or whatever program is set on your system. I call it ScriptLine since it's main purpose is for running scripts.
+
+![ScriptLine](/images/scriptline.png)
 
 If you have questions, you can ask them in the [Discussions](https://github.com/raguay/EmailIt/discussions). If you have a bug, please create an [Issue](https://github.com/raguay/EmailIt/issues) for it. Thanks.
 
@@ -56,6 +60,8 @@ mask build
 
 You can look at the maskfile.md file to see what the build command does if you don't want to use mask itself.
 
+I develop on a MacBook Pro M1 system. Therefore, all features do work on a similar system. I'm trying to test and use it on Linux and Windows, but I don't currently have a Windows system to work with.
+
 ## Documentation
 
 EmailIt came about when my favorite email sending program went vaporware on me (The Let.ter application for macOS). I still needed a way to send markdown based emails to people quickly. I then merged in the functionality of [ScriptPad](https://github.com/raguay/SvelteScriptPad) program I created to have multiple notes, text altering scripts, and templates. I often need to reference or copy something from a note to an email. I also have many email templates that I use in the Template interface. 
@@ -70,8 +76,8 @@ I use this program everyday and is very helpful to my workflow. I hope you enjoy
 	- [Notes](#notes)
 	- [Scripts](#scripts)
 	- [Templates](#templates)
-	- [Script Terminal](#script-terminal)
-	- [Logs Screen](#logs-screen)
+	- [ScriptLine](#scriptline)
+  - [TUI and the command line](#tui-and-the-command-line)
 	- [Preferences](#preferences)
 	  - [General](#general)
 	  - [Theme](#theme)
@@ -327,13 +333,13 @@ The following data expansions are defined as well:
 
 I'm working on a way to have user defined Handlebar helpers and macros. 
 
-## Script Terminal
+## Scriptline
 
-The Script Terminal is a terminal that runs scripts in the EmailIt program on text given or on files given. You can go to the Script Terminal by pressing the `ScriptTerminal` button in the Log screen, Notes screen, or the Script Editor Screen.
+The Scriptline is a terminal that runs scripts in the EmailIt program on text given or on files given. You access the Scriptline from any other screen by pressing `<ctrl>-s`. It can also be opened from a command sent to the internal server.
 
-![Script Terminal](/images/scriptterminal.png)
+![Scriptline](/images/scriptline.png)
 
-By typing help, you will see all script terminal commands and scripts. The current list of builtin commands are:
+By typing help, you will see all script commands and scripts. The current list of builtin commands are:
 
 |  |  |
 |--|----|
@@ -349,13 +355,9 @@ By typing help, you will see all script terminal commands and scripts. The curre
 | mkdir |   The mkdir command makes the given directory if it doesn't already exist. |
 | mkfile |  The mkfile command makes the given file if it doesn't already exist. |
 
-The terminal has two operational modes: Command, and Insert. The Insert mode is the normal state of the terminal where you can type in commands and perform normal actions. The Command state is entered by pressing the `<ESC>` key. Not all commands allow for entering the Command state. In the command state, the cursor is placed on the last output line of the last command. You can go up the list with `k` key and down the list with the `j` key (normal Vim keystrokes). If you press the `r` key, the commands associated with that line (not displayed but in the terminal script output JSON structure) is printed on the command line and executed. You can leave the Command state by pressing the `i` key (for insert).
+This is in no way a full terminal emulator. It is a simple line based command running. No pipes, redirections, flow control, etc. I mostly use this to run scripts on text files. You can run several commands at once by separating them with a `;` or by using functional programming style of function chaining. Only the last command ran can be used for showing results. The semicolon can be used in the commands for the Command state or `tcommand` fields in the terminal script JSON output.
 
-The `ls`, `hist`, and `rm` builtin commands allow for entering the Command state on their output.
-
-This is in no way a full terminal emulator. It is a simple line based command running terminal. No pipes, redirections, flow control, etc. I mostly use this to run scripts on text files. You can run several commands at once by separating them with a `;`. Only the last command ran can be used for entering the Command state. The semicolon can be used in the commands for the Command state or `tcommand` fields in the terminal script JSON output.
-
-All terminal script have to take in a text line and output a JSON structure that tells the script terminal what to do. The JSON structure is:
+All scripts for use in the Scriptline have to take in a JSON structure called `SP` (same structure described in the scripts section but with some added fields) and output a JSON structure that tells the script terminal what to do. The JSON output structure is:
 
 ```JSON
 {
@@ -376,9 +378,52 @@ The `lines` structure is an array of objects containing a `text` field with the 
 
 The valid colors are: red, black, green, orange, blue, magenta, cyan, gray, and default. These colors are controlled by the current theme for EmailIt. The default color is the text color.
 
+## TUI and the command line
+
+You can enter act with EmailIt from the command line. It has some TUI programs that make using the overall program from the command line easy. The command line for EmailIt has flags and commands. In order to use the program from the command line, you need to make an alias to the programs executable file for the macOS:
+
+```bash
+alias em=/Applications/EmailIt.app/Contents/MacOS/EmailIt
+```
+With the above line in your `.bashrc` or `.zshrc` file (you will have to make a similar line for other shells), you can run the EmailIt program from any directory. The different command line options are shown with the basic `-h` or `--help` flag or the `help` or `h` command:
+
+```bash
+> em help
+NAME:
+   EmailIt - A program for sending emails, working with text, and scripts.
+
+USAGE:
+   EmailIt [global options] command [command options] [arguments...]
+
+VERSION:
+   v2.1.0
+
+AUTHOR:
+   Richard Guay <raguay@customct.com>
+
+COMMANDS:
+   mkemail, me     Create an email using a TUI
+   notes, n        Open the notes.
+   emailit, e      Open the EmailIt email sending application.
+   scriptline, sl  Open the ScriptLine application.
+   sendemail, se   Send the email directly. No GUI or TUI.
+   help, h         Shows a list of commands or help for one command
+
+GLOBAL OPTIONS:
+   -a value       Address to send an email
+   -s value       Subject for the email
+   -b value       Body of the email
+   --help, -h     show help
+   --version, -v  print the version
+
+COPYRIGHT:
+   (c) 2022 Richard Guay
+ ```
+
+
 ## Preferences
 
-The preferences can be reached by pressing `<ctrl>-p` or `<cmd>-,` anywhere in the program. There are four sections currently: General, Theme, Node-Red, External Scripts, and Environments. I'm working on a GitHub download section, but it's not finished yet.
+The preferences can be reached by pressing `<ctrl>-p` or `<cmd>-,` anywhere in the program. There are four sections currently: General, Theme, Node-Red, External Scripts, Environments, and GitHub.
 
 ### General
 

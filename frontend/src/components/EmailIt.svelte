@@ -614,7 +614,7 @@
         autocorrect="off"
         bind:value={accountPassword}
       />
-      <label for="accountSigInput" class="newAccountLabel"> Signiture: </label>
+      <label for="accountSigInput" class="newAccountLabel"> Signature: </label>
       <textarea
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         id="accountSigInput"

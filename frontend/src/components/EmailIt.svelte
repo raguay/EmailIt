@@ -15,7 +15,7 @@
   import { config } from "../stores/config.js";
   import { runtemplate } from "../stores/runtemplate.js";
   import * as App from "../../wailsjs/go/main/App.js";
-  import * as rt from "../../wailsjs/runtime/runtime.js"; // the runtime for Wails2
+  //  import * as rt from "../../wailsjs/runtime/runtime.js"; // the runtime for Wails2
 
   let receiver = "";
   let subject = "";
@@ -156,6 +156,7 @@
         }
       });
     }
+    elist = emails;
   }
 
   function changeAccount() {

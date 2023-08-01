@@ -43,6 +43,8 @@ type model struct {
 	err           string          // this will contain any errors from the validators
 	inputWidth    int             // Text Input width
 	textareaWidth int             // Text Area width
+	screenHeight  int             // The height of the terminal.
+	screenWidth   int             // the width of the terminal
 }
 
 // Type:          errMsg
@@ -121,10 +123,12 @@ func initialModel() model {
 	var m model
 
 	//
-	// Set th different widths. Should be based on terminal size.
+	// Set the different widths. Should be based on terminal size.
 	//
 	m.inputWidth = 92
 	m.textareaWidth = 100
+	m.screenHeight = 100
+	m.screenWidth = 100
 
 	//
 	// Create the different inputs.
@@ -270,6 +274,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case tea.KeyTab, tea.KeyCtrlN:
 			m.nextInput()
 		}
+
+	case tea.WindowSizeMsg:
+		m.screenWidth = msg.Width
+		m.screenHeight = msg.Height
+		m.textareaWidth = m.screenWidth - 10
+		m.inputWidth = m.screenWidth - 18
+		m.to.Width = m.inputWidth
+		m.account.Width = m.inputWidth
+		m.body.SetWidth(m.textareaWidth)
+		m.body.SetHeight(m.screenHeight - 7)
+		return m, nil
 
 	// We handle errors just like any other message
 	case errMsg:

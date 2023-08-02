@@ -9,6 +9,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	//"github.com/erikgeiser/promptkit/selection"
+	"github.com/charmbracelet/bubbles/list"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -35,16 +36,14 @@ func BuildEmail() error {
 //
 // description: The structure for the bubbletea interface for the email sending TUI.
 type model struct {
-	account       textinput.Model // This is for the account.
-	to            textinput.Model // this is for the to address
-	subject       textinput.Model // this is the subject line
-	body          textarea.Model  // The body of the message.
-	focused       int             // This is the currently focused input
-	err           string          // this will contain any errors from the validators
-	inputWidth    int             // Text Input width
-	textareaWidth int             // Text Area width
-	screenHeight  int             // The height of the terminal.
-	screenWidth   int             // the width of the terminal
+	account textinput.Model // This is for the account.
+	to      textinput.Model // this is for the to address
+	subject textinput.Model // this is the subject line
+	body    textarea.Model  // The body of the message.
+	focused int             // This is the currently focused input
+	err     string          // this will contain any errors from the validators
+	list    list.Model      // list for choosing accounts
+	sending bool            // flag if sending or not.
 }
 
 // Type:          errMsg
@@ -64,6 +63,19 @@ type HttpEmailMsg struct {
 	Subject   string `json:"subject" binding:"required"`
 	Body      string `json:"body" binding:"required"`
 	ReturnMsg string `json:"returnMsg"`
+}
+
+type EmailAccounts struct {
+	Default    bool   `json:"default" binding:"required"`
+	FooterHTML string `json:"footerHTML" binding:"required"`
+	From       string `json:"from" binding:"required"`
+	HeaderHTML string `json:"headerHTML" binding:"required"`
+	Name       string `json:"name" binding:"required"`
+	Password   string `json:"passwd" binding:"required"`
+	Port       string `json:"port" binding:"required"`
+	Signiture  string `json:"signiture" binding:"required"`
+	SmtpServer string `json:"smtpserver" binding:"required"`
+	Username   string `json:"usersname" binding:"required"`
 }
 
 // Constants:     These are the different constants for the currently focused field.
@@ -94,6 +106,48 @@ var (
 	}
 )
 
+// These items are for the accounts list.
+
+var (
+	titleStyle        = lipgloss.NewStyle().MarginLeft(2).Foreground(lipgloss.Color("#9580FF"))
+	itemStyle         = lipgloss.NewStyle().PaddingLeft(4).Foreground(lipgloss.Color("#80FFEA"))
+	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("#9F70A9"))
+	paginationStyle   = list.DefaultStyles().PaginationStyle.PaddingLeft(4)
+	helpStyle         = list.DefaultStyles().HelpStyle.PaddingLeft(4).PaddingBottom(1)
+	quitTextStyle     = lipgloss.NewStyle().Margin(1, 0, 2, 4)
+)
+
+type item string
+
+func (i item) FilterValue() string { return "" }
+
+type itemDelegate struct{}
+
+func (d itemDelegate) Height() int                             { return 1 }
+func (d itemDelegate) Spacing() int                            { return 0 }
+func (d itemDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd { return nil }
+func (d itemDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+	i, ok := listItem.(item)
+	if !ok {
+		return
+	}
+
+	str := fmt.Sprintf("%d. %s", index+1, i)
+
+	fn := itemStyle.Render
+	if index == m.Index() {
+		fn = func(s ...string) string {
+			return selectedItemStyle.Render("> " + strings.Join(s, " "))
+		}
+	}
+
+	fmt.Fprint(w, fn(str))
+}
+
+//
+// End of list items
+//
+
 // Function:          nameValidator
 //
 // Description:       This is a validator functions to ensure valid input.
@@ -121,14 +175,50 @@ func stringValidator(s string) error {
 // Description:     This will create and initialize the model for our TUI.
 func initialModel() model {
 	var m model
+	var b App
+	var accounts []EmailAccounts
 
 	//
-	// Set the different widths. Should be based on terminal size.
+	// Set the different widths. Should be based on terminal size and will
+	// be replaced when the terminal size message is sent.
 	//
-	m.inputWidth = 92
-	m.textareaWidth = 100
-	m.screenHeight = 100
-	m.screenWidth = 100
+	inputWidth := 92
+	textareaWidth := 100
+
+	//
+	// Get the list of accounts.
+	//
+	hmdir := b.GetHomeDir()
+	accountsPath := b.AppendPath(hmdir, ".config/EmailIt/emailaccounts.json")
+	items := []list.Item{}
+	numacc := 0
+	if b.FileExists(accountsPath) {
+		accountsText := b.ReadFile(accountsPath)
+		err := json.Unmarshal([]byte(accountsText), &accounts)
+		if err != nil {
+			fmt.Printf("Couldn't parse the JSON accounts file! %s", err.Error())
+			os.Exit(0)
+		} else {
+			numacc = len(accounts) + 1
+			items = make([]list.Item, numacc)
+			items[0] = item("Default")
+			for i := 1; i < numacc; i++ {
+				items[i] = item(accounts[i-1].Name)
+			}
+		}
+	} else {
+		fmt.Print("\nEmailIt doesn't have accounts setup. Please setup accounts before using the TUI.\n")
+		os.Exit(0)
+	}
+
+	l := list.New(items, itemDelegate{}, 50, numacc+8)
+	l.Title = "Which account to you want to use?"
+	l.SetShowStatusBar(false)
+	l.SetFilteringEnabled(false)
+	l.Styles.Title = titleStyle
+	l.Styles.PaginationStyle = paginationStyle
+	l.Styles.HelpStyle = helpStyle
+	m.list = l
 
 	//
 	// Create the different inputs.
@@ -140,7 +230,7 @@ func initialModel() model {
 	m.to.Validate = nameValidator
 	m.to.TextStyle = inputStyle
 	m.to.Cursor.Style = cursorStyle
-	m.to.Width = m.inputWidth
+	m.to.Width = inputWidth
 	if cliemail.To != "" {
 		m.to.SetValue(cliemail.To)
 	}
@@ -152,25 +242,25 @@ func initialModel() model {
 	m.subject.Validate = nameValidator
 	m.subject.TextStyle = inputStyle
 	m.subject.Cursor.Style = cursorStyle
-	m.subject.Width = m.inputWidth
+	m.subject.Width = inputWidth
 	if cliemail.Subject != "" {
 		m.subject.SetValue(cliemail.Subject)
 	}
 
 	m.account = textinput.New()
-	m.account.Placeholder = ""
+	m.account.Placeholder = "                                    "
 	m.account.CharLimit = 0
 	m.account.Prompt = ""
 	m.account.Validate = stringValidator
 	m.account.TextStyle = inputStyle
 	m.account.Cursor.Style = cursorStyle
-	m.account.Width = m.inputWidth
+	m.account.Width = inputWidth
 
 	m.body = textarea.New()
 	m.body.FocusedStyle = textareaStyle
 	m.body.BlurredStyle = textareaStyle
 	m.body.Prompt = ""
-	m.body.SetWidth(m.textareaWidth)
+	m.body.SetWidth(textareaWidth)
 	if cliemail.Body != "" {
 		m.body.SetValue(cliemail.Body)
 	}
@@ -178,8 +268,9 @@ func initialModel() model {
 	//
 	// Set up the rest of the default values.
 	//
-	m.account.SetValue("Default")
+	m.account.SetValue("Default                ")
 	m.focused = tofield
+	m.sending = false
 	m.err = ""
 	return m
 }
@@ -226,10 +317,12 @@ func (m model) SendMessage() tea.Msg {
 	//
 	// Create and send the email. Then quit.
 	//
+	fixacct := strings.Trim(m.account.Value(), " ")
+	fixto := strings.Trim(m.to.Value(), " ")
 	bodyJson := HttpEmailMsg{
-		Account: m.account.Value(),
+		Account: fixacct,
 		From:    "Default",
-		To:      m.to.Value(),
+		To:      fixto,
 		Subject: m.subject.Value(),
 		Body:    m.body.Value(),
 	}
@@ -262,29 +355,44 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				//
 				// This is the last input, save the inputs
 				//
-				return m, m.SendMessage
+				if !m.sending {
+					m.sending = true
+					return m, m.SendMessage
+				} else {
+					return m, nil
+				}
+			} else if m.focused == accountfield {
+				i, ok := m.list.SelectedItem().(item)
+				if ok {
+					m.account.SetValue(string(i))
+					m.nextInput()
+				}
 			} else if m.focused < bodyfield {
 				m.nextInput()
-				return m, nil
 			}
 		case tea.KeyCtrlC, tea.KeyEsc:
 			return m, tea.Quit
 		case tea.KeyShiftTab, tea.KeyCtrlP:
-			m.prevInput()
+			if m.focused != accountfield {
+				m.prevInput()
+			}
 		case tea.KeyTab, tea.KeyCtrlN:
-			m.nextInput()
+			if m.focused != accountfield {
+				m.nextInput()
+			}
 		}
 
+		//
+		// This case is for getting the terminal size and setting up the
+		// component sizes.
+		//
 	case tea.WindowSizeMsg:
-		m.screenWidth = msg.Width
-		m.screenHeight = msg.Height
-		m.textareaWidth = m.screenWidth - 10
-		m.inputWidth = m.screenWidth - 18
-		m.to.Width = m.inputWidth
-		m.account.Width = m.inputWidth
-		m.body.SetWidth(m.textareaWidth)
-		m.body.SetHeight(m.screenHeight - 7)
-		return m, nil
+		m.to.Width = msg.Width - 18
+		m.account.Width = msg.Width - 18
+		m.body.SetWidth(msg.Width - 10)
+		m.body.SetHeight(msg.Height - 7)
+		m.list.SetWidth(msg.Width - 10)
+		//return m, nil
 
 	// We handle errors just like any other message
 	case errMsg:
@@ -327,9 +435,12 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	//
 	m.to, cmds[tofield] = m.to.Update(msg)
 	m.subject, cmds[subjectfield] = m.subject.Update(msg)
-	m.account, cmds[accountfield] = m.account.Update(msg)
 	m.body, cmds[bodyfield] = m.body.Update(msg)
-
+	if m.focused == accountfield {
+		m.list, cmds[accountfield] = m.list.Update(msg)
+	} else {
+		m.account, cmds[accountfield] = m.account.Update(msg)
+	}
 	return m, tea.Batch(cmds...)
 }
 
@@ -342,19 +453,26 @@ func (m model) View() string {
 	//
 	// Create the actual view string.
 	//
-	result := fmt.Sprintf(`%s  %s
+	result := ""
+	if m.focused == accountfield {
+		result = m.list.View()
+	} else if m.sending {
+		result = labelStyle.Width(25).Render("The Email is sending....")
+	} else {
+		result = fmt.Sprintf(`%s  %s
 %s  %s
 %s  %s
 %s`,
-		labelStyle.Width(7).Render("Account"),
-		m.account.View(),
-		labelStyle.Width(7).Render("     To"),
-		m.to.View(),
-		labelStyle.Width(7).Render("Subject"),
-		m.subject.View(),
-		m.body.View())
-	if m.focused == sendfield {
-		result += continueStyle.Render("\nSend Email ->")
+			labelStyle.Width(7).Render("Account"),
+			m.account.View(),
+			labelStyle.Width(7).Render("     To"),
+			m.to.View(),
+			labelStyle.Width(7).Render("Subject"),
+			m.subject.View(),
+			m.body.View())
+		if m.focused == sendfield {
+			result += continueStyle.Render("\nSend Email ->")
+		}
 	}
 	result += "\n"
 

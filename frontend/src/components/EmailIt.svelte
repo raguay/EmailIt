@@ -8,6 +8,7 @@
   import { account } from "../stores/account.js";
   import { emailaccounts } from "../stores/emailaccounts.js";
   import { email } from "../stores/email.js";
+  import { emails } from "../stores/emails.js";
   import { emailEditor } from "../stores/emailEditor.js";
   import { commandLineEmail } from "../stores/commandLineEmail.js";
   import { showScripts } from "../stores/showScripts.js";
@@ -38,7 +39,6 @@
   let previewHTML = "";
   let bodyValue = "";
   let oldState = "";
-  let emails = [];
   let editorConfig = {
     language: "markdown",
     lineNumbers: false,
@@ -51,17 +51,19 @@
   let alertTitle = "";
   let alertMsg = "";
   let showAlert = false;
-  let showEmailList = false;
+  let showEmailList = true;
   let showAddressB = false;
   let receiverDOM;
 
   onMount(async () => {
-    await getEmails();
     emailState = "edit";
     oldState = "edit";
-    initFinished = true;
+    initFinished = false;
+    generateEmailList();
     if ($email.new) {
       focusAgain = true;
+    } else {
+      focusAgain = false;
     }
   });
 
@@ -96,19 +98,24 @@
   });
 
   function generateEmailList(e) {
-    if (e !== undefined && (e.key === "Escape" || e.key === "Tab")) {
-      showEmailList = false;
-    } else {
+    elist = $emails.map((item) => {
+      if (item.name === "") {
+        return item.email;
+      } else {
+        return `${item.name.trim()} <${item.email.trim()}>`;
+      }
+    });
+    if (typeof receiver !== "undefined") {
       var fullLine = receiver.toString().toLowerCase();
       var currentPart = "";
       var parts = fullLine.split(",");
       if (parts.length > 1) {
         currentPart = parts[parts.length - 1];
-        elist = emails.filter((item) =>
+        elist = elist.filter((item) =>
           item.toString().toLowerCase().includes(currentPart.trim())
         );
       } else {
-        elist = emails.filter((item) =>
+        elist = elist.filter((item) =>
           item.toString().toLowerCase().includes(fullLine)
         );
       }
@@ -138,25 +145,6 @@
   function textChanged(textCursor) {
     $email.body = textCursor.value;
     bodyValue = textCursor.value;
-  }
-
-  async function getEmails() {
-    //
-    // Get the emails from the system.
-    //
-    let emailfileloc = await App.AppendPath($config.configDir, "emails.json");
-    if (await App.FileExists(emailfileloc)) {
-      let emailfilejson = await App.ReadFile(emailfileloc);
-      emails = JSON.parse(emailfilejson);
-      emails = emails.map((item) => {
-        if (item.name === "") {
-          return item.email;
-        } else {
-          return `${item.name.trim()} <${item.email.trim()}>`;
-        }
-      });
-    }
-    elist = emails;
   }
 
   function changeAccount() {
@@ -372,12 +360,12 @@
   function addToEmailsSingle(name, email) {
     email = email.trim();
     name = name.trim();
-    emails = emails.filter((item) => item.email !== email);
-    emails.push({
+    $emails = $emails.filter((item) => item.email !== email);
+    $emails.push({
       name: name,
       email: email,
     });
-    emails = emails;
+    $emails = $emails;
   }
 
   function clearEmail() {
@@ -731,26 +719,22 @@
         bind:value={receiver}
         bind:this={receiverDOM}
         on:blur={() => {
+          showEmailList = false;
           saveEmailState();
         }}
         on:focus={() => {
+          generateEmailList();
           showEmailList = true;
+          receiverDOM.selectionStart = receiver.length - 1;
+        }}
+        on:keydown={() => {
           generateEmailList();
-          receiverDOM.selectionStart = receiver.length;
-        }}
-        on:keydown={(e) => {
-          generateEmailList(e);
-        }}
-        on:keyup={(e) => {
-          generateEmailList(e);
-        }}
-        on:change={() => {
-          generateEmailList();
+          showEmailList = true;
         }}
       />
       {#if showEmailList && elist.length > 0}
         <div
-          id="elist"
+          id="elistID"
           style="width: {receiverDOM.offsetWidth}px; left: {cumulativeOffset(
             receiverDOM
           ).left}px; top: {cumulativeOffset(receiverDOM).top +
@@ -781,6 +765,7 @@
         bind:this={subject}
         on:blur={() => {
           saveEmailState();
+          showEmailList = false;
           $emailEditor.focus();
           focusAgain = true;
         }}
@@ -1062,7 +1047,7 @@
     margin: 0px 0px 15px 0px;
   }
 
-  #elist {
+  #elistID {
     position: absolute;
     z-index: 100;
     max-height: 400px;

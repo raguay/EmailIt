@@ -13,6 +13,7 @@
   import { state } from "./stores/state.js";
   import { sp } from "./stores/sp.js";
   import { email } from "./stores/email.js";
+  import { emails } from "./stores/emails.js";
   import { wd } from "./stores/wd.js";
   import { scripts } from "./stores/scripts.js";
   import { termscripts } from "./stores/termscripts.js";
@@ -287,6 +288,8 @@
       await $runscript(startup, "");
     }
 
+    await getEmails();
+
     //
     // Start the listeners from the Server.
     //
@@ -446,6 +449,17 @@
       await rt.EventsEmit(msg.returnMsg, "Okay");
     });
   });
+
+  async function getEmails() {
+    //
+    // Get the emails from the system.
+    //
+    let emailfileloc = await App.AppendPath($config.configDir, "emails.json");
+    if (await App.FileExists(emailfileloc)) {
+      let emailfilejson = await App.ReadFile(emailfileloc);
+      $emails = JSON.parse(emailfilejson);
+    }
+  }
 
   function makeHtml(acc, text) {
     let result = "";

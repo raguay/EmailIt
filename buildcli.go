@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	//"github.com/erikgeiser/promptkit/selection"
-	"github.com/charmbracelet/bubbles/list"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -334,7 +333,10 @@ func (m model) SendMessage() tea.Msg {
 		//
 		// Send the email then!
 		//
-		SendHTTPQuery("PUT", "http://localhost:9978/api/emailit/send", bodyStr)
+		result := SendHTTPQuery("PUT", "http://localhost:9978/api/emailit/send", bodyStr)
+		if result != "" {
+			fmt.Print(labelStyle.Width(25 + len(result)).Render(fmt.Sprintf("The server returned: %s", result)))
+		}
 	}
 	return tea.QuitMsg{}
 }

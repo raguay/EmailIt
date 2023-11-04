@@ -1,5 +1,5 @@
 <script>
-  import { afterUpdate, onMount } from "svelte";
+  import { afterUpdate, onMount, tick } from "svelte";
   import CodeMirror from "../components/CodeMirror.svelte";
   import AddressBook from "../components/AddressBook.svelte";
   import showdown from "showdown";
@@ -20,6 +20,7 @@
 
   let receiver = "";
   let subject = "";
+  let listEl = false;
   let emailState = "edit";
   let focusAgain = false;
   let showChangeAccount = false;
@@ -59,6 +60,7 @@
     emailState = "edit";
     oldState = "edit";
     initFinished = false;
+    receiver = "";
     generateEmailList();
     if ($email.new) {
       focusAgain = true;
@@ -67,7 +69,7 @@
     }
   });
 
-  afterUpdate(() => {
+  afterUpdate(async () => {
     if ($commandLineEmail !== undefined && $commandLineEmail !== "") {
       receiver = $commandLineEmail;
       $email.to = $commandLineEmail;
@@ -75,8 +77,6 @@
     }
     if ($email.new && $emailEditor !== null) {
       receiver = $email.to;
-      var rec = document.getElementById("receiverInput");
-      rec.value = $email.to;
       subject.value = $email.subject;
       $emailEditor.setValue($email.body);
       $email = {
@@ -92,7 +92,7 @@
         $emailEditor.setValue(bodyValue);
         oldState = "edit";
       }
-      if (focusAgain) $emailEditor.focus();
+      //if (focusAgain) $emailEditor.focus();
       focusAgain = false;
     }
   });
@@ -124,6 +124,7 @@
 
   function addToInput(newEmail) {
     var parts = receiver.split(",");
+    console.log("addToInput: ", newEmail, receiver, parts);
     if (parts.length > 1) {
       receiver =
         parts
@@ -201,7 +202,7 @@
 
   async function createPreview() {
     var toAddress;
-    toAddress = document.getElementById("receiverInput").value;
+    toAddress = receiver;
     if (validate(toAddress)) {
       //
       // Keep a copy of the body value for when we exit preview mode.
@@ -260,8 +261,7 @@
     ) {
       toAddress = $email.to;
     } else {
-      var em = document.getElementById("receiverInput").value;
-      toAddress = em;
+      toAddress = receiver;
     }
     if (validate(toAddress)) {
       addToEmails(toAddress);
@@ -369,8 +369,6 @@
   }
 
   function clearEmail() {
-    var rec = document.getElementById("receiverInput");
-    rec.value = "";
     receiver = "";
     subject.value = "";
     $emailEditor.setValue("");
@@ -477,8 +475,7 @@
 
   function saveEmailState() {
     if ($emailEditor !== null) {
-      var rec = document.getElementById("receiverInput");
-      $email.to = rec.value;
+      $email.to = receiver;
       $email.body = $emailEditor.getValue();
       $email.subject = subject.value;
       $email.new = true;
@@ -718,8 +715,8 @@
         autocorrect="off"
         bind:value={receiver}
         bind:this={receiverDOM}
+        tabindex="0"
         on:blur={() => {
-          showEmailList = false;
           saveEmailState();
         }}
         on:focus={() => {
@@ -744,8 +741,8 @@
             {#each elist as item}
               <li
                 on:click={() => {
+                  listEl = true;
                   addToInput(item);
-                  receiverDOM.focus();
                 }}
               >
                 {item}
@@ -762,16 +759,19 @@
         autocomplete="off"
         spellcheck="false"
         autocorrect="off"
+        tabindex="0"
         bind:this={subject}
         on:blur={() => {
           saveEmailState();
           showEmailList = false;
+          listEl = false;
           $emailEditor.focus();
           focusAgain = true;
         }}
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         on:focus={() => {
           showEmailList = false;
+          listEl = false;
         }}
       />
     </div>
@@ -789,16 +789,21 @@
       styling="position: relative; margin-bottom: 20px; border: solid 1px transparent; border-radius: 20px; overflow: hidden;"
       on:textChange={(event) => {
         showEmailList = false;
+        listEl = false;
         textChanged(event.detail.data);
       }}
       on:editorChange={(event) => {
         showEmailList = false;
+        listEl = false;
         editorChange(event.detail.data);
       }}
       on:focus={() => {
         showEmailList = false;
+        listEl = false;
       }}
       on:blur={() => {
+        showEmailList = false;
+        listEl = false;
         saveEmailState();
       }}
     />

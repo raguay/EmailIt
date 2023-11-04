@@ -548,7 +548,7 @@ func SendHTTPQuery(method string, uri string, body string) string {
 			}
 
 			if res == nil {
-				return fmt.Sprint("error: calling %s returned empty response", uri)
+				return fmt.Sprintf("error: calling %s returned empty response", uri)
 			}
 
 			responseData, err := io.ReadAll(res.Body)

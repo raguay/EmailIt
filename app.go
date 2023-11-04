@@ -308,6 +308,7 @@ func (b *App) RunCommandLine(cmd string, args []string, env []string, dir string
 	cmdline.Env = env
 	cmdline.Dir = dir
 	result, err := cmdline.CombinedOutput()
+	fmt.Println("\n RunCommandLine: ", cmd, "\n", string(result))
 	if err != nil {
 		fmt.Print("\nRunCommandLine had an error: ", err.Error(), "\n")
 	}

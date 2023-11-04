@@ -121,6 +121,7 @@
   }
 
   function shortenPath(oldpath) {
+    oldpath = oldpath.replaceAll(" ", "&nbsp;");
     let result = oldpath;
 
     //
@@ -132,7 +133,7 @@
     //
     // Add 40 to the width to account for the padding on each side.
     //
-    while (determineWidth(result) + 40 >= $config.width) {
+    while (determineWidth(result) + 60 >= $config.width) {
       result = "/";
       oldpath.split("/").forEach((element, index) => {
         if (element !== "") {
@@ -1451,7 +1452,7 @@
       id="statusline"
       style="background-color: {$theme.backgroundColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
     >
-      WD: {shortwd}
+      WD:&nbsp;{shortwd}
     </div>
     {#if showError}
       <div id="errorContainer">
@@ -1605,8 +1606,12 @@
   #statusline {
     display: flex;
     flex-direction: row;
+    user-select: none;
+    word-break: keep-all;
     height: 30px;
+    max-height: 30px;
     width: 900px;
+    max-width: 900px;
     margin: 10px;
   }
 

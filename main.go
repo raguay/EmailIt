@@ -200,7 +200,10 @@ func main() {
 }
 
 func runFrontEnd() {
-	// Create an instance of the app structure
+	//
+	// Run the different server locations.
+	//
+	go dirserver(wailsapp, "/Users/raguay/Dropbox/Richard/Apptorium/UsingShortcutsWithWorkspaces/")
 
 	// Create application with options
 	err := wails.Run(&options.App{

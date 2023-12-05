@@ -1452,7 +1452,7 @@
       id="statusline"
       style="background-color: {$theme.backgroundColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
     >
-      WD:&nbsp;{shortwd}
+      WD:&nbsp;{@html shortwd}
     </div>
     {#if showError}
       <div id="errorContainer">

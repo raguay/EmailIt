@@ -4,7 +4,9 @@
 
 # EmailIt
 
-A simple program for sending markdown formatted emails quickly. It can expand macros defined using [Handlebars](https:///handlebarsjs.com/). It also has notes, scripts to act on the text, and Handlebar templates. You can set default data to be used in the expansions. I'm still actively developing this program, but the basics are functional. I've only built it as a macOS universal build. I'll be adding other builds in the future. This program is built with [Wails](https://wails.io/) and [Svelte](https://svelte.dev/).
+A simple program for sending markdown formatted emails quickly. It also allows for sending attachments to the emails. It can expand macros defined using [Handlebars](https:///handlebarsjs.com/). It also has notes, scripts to act on the text, and Handlebar templates. You can set default data to be used in the expansions. I'm still actively developing this program, but the basics are functional. I've only built it as a macOS M1 build. I'll be adding other builds in the future. Right now, I just have a Macbook Pro M1 system to develop on. This program is built with [Wails](https://wails.io/) and [Svelte](https://svelte.dev/).
+
+If you want to compile it yourself, it is really easy to do. Just follow the directions under [How to Build](#how-to-build).
 
 ![EmailIt Main Screen](/images/mainscreen.png)
 

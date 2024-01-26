@@ -46,7 +46,6 @@
     lineWrapping: true,
     lineHighlight: true,
   };
-  let initFinished = true;
   let badEmails = [];
   let elist = [];
   let alertTitle = "";
@@ -55,11 +54,12 @@
   let showEmailList = true;
   let showAddressB = false;
   let receiverDOM;
+  let showAttachment = false;
+  let attachments = [];
 
   onMount(async () => {
     emailState = "edit";
     oldState = "edit";
-    initFinished = false;
     receiver = "";
     generateEmailList();
     if ($email.new) {
@@ -70,10 +70,14 @@
   });
 
   afterUpdate(async () => {
-    if ($commandLineEmail !== undefined && $commandLineEmail !== "") {
+    if (
+      $commandLineEmail !== undefined &&
+      $commandLineEmail !== "" &&
+      $commandLineEmail !== null
+    ) {
       receiver = $commandLineEmail;
       $email.to = $commandLineEmail;
-      $commandLineEmail = undefined;
+      $commandLineEmail = null;
     }
     if ($email.new && $emailEditor !== null) {
       receiver = $email.to;
@@ -87,15 +91,24 @@
         new: false,
       };
     }
+    await tick();
+    window.EmailEditor = $emailEditor;
     if ($emailEditor !== null) {
       if (emailState === "edit" && oldState === "preview") {
         $emailEditor.setValue(bodyValue);
         oldState = "edit";
       }
-      //if (focusAgain) $emailEditor.focus();
+      if (focusAgain) $emailEditor.focus();
       focusAgain = false;
     }
   });
+
+  function showAttachments() {
+    //
+    // Show the Attachments dialog.
+    //
+    showAttachment = true;
+  }
 
   function generateEmailList(e) {
     elist = $emails.map((item) => {
@@ -124,7 +137,6 @@
 
   function addToInput(newEmail) {
     var parts = receiver.split(",");
-    console.log("addToInput: ", newEmail, receiver, parts);
     if (parts.length > 1) {
       receiver =
         parts
@@ -212,8 +224,8 @@
       //
       // Set to preview and keep a copy of the new state.
       //
-      emailState = "preview";
       oldState = emailState;
+      emailState = "preview";
 
       //
       // Creat a preview of the email.
@@ -224,11 +236,13 @@
       // Show the preview.
       //
       showPreview = true;
+      $emailEditor = null;
     } else {
       showInvalidEmails();
     }
     $showScripts = false;
     $showTemplates = false;
+    showAttachment = false;
   }
 
   async function makeHtml() {
@@ -245,6 +259,7 @@
 
   async function editEmail() {
     emailState = "edit";
+    oldState = "preview";
     showPreview = false;
   }
 
@@ -268,6 +283,7 @@
       var bodyText = bodyValue + cleanTags($account.signiture);
       bodyText = await $runtemplate("given", bodyText);
       showPreview = false;
+      oldState = emailState;
       emailState = "edit";
 
       //
@@ -282,7 +298,8 @@
         toAddress,
         previewHTML,
         bodyText,
-        subject.value
+        subject.value,
+        attachments.join(", ")
       );
       if (result !== "Success") {
         alertTitle = "Sending Email Failed";
@@ -382,6 +399,7 @@
     oldState = "edit";
     $showScripts = false;
     $showTemplates = false;
+    attachments = [];
   }
 
   async function saveNewAccount() {
@@ -506,6 +524,14 @@
     };
   }
 
+  async function addAttachment() {
+    //
+    // Add an attachment file to the list.
+    //
+    let newfiles = await App.GetFiles();
+    attachments = attachments.concat(newfiles);
+  }
+
   function showAddressBook() {
     showAddressB = !showAddressB;
     $showTemplates = false;
@@ -517,6 +543,35 @@
   id="main"
   style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
 >
+  {#if showAttachment}
+    <div
+      id="AttachmentDialog"
+      style="background-color: {$theme.backgroundColor}; font-family: {$theme.font}; border-color: {$theme.borderColor}; color: {$theme.textColor}; font-size: {$theme.fontSize};"
+    >
+      <h3 style="margin: 5px auto 20px auto;">Attachments</h3>
+      {#each attachments as item}
+        <p style="margin: 0px;">{item}</p>
+      {/each}
+      <div id="AttachmentButtonRow">
+        <button
+          id="newattachment"
+          on:click={addAttachment}
+          style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
+        >
+          New
+        </button>
+        <button
+          id="cancelattachment"
+          on:click={() => {
+            showAttachment = false;
+          }}
+          style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+  {/if}
   {#if showNewAccount}
     <div
       id="newAccountDialog"
@@ -785,7 +840,6 @@
       height="330px"
       width="983px"
       config={editorConfig}
-      {initFinished}
       styling="position: relative; margin-bottom: 20px; border: solid 1px transparent; border-radius: 20px; overflow: hidden;"
       on:textChange={(event) => {
         showEmailList = false;
@@ -856,6 +910,13 @@
         {$account.name}
       </button>
     {/if}
+    <button
+      id="clear"
+      on:click={showAttachments}
+      style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
+    >
+      Attachments
+    </button>
     <button
       id="clear"
       on:click={clearEmail}
@@ -1021,6 +1082,42 @@
     overflow-y: auto;
   }
 
+  #AttachmentDialog {
+    display: flex;
+    flex-direction: column;
+    width: 60%;
+    height: 60%;
+    z-index: 200;
+    position: absolute;
+    top: 20%;
+    left: 20%;
+    border-radius: 10px;
+    padding: 20px;
+    margin: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  #AttachmentButtonRow {
+    display: flex;
+    flex-direction: row;
+    margin: 0px auto 10px auto;
+    position: absolute;
+    bottom: 5px;
+    left: 270px;
+  }
+
+  #AttachmentButtonRow button {
+    border-radius: 10px;
+    padding: 5px 10px 5px 10px;
+    margin: 0px 5px;
+    width: 100%;
+    max-height: 40px;
+    height: 40px;
+    width: auto;
+    cursor: pointer;
+  }
+
   #newAccountDialog {
     display: grid;
     grid-template-columns: 1fr 2fr;
@@ -1042,11 +1139,13 @@
   }
 
   #preview {
-    height: 270px;
-    max-height: 270px;
+    height: 330px;
+    max-height: 330px;
+    width: 983px;
+    max-width: 983px;
     border-radius: 20px;
     overflow-y: auto;
-    padding: 10px;
+    padding: 0px;
     border: solid 3px;
     border-radius: 20px;
     margin: 0px 0px 15px 0px;

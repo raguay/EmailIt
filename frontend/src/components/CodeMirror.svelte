@@ -42,10 +42,8 @@
   export let width = 0;
   export let styling = "";
   export let config = {};
-  export let initFinished = false;
 
   let CodeMirrorEditor = null;
-  let edState = null;
   let edView = null;
   let editorFunctions = null;
   let currentCursor = null;
@@ -128,9 +126,7 @@
     // Since we are setting a whole new document, create new editor
     // states and views.
     //
-    if (initFinished) {
-      CreateEditorState(text);
-    }
+    CreateEditorState(text);
   }
 
   function CreateEditorState(text) {
@@ -212,18 +208,11 @@
     }
 
     //
-    // Create the editor state.
-    //
-    edState = EditorState.create({
-      doc: text,
-      extensions: exts,
-    });
-
-    //
     // Create the editor View.
     //
     edView = new EditorView({
-      state: edState,
+      doc: text,
+      extensions: exts,
       parent: CodeMirrorEditor,
     });
   }
@@ -248,7 +237,6 @@
       getLine: getLine,
       focus: focus,
       getEdView: getEdView,
-      getEdState: getEdState,
       isFocused: isFocused,
       insertAtCursor: insertAtCursor,
     };
@@ -269,7 +257,6 @@
     return () => {
       // this function runs when the
       // component is destroyed
-      edState = null;
       edView = null;
       editorFunctions = null;
     };
@@ -361,10 +348,6 @@
 
   function getEdView() {
     return edView;
-  }
-
-  function getEdState() {
-    return edState;
   }
 </script>
 

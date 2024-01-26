@@ -369,7 +369,8 @@
           msg.to,
           processHTML,
           processText,
-          msg.subject
+          msg.subject,
+          msg.attachment
         );
       } else if (msg.account === "Default") {
         //
@@ -386,7 +387,8 @@
           msg.to,
           processHTML,
           processText,
-          msg.subject
+          msg.subject,
+          msg.attachment
         );
       } else {
         //
@@ -405,7 +407,8 @@
             msg.to,
             processHTML,
             processText,
-            msg.subject
+            msg.subject,
+            msg.attachment
           );
         } else {
           result = "Account not found.";

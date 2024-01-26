@@ -4,16 +4,17 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/charmbracelet/bubbles/list"
-	"github.com/charmbracelet/bubbles/textarea"
-	"github.com/charmbracelet/bubbles/textinput"
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
+
+	"github.com/charmbracelet/bubbles/list"
+	"github.com/charmbracelet/bubbles/textarea"
+	"github.com/charmbracelet/bubbles/textinput"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 // Function:      BuildEmail()
@@ -56,12 +57,13 @@ type (
 //
 // Description:   This is the structure for sending an email to the EmailIt program.
 type HttpEmailMsg struct {
-	Account   string `json:"account"`
-	To        string `json:"to" binding:"required"`
-	From      string `json:"from" binding:"required"`
-	Subject   string `json:"subject" binding:"required"`
-	Body      string `json:"body" binding:"required"`
-	ReturnMsg string `json:"returnMsg"`
+	Account    string `json:"account"`
+	To         string `json:"to" binding:"required"`
+	From       string `json:"from" binding:"required"`
+	Subject    string `json:"subject" binding:"required"`
+	Body       string `json:"body" binding:"required"`
+	ReturnMsg  string `json:"returnMsg"`
+	Attachment string `json:"attachment"`
 }
 
 type EmailAccounts struct {
@@ -319,11 +321,12 @@ func (m model) SendMessage() tea.Msg {
 	fixacct := strings.Trim(m.account.Value(), " ")
 	fixto := strings.Trim(m.to.Value(), " ")
 	bodyJson := HttpEmailMsg{
-		Account: fixacct,
-		From:    "Default",
-		To:      fixto,
-		Subject: m.subject.Value(),
-		Body:    m.body.Value(),
+		Account:    fixacct,
+		From:       "Default",
+		To:         fixto,
+		Subject:    m.subject.Value(),
+		Body:       m.body.Value(),
+		Attachment: "",
 	}
 	body, err := json.Marshal(bodyJson)
 	bodyStr := string(body[:])
@@ -394,7 +397,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.body.SetWidth(msg.Width - 10)
 		m.body.SetHeight(msg.Height - 7)
 		m.list.SetWidth(msg.Width - 10)
-		//return m, nil
+		// return m, nil
 
 	// We handle errors just like any other message
 	case errMsg:

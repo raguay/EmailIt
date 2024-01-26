@@ -94,6 +94,12 @@ func main() {
 				Destination: &cliemail.To,
 			},
 			&cli.StringFlag{
+				Name:        "t",
+				Value:       "",
+				Usage:       "Attachment to the email",
+				Destination: &cliemail.Attachment,
+			},
+			&cli.StringFlag{
 				Name:        "s",
 				Value:       "",
 				Usage:       "Subject for the email",
@@ -174,11 +180,12 @@ func main() {
 					// Create and send the email. Then quit.
 					//
 					bodyJson := HttpEmailMsg{
-						Account: cliemail.Account,
-						From:    "Default",
-						To:      cliemail.To,
-						Subject: cliemail.Subject,
-						Body:    cliemail.Body,
+						Account:    cliemail.Account,
+						From:       "Default",
+						To:         cliemail.To,
+						Subject:    cliemail.Subject,
+						Body:       cliemail.Body,
+						Attachment: cliemail.Attachment,
 					}
 					body, err := json.Marshal(bodyJson)
 					bodyStr := string(body[:])

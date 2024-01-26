@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/go-git/go-git/v5"
 	"io"
 	"io/fs"
 	"io/ioutil"
@@ -14,7 +13,10 @@ import (
 	"path/filepath"
 	goruntime "runtime"
 	"strconv"
+	"strings"
 	"time"
+
+	"github.com/go-git/go-git/v5"
 
 	//"github.com/davecgh/go-spew/spew"
 
@@ -131,7 +133,7 @@ func (b *App) GetHomeDir() string {
 }
 
 func (b *App) WriteFile(path string, data string) {
-	err := os.WriteFile(path, []byte(data), 0666)
+	err := os.WriteFile(path, []byte(data), 0o666)
 	if err != nil {
 		b.err = err.Error()
 	}
@@ -185,7 +187,7 @@ func (b *App) ReadDir(path string) []FileInfo {
 
 func (b *App) MakeDir(path string) {
 	b.err = ""
-	err := os.MkdirAll(path, 0755)
+	err := os.MkdirAll(path, 0o755)
 	if err != nil {
 		b.err = err.Error()
 	}
@@ -346,6 +348,13 @@ func (b *App) Quit() {
 	wailsruntime.Quit(b.ctx)
 }
 
+func (b *App) GetFiles() []string {
+	files, _ := wailsruntime.OpenMultipleFilesDialog(b.ctx, wailsruntime.OpenDialogOptions{
+		Title: "What files to you want to attach?",
+	})
+	return files
+}
+
 func (b *App) GetOSName() string {
 	os := goruntime.GOOS
 	result := ""
@@ -409,16 +418,37 @@ func (b *App) GetGitHubScripts() []GitHubRepos {
 	return result
 }
 
-func (b *App) SendEmail(username string, from string, password string, host string, port string, toList string, msg string, msgText string, subject string) string {
+func (b *App) SendEmail(username string, from string, password string, host string, port string, toList string, msg string, msgText string, subject string, attachment string) string {
+	//
+	// Create the message.
+	//
 	m := mail.NewMessage()
 	m.SetHeader("From", from)
 	m.SetHeader("To", toList)
 	m.SetHeader("Subject", subject)
 	m.SetBody("text/plain", msgText)
 	m.AddAlternative("text/html", msg)
+
+	//
+	// Add attachment if any. The attachment string can have multiple one seperated by a coma.
+	//
+	if attachment != "" {
+		parts := strings.Split(attachment, ", ")
+		for i := 0; i < len(parts); i++ {
+			m.Attach(parts[i])
+		}
+	}
+
+	//
+	// Get the server information.
+	//
 	iport, _ := strconv.Atoi(port)
 	d := mail.NewDialer(host, iport, username, password)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	//
+	// Send the email.
+	//
 	if err := d.DialAndSend(m); err != nil {
 		b.err = err.Error()
 		return b.err

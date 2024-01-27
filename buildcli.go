@@ -36,14 +36,15 @@ func BuildEmail() error {
 //
 // description: The structure for the bubbletea interface for the email sending TUI.
 type model struct {
-	account textinput.Model // This is for the account.
-	to      textinput.Model // this is for the to address
-	subject textinput.Model // this is the subject line
-	body    textarea.Model  // The body of the message.
-	focused int             // This is the currently focused input
-	err     string          // this will contain any errors from the validators
-	list    list.Model      // list for choosing accounts
-	sending bool            // flag if sending or not.
+	account    textinput.Model // This is for the account.
+	to         textinput.Model // this is for the to address
+	subject    textinput.Model // this is the subject line
+	body       textarea.Model  // The body of the message.
+	attachment textinput.Model // The attachments to the message
+	focused    int             // This is the currently focused input
+	err        string          // this will contain any errors from the validators
+	list       list.Model      // list for choosing accounts
+	sending    bool            // flag if sending or not.
 }
 
 // Type:          errMsg
@@ -85,6 +86,7 @@ const (
 	tofield
 	subjectfield
 	bodyfield
+	attachmentfield
 	sendfield
 )
 
@@ -266,6 +268,15 @@ func initialModel() model {
 		m.body.SetValue(cliemail.Body)
 	}
 
+	m.attachment = textinput.New()
+	m.attachment.Placeholder = "                                    "
+	m.attachment.CharLimit = 0
+	m.attachment.Prompt = ""
+	m.attachment.Validate = stringValidator
+	m.attachment.TextStyle = inputStyle
+	m.attachment.Cursor.Style = cursorStyle
+	m.attachment.Width = inputWidth
+
 	//
 	// Set up the rest of the default values.
 	//
@@ -326,7 +337,7 @@ func (m model) SendMessage() tea.Msg {
 		To:         fixto,
 		Subject:    m.subject.Value(),
 		Body:       m.body.Value(),
-		Attachment: "",
+		Attachment: m.attachment.Value(),
 	}
 	body, err := json.Marshal(bodyJson)
 	bodyStr := string(body[:])
@@ -372,7 +383,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.account.SetValue(string(i))
 					m.nextInput()
 				}
-			} else if m.focused < bodyfield {
+			} else if m.focused < sendfield {
 				m.nextInput()
 			}
 		case tea.KeyCtrlC, tea.KeyEsc:
@@ -394,10 +405,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.to.Width = msg.Width - 18
 		m.account.Width = msg.Width - 18
+		m.attachment.Width = msg.Width - 18
 		m.body.SetWidth(msg.Width - 10)
-		m.body.SetHeight(msg.Height - 7)
+		m.body.SetHeight(msg.Height - 10)
 		m.list.SetWidth(msg.Width - 10)
-		// return m, nil
 
 	// We handle errors just like any other message
 	case errMsg:
@@ -414,25 +425,35 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.account.Blur()
 		m.subject.Blur()
 		m.body.Blur()
+		m.attachment.Blur()
 
 	case accountfield:
 		m.account.Focus()
 		m.to.Blur()
 		m.subject.Blur()
 		m.body.Blur()
+		m.attachment.Blur()
 
 	case subjectfield:
 		m.subject.Focus()
 		m.to.Blur()
 		m.account.Blur()
 		m.body.Blur()
+		m.attachment.Blur()
 
 	case bodyfield:
 		m.body.Focus()
 		m.to.Blur()
 		m.account.Blur()
 		m.subject.Blur()
+		m.attachment.Blur()
 
+	case attachmentfield:
+		m.body.Blur()
+		m.to.Blur()
+		m.account.Blur()
+		m.subject.Blur()
+		m.attachment.Focus()
 	}
 
 	//
@@ -441,6 +462,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.to, cmds[tofield] = m.to.Update(msg)
 	m.subject, cmds[subjectfield] = m.subject.Update(msg)
 	m.body, cmds[bodyfield] = m.body.Update(msg)
+	m.attachment, cmds[attachmentfield] = m.attachment.Update(msg)
 	if m.focused == accountfield {
 		m.list, cmds[accountfield] = m.list.Update(msg)
 	} else {
@@ -467,14 +489,17 @@ func (m model) View() string {
 		result = fmt.Sprintf(`%s  %s
 %s  %s
 %s  %s
-%s`,
+%s
+%s  %s`,
 			labelStyle.Width(7).Render("Account"),
 			m.account.View(),
 			labelStyle.Width(7).Render("     To"),
 			m.to.View(),
 			labelStyle.Width(7).Render("Subject"),
 			m.subject.View(),
-			m.body.View())
+			m.body.View(),
+			labelStyle.Width(12).Render("Attachments"),
+			m.attachment.View())
 		if m.focused == sendfield {
 			result += continueStyle.Render("\nSend Email ->")
 		}

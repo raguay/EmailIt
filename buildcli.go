@@ -502,6 +502,8 @@ func (m model) View() string {
 			m.attachment.View())
 		if m.focused == sendfield {
 			result += continueStyle.Render("\nSend Email ->")
+		} else {
+			result += continueStyle.Render("\n")
 		}
 	}
 	result += "\n"

@@ -500,10 +500,12 @@ func (m model) View() string {
 			m.body.View(),
 			labelStyle.Width(12).Render("Attachments"),
 			m.attachment.View())
+		//
+		// Add the Send Email field.
+		//
+		result += continueStyle.Render("\n")
 		if m.focused == sendfield {
-			result += continueStyle.Render("\nSend Email ->")
-		} else {
-			result += continueStyle.Render("\n")
+			result += continueStyle.Render("Send Email -> ")
 		}
 	}
 	result += "\n"

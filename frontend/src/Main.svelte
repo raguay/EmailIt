@@ -354,7 +354,50 @@
 
     rt.EventsOn("emailSend", async (msg) => {
       let result = "Sent successfully!";
+      //
+      // Remove enclosing quote marks before sending.
+      //
+      if (
+        (msg.to[0] === `'` || msg.to[0] === `"`) &&
+        (msg.to[msg.to.length - 1] === `'` || msg.to[msg.to.length - 1] === `"`)
+      ) {
+        msg.to = msg.to.slice(1, msg.to.length - 1);
+      }
+      if (
+        (msg.subject[0] === `'` || msg.subject[0] === `"`) &&
+        (msg.subject[msg.subject.length - 1] === `'` ||
+          msg.subject[msg.subject.length - 1] === `"`)
+      ) {
+        msg.subject = msg.subject.slice(1, msg.subject.length - 1);
+      }
+      if (
+        (msg.body[0] === `'` || msg.body[0] === `"`) &&
+        (msg.body[msg.body.length - 1] === `'` ||
+          msg.body[msg.body.length - 1] === `"`)
+      ) {
+        msg.body = msg.body.slice(1, msg.body.length - 1);
+      }
+      if (
+        (msg.attachment[0] === `'` || msg.attachment[0] === `"`) &&
+        (msg.attachment[msg.attachment.length - 1] === `'` ||
+          msg.attachment[msg.attachment.length - 1] === `"`)
+      ) {
+        msg.attachment = msg.attachment.slice(1, msg.attachment.length - 1);
+      }
+
+      //
+      // Make sure the emails are added to the address book.
+      //
+      addToEmails(msg.to);
+
+      //
+      // Run the body through the templater.
+      //
       let processText = await $runtemplate("given", msg.body);
+
+      //
+      // Send the email using the given account.
+      //
       if (msg.account === "") {
         //
         // Use the current account to send it.
@@ -398,6 +441,10 @@
         if (acc.length > 0) {
           acc = acc[0];
           let processHTML = makeHtml(acc, processText);
+
+          //
+          // Send the email.
+          //
           result = await App.SendEmail(
             acc.username,
             acc.from,
@@ -452,6 +499,37 @@
       await rt.EventsEmit(msg.returnMsg, "Okay");
     });
   });
+
+  function addToEmails(emailLine) {
+    emailLine
+      .toString()
+      .split(",")
+      .forEach((item) => {
+        var email = item;
+        var name = "";
+        if (item.includes("<")) {
+          //
+          // It's an email with a name infront. Get the email to check.
+          //
+          const nameRegexp = new RegExp(/^([^<]*)\<([^\>]*)\>/);
+          const matches = item.match(nameRegexp);
+          name = matches[1];
+          email = matches[2];
+        }
+        addToEmailsSingle(name, email);
+      });
+  }
+
+  function addToEmailsSingle(name, email) {
+    email = email.trim();
+    name = name.trim();
+    $emails = $emails.filter((item) => item.email !== email);
+    $emails.push({
+      name: name,
+      email: email,
+    });
+    $emails = $emails;
+  }
 
   async function getEmails() {
     //

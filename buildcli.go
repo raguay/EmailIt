@@ -527,6 +527,7 @@ func (m model) View() string {
 //	body        The body of the request. The body is assumed to be JSON structure.
 func SendHTTPQuery(method string, uri string, body string) string {
 	var result string
+  print(method, uri, body)
 	switch strings.Trim(method, " ") {
 	case "GET":
 		{

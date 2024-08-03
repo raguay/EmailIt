@@ -210,7 +210,7 @@ func runFrontEnd() {
 	//
 	// Run the different server locations.
 	//
-	go dirserver(wailsapp, "/Users/raguay/Dropbox/Richard/Apptorium/UsingShortcutsWithWorkspaces/")
+	go dirserver(wailsapp, "Archive", "/Users/raguay/Dropbox/Richard/Notes/TheArchive")
 
 	// Create application with options
 	err := wails.Run(&options.App{

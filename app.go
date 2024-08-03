@@ -252,7 +252,6 @@ func (b *App) CopyEntries(from string, to string) {
 		}
 		defer destination.Close()
 		_, err = io.Copy(destination, source)
-
 		if err != nil {
 			b.err = err.Error()
 		}
@@ -422,6 +421,7 @@ func (b *App) SendEmail(username string, from string, password string, host stri
 	//
 	// Create the message.
 	//
+	fmt.Println(username, "|", from, "|", toList, "|", msg, "|", msgText)
 	m := mail.NewMessage()
 	m.SetHeader("From", from)
 	m.SetHeader("To", toList)

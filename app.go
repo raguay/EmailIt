@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -17,8 +16,6 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5"
-
-	//"github.com/davecgh/go-spew/spew"
 
 	clip "github.com/atotto/clipboard"
 	github "github.com/google/go-github/v49/github"
@@ -167,7 +164,7 @@ func (b *App) ReadDir(path string) []FileInfo {
 	b.err = ""
 	var result []FileInfo
 	result = make([]FileInfo, 0, 0)
-	files, err := ioutil.ReadDir(path)
+	files, err := io.ReadDir(path)
 	if err != nil {
 		b.err = err.Error()
 	} else {

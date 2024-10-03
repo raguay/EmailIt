@@ -12,11 +12,11 @@ require (
 	github.com/gin-contrib/static v1.1.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-git/go-git/v5 v5.12.0
-	github.com/gomarkdown/markdown v0.0.0-20240730141124-034f12af3bf6
+	github.com/gomarkdown/markdown v0.0.0-20240930133441-72d49d9543d8
 	github.com/google/go-github/v49 v49.1.0
 	github.com/otiai10/copy v1.14.0
 	github.com/urfave/cli/v2 v2.27.4
-	github.com/wailsapp/wails/v2 v2.9.1
+	github.com/wailsapp/wails/v2 v2.9.2
 	gopkg.in/mail.v2 v2.3.1
 )
 
@@ -26,15 +26,15 @@ require (
 	github.com/ProtonMail/go-crypto v1.0.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/bep/debounce v1.2.1 // indirect
-	github.com/bytedance/sonic v1.12.2 // indirect
+	github.com/bytedance/sonic v1.12.3 // indirect
 	github.com/bytedance/sonic/loader v0.2.0 // indirect
-	github.com/charmbracelet/x/ansi v0.3.1 // indirect
+	github.com/charmbracelet/x/ansi v0.3.2 // indirect
 	github.com/charmbracelet/x/term v0.2.0 // indirect
 	github.com/cloudflare/circl v1.4.0 // indirect
 	github.com/cloudwego/base64x v0.1.4 // indirect
 	github.com/cloudwego/iasm v0.2.0 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.4 // indirect
-	github.com/cyphar/filepath-securejoin v0.3.2 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
+	github.com/cyphar/filepath-securejoin v0.3.3 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/gabriel-vasile/mimetype v1.4.5 // indirect
@@ -87,7 +87,7 @@ require (
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
-	github.com/wailsapp/go-webview2 v1.0.15 // indirect
+	github.com/wailsapp/go-webview2 v1.0.16 // indirect
 	github.com/wailsapp/mimetype v1.4.1 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1 // indirect

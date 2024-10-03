@@ -1,7 +1,12 @@
 export namespace main {
 	
 	export class FileInfo {
-	
+	    Dir: string;
+	    Name: string;
+	    Extension: string;
+	    IsDir: boolean;
+	    Size: number;
+	    Modtime: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new FileInfo(source);
@@ -9,11 +14,18 @@ export namespace main {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	
+	        this.Dir = source["Dir"];
+	        this.Name = source["Name"];
+	        this.Extension = source["Extension"];
+	        this.IsDir = source["IsDir"];
+	        this.Size = source["Size"];
+	        this.Modtime = source["Modtime"];
 	    }
 	}
 	export class FileParts {
-	
+	    Dir: string;
+	    Name: string;
+	    Extension: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new FileParts(source);
@@ -21,7 +33,9 @@ export namespace main {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	
+	        this.Dir = source["Dir"];
+	        this.Name = source["Name"];
+	        this.Extension = source["Extension"];
 	    }
 	}
 	export class GitHubRepos {

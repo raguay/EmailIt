@@ -1,5 +1,5 @@
 <script>
-  import { onMount } from "svelte";
+  import { onMount, tick } from "svelte";
   import showdown from "showdown";
   import EmailIt from "./components/EmailIt.svelte";
   import Notes from "./components/Notes.svelte";
@@ -257,17 +257,17 @@
     //
     // Set the state to emailit.
     //
-    $state = "emailit";
     $commands = [];
+    $state = "";
 
     //
     // Get stuff from the server.
     //
     await getConfig();
+    await getAccounts();
     await getScriptsList();
     getTermScriptsList();
     await getTemplatesList();
-    await getAccounts();
     await getTheme();
     await getNotes();
     setupHandlebarHelpers();
@@ -313,20 +313,20 @@
     rt.EventsOn("envList", async (msg) => {
       let envlistloc = await App.AppendPath(
         $config.configDir,
-        "environments.json"
+        "environments.json",
       );
       let envlist = await App.ReadFile(envlistloc);
       envlist = JSON.parse(envlist);
       await rt.EventsEmit(
         msg.returnMsg,
-        envlist.map((item) => item.name)
+        envlist.map((item) => item.name),
       );
     });
 
     rt.EventsOn("scriptList", async (msg) => {
       await rt.EventsEmit(
         msg.returnMsg,
-        $scripts.map((item) => item.name)
+        $scripts.map((item) => item.name),
       );
     });
 
@@ -343,7 +343,7 @@
     rt.EventsOn("templateList", async (msg) => {
       await rt.EventsEmit(
         msg.returnMsg,
-        $templates.map((item) => item.name)
+        $templates.map((item) => item.name),
       );
     });
 
@@ -413,7 +413,7 @@
           processHTML,
           processText,
           msg.subject,
-          msg.attachment
+          msg.attachment,
         );
       } else if (msg.account === "Default") {
         //
@@ -431,7 +431,7 @@
           processHTML,
           processText,
           msg.subject,
-          msg.attachment
+          msg.attachment,
         );
       } else {
         //
@@ -455,7 +455,7 @@
             processHTML,
             processText,
             msg.subject,
-            msg.attachment
+            msg.attachment,
           );
         } else {
           result = "Account not found.";
@@ -498,6 +498,13 @@
       await rt.Show();
       await rt.EventsEmit(msg.returnMsg, "Okay");
     });
+
+    //
+    // Set the program to display first.
+    //
+    await tick();
+    await tick();
+    $state = "emailit";
   });
 
   function addToEmails(emailLine) {
@@ -561,13 +568,21 @@
     //
     let accountfileloc = await App.AppendPath(
       $config.configDir,
-      "emailaccounts.json"
+      "emailaccounts.json",
     );
     if (await App.FileExists(accountfileloc)) {
       $emailaccounts = await App.ReadFile(accountfileloc);
       $emailaccounts = JSON.parse($emailaccounts);
       if ($emailaccounts.length > 0) {
         $account = $emailaccounts.find((item) => item.default);
+        if (typeof $account === "undefined") {
+          //
+          // There wasn't a default account set. Set the
+          // first account as it.
+          //
+          $emailaccounts[0].default = true;
+          $account = $emailaccounts[0];
+        }
       }
     }
   }
@@ -849,7 +864,7 @@
     var notesloc = await App.AppendPath(configdir, "notes.json");
     await App.WriteFile(
       notesloc,
-      JSON.stringify(["", "", "", "", "", "", "", "", "", ""])
+      JSON.stringify(["", "", "", "", "", "", "", "", "", ""]),
     );
 
     //
@@ -861,7 +876,7 @@
     }
     let defaultThemefile = await App.AppendPath(
       defaultThemeDir,
-      "Default.json"
+      "Default.json",
     );
     $theme = {
       name: "Default",
@@ -946,7 +961,7 @@
           github: "",
           main: "Default.json",
         },
-      })
+      }),
     );
   }
 
@@ -959,11 +974,11 @@
   async function getScriptsList() {
     let userScriptsLoc = await App.AppendPath(
       $config.configDir,
-      "scripts.json"
+      "scripts.json",
     );
     let extScriptsLoc = await App.AppendPath(
       $config.configDir,
-      "extscripts.json"
+      "extscripts.json",
     );
     let userScriptFile = {};
     if (await App.FileExists(userScriptsLoc)) {
@@ -1000,14 +1015,14 @@
           .filter((value) => value.termscript === false)
           .map((value) => {
             return { name: value.name, insert: value.insert };
-          })
+          }),
       )
       .concat(
         $extScripts
           .filter((value) => value.termscript === false)
           .map((value) => {
             return { name: value.name, insert: false };
-          })
+          }),
       );
   }
 
@@ -1075,7 +1090,7 @@
       let parts = await App.SplitFile(file);
       let nfile = await App.AppendPath(
         parts.Dir,
-        `${parts.Name}-processed${parts.Extension}`
+        `${parts.Name}-processed${parts.Extension}`,
       );
       await App.WriteFile(nfile, result);
       result = `${parts.Name}-processed${parts.Extension} was created!`;
@@ -1136,7 +1151,7 @@
     if (extScrpt.env !== "") {
       let envlistloc = await App.AppendPath(
         $config.configDir,
-        "environments.json"
+        "environments.json",
       );
       let envlist = await App.ReadFile(envlistloc);
       envlist = JSON.parse(envlist);
@@ -1170,7 +1185,7 @@
         extScrpt.script,
         args,
         strEnv,
-        extScrpt.path
+        extScrpt.path,
       );
       if (result !== null && typeof result === "object")
         result = result.toString();
@@ -1257,7 +1272,7 @@ ${text}
               path: "",
             },
             "",
-            env
+            env,
           );
           result = `\n${result}`;
 

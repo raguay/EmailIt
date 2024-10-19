@@ -13,7 +13,6 @@ import (
 	goruntime "runtime"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/go-git/go-git/v5"
 
@@ -164,16 +163,14 @@ func (b *App) ReadDir(path string) []FileInfo {
 	b.err = ""
 	var result []FileInfo
 	result = make([]FileInfo, 0, 0)
-	files, err := io.ReadDir(path)
+	files, err := os.ReadDir(path)
 	if err != nil {
 		b.err = err.Error()
 	} else {
 		for _, file := range files {
 			var fileInfo FileInfo
 			fileInfo.Name = file.Name()
-			fileInfo.Size = file.Size()
 			fileInfo.IsDir = file.IsDir()
-			fileInfo.Modtime = file.ModTime().Format(time.ANSIC)
 			fileInfo.Dir = path
 			fileInfo.Extension = filepath.Ext(file.Name())
 			result = append(result, fileInfo)

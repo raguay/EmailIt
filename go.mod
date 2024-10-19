@@ -14,6 +14,7 @@ require (
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/gomarkdown/markdown v0.0.0-20240930133441-72d49d9543d8
 	github.com/google/go-github/v49 v49.1.0
+	github.com/ichiban/prolog v1.2.1
 	github.com/otiai10/copy v1.14.0
 	github.com/urfave/cli/v2 v2.27.4
 	github.com/wailsapp/wails/v2 v2.9.2
@@ -50,7 +51,6 @@ require (
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/ichiban/prolog v1.2.1 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

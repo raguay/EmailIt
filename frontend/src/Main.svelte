@@ -1099,6 +1099,25 @@
   }
 
   //
+  // Function:         runPrologScript
+  //
+  // Description:      This will run some given text with a script.
+  //
+  // Inputs:
+  //                   script          The script.
+  //                   text            The text to process.
+  //
+  async function runPrologScript(script, text) {
+    let result = "";
+    result = await App.RunProlog(script, text);
+    let error = await App.GetError();
+    if (error !== "") {
+      result = `${text}\nProlog Error: ${error}\n`;
+    }
+    return result;
+  }
+
+  //
   // Function:         runJavaScript
   //
   // Description:      This will run some given text with a script.
@@ -1225,7 +1244,11 @@
       if (isfile && !isDir && !isLongText) {
         result = await runJavaScriptFile(script, text);
       } else {
-        result = runJavaScript(script, text);
+        if (scriptIndex.language === "JavaScript") {
+          result = runJavaScript(script, text);
+        } else {
+          result = runPrologScript(script, text);
+        }
       }
     } else {
       scriptIndex = $systemScripts.find((ele) => {
@@ -1236,7 +1259,11 @@
         if (isfile && !isDir && !isLongText) {
           result = await runJavaScriptFile(script, text);
         } else {
-          result = runJavaScript(script, text);
+          if (scriptIndex.language === "JavaScript") {
+            result = runJavaScript(script, text);
+          } else {
+            result = runPrologScript(script, text);
+          }
         }
       } else {
         scriptIndex = $extScripts.find((ele) => {
@@ -1412,9 +1439,7 @@ ${text}
 {:else if $state === "scriptline"}
   <ScriptLine />
 {:else}
-  <div id="error">
-    <h1>Something went wrong!</h1>
-  </div>
+  <EmailIt />
 {/if}
 
 <ScriptMenu />

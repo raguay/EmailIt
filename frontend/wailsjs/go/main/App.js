@@ -118,6 +118,10 @@ export function RunCommandLine(arg1, arg2, arg3, arg4) {
   return window['go']['main']['App']['RunCommandLine'](arg1, arg2, arg3, arg4);
 }
 
+export function RunProlog(arg1, arg2) {
+  return window['go']['main']['App']['RunProlog'](arg1, arg2);
+}
+
 export function SendEmail(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10) {
   return window['go']['main']['App']['SendEmail'](arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10);
 }

@@ -40,12 +40,12 @@
       repos = await ap.GetGitHubScripts();
       themes = await ap.GetGitHubThemes();
       if (typeof repos !== "undefined" && repos !== null) {
-        for (var i = 0; i < repos.length; i++) {
+        for (let i = 0; i < repos.length; i++) {
           repos[i].loaded = await extExists(repos[i]);
         }
       }
       if (typeof themes !== "undefined" && themes !== null) {
-        for (var i = 0; i < themes.length; i++) {
+        for (let i = 0; i < themes.length; i++) {
           themes[i].loaded = await themeExists(themes[i]);
         }
       }
@@ -283,7 +283,14 @@
 >
   <div id="GitHubHeader">
     <h3>GitHub Themes and Scripts Importer</h3>
-    <input id="inputHidden" bind:this={hiddenInput} on:keydown={inputChange} autocomplete="off" spellcheck="false" autocorrect="off" />
+    <input
+      id="inputHidden"
+      bind:this={hiddenInput}
+      on:keydown={inputChange}
+      autocomplete="off"
+      spellcheck="false"
+      autocorrect="off"
+    />
   </div>
   {#if loading}
     <h1>Loading....</h1>

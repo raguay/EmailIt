@@ -26,6 +26,7 @@
   let scriptSel = "";
   let scriptName = "";
   let description = "";
+  let language = "JavaScript";
   let insert = false;
   let termscript = false;
   let list;
@@ -43,19 +44,25 @@
     if (typeof callback !== "undefined") callback();
   }
 
-  function getScript(name, callback) {
+  async function getScript(name, callback) {
     if (name !== undefined && name !== "") {
       let data = $userScripts.find((item) => item.name === name);
       if (typeof data !== "undefined") {
         scriptName = data.name;
         script = data.script;
         description = data.description;
+        language = data.language;
         insert = data.insert == "true" ? true : false;
         if (typeof data.termscript === "undefined") {
           termscript = false;
         } else {
           termscript = data.termscript;
         }
+        if (language === "") {
+          language = "JavaScript";
+          await saveScript();
+        }
+        editorConfig.language = language;
         $scriptEditor.setValue(script);
       }
       if (typeof callback !== "undefined") callback();
@@ -69,6 +76,7 @@
         insert: insert,
         description: description,
         script: script,
+        language: language,
         termscript: termscript,
         help: description,
       };
@@ -85,6 +93,7 @@
     scriptSel = "";
     insert = true;
     description = "";
+    language = "JavaScript";
     script = "";
     scriptSel = "";
     $scriptEditor.setValue(script);
@@ -95,7 +104,7 @@
   async function saveUserScripts() {
     let userScriptsLoc = await App.AppendPath(
       $config.configDir,
-      "scripts.json"
+      "scripts.json",
     );
     await App.WriteFile(userScriptsLoc, JSON.stringify($userScripts));
     $scripts = $userScripts
@@ -108,14 +117,14 @@
           .filter((value) => value.termscript === false)
           .map((value) => {
             return { name: value.name, insert: value.insert };
-          })
+          }),
       )
       .concat(
         $extScripts
           .filter((value) => value.termscript === false)
           .map((value) => {
             return { name: value.name, insert: false };
-          })
+          }),
       );
     getUserScripts();
     getTermScriptsList();
@@ -154,8 +163,8 @@
     $showTemplates = !$showTemplates;
   }
 
-  function viewScriptTerm() {
-    $state = "scriptterm";
+  function viewScriptLine() {
+    $state = "scriptline";
   }
 
   function changeName(newName) {
@@ -187,6 +196,7 @@
             scriptName = name;
             description = "";
             script = "";
+            language = "JavaScript";
             $scriptEditor.setValue(script);
           }
         }}
@@ -204,23 +214,46 @@
       <label for="description"> Description: </label>
       <input
         id="description"
-        autocomplete="off" spellcheck="false" autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
         bind:value={description}
         style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize}"
       />
       <label id="termScriptLab" for="termScriptChk"> Terminal Script? </label>
       <input
         id="termScriptChk"
-        autocomplete="off" spellcheck="false" autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
         name="termScriptChk"
         type="checkbox"
         bind:checked={termscript}
         style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize}"
       />
     </div>
+    <div class="headerRow">
+      <label id="scriptlangLab" for="scriptlang"> Language: </label>
+      <select
+        id="scriptlang"
+        name="scriptlangSel"
+        bind:value={language}
+        style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize}"
+      >
+        {#if language === "JavaScript"}
+          <option name="JavaScript" value="JavaScript" selected>
+            JavaScript
+          </option>
+          <option name="Prolog" value="Prolog">Prolog</option>
+        {:else}
+          <option name="JavaScript" value="JavaScript">JavaScript</option>
+          <option name="Prolog" value="Prolog" selected>Prolog</option>
+        {/if}
+      </select>
+    </div>
   </div>
   <CodeMirror
-    height="380px"
+    height="340px"
     width="980px"
     config={editorConfig}
     {initFinished}
@@ -251,10 +284,10 @@
       Notes
     </button>
     <button
-      on:click={viewScriptTerm}
+      on:click={viewScriptLine}
       style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
     >
-      Script Terminal
+      Script Line
     </button>
     <button
       on:click={viewScriptsMenu}
@@ -317,7 +350,7 @@
     display: flex;
     flex-direction: row;
     max-height: 40px;
-    margin: 0px 0px 20px 0px;
+    margin: 0px 0px 15px 0px;
     width: 100%;
   }
 

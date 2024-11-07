@@ -1,9 +1,6 @@
-import Main from './Main.svelte';
+import { mount } from "svelte";
+import Main from "./Main.svelte";
 
-const main = new Main({
-	target: document.body,
-	props: {
-	}
-});
+const main = mount(Main, { target: document.body });
 
 export default main;

@@ -95,6 +95,7 @@ func (b *App) SystemOpenFile(prog string) {
 }
 
 func (b *App) GetExecutable() string {
+	b.err = ""
 	ex, err := os.Executable()
 	if err != nil {
 		b.err = err.Error()
@@ -103,6 +104,7 @@ func (b *App) GetExecutable() string {
 }
 
 func (b *App) Getwd() string {
+	b.err = ""
 	wd, err := os.Getwd()
 	if err != nil {
 		b.err = err.Error()
@@ -129,6 +131,7 @@ func (b *App) GetHomeDir() string {
 }
 
 func (b *App) WriteFile(path string, data string) {
+	b.err = ""
 	err := os.WriteFile(path, []byte(data), 0o666)
 	if err != nil {
 		b.err = err.Error()
@@ -264,6 +267,7 @@ func (b *App) CreateTempFile(contents string) string {
 	//
 	// Create the temperary file.
 	//
+	b.err = ""
 	f, err := os.CreateTemp("", "extscript*")
 	if err != nil {
 		b.err = err.Error()
@@ -291,6 +295,7 @@ func (b *App) CreateTempFile(contents string) string {
 }
 
 func (b *App) Chmod(file string, nmode fs.FileMode) {
+	b.err = ""
 	err := os.Chmod(file, nmode)
 	if err != nil {
 		b.err = err.Error()
@@ -298,6 +303,7 @@ func (b *App) Chmod(file string, nmode fs.FileMode) {
 }
 
 func (b *App) RunCommandLine(cmd string, args []string, env []string, dir string) string {
+	b.err = ""
 	cmdline := exec.Command(cmd)
 	cmdline.Args = args
 	cmdline.Env = env
@@ -311,6 +317,7 @@ func (b *App) RunCommandLine(cmd string, args []string, env []string, dir string
 }
 
 func (b *App) GetClip() string {
+	b.err = ""
 	result, err := clip.ReadAll()
 	if err != nil {
 		b.err = err.Error()
@@ -319,6 +326,7 @@ func (b *App) GetClip() string {
 }
 
 func (b *App) SetClip(msg string) {
+	b.err = ""
 	err := clip.WriteAll(msg)
 	if err != nil {
 		b.err = err.Error()
@@ -374,6 +382,7 @@ func (b *App) GetFeedback(question string, defans string) string {
 }
 
 func (b *App) GetGitHubThemes() []GitHubRepos {
+	b.err = ""
 	var result []GitHubRepos
 	client := github.NewClient(nil)
 	topics, _, err := client.Search.Repositories(context.Background(), "in:topic emailit in:topic theme", nil)
@@ -393,6 +402,7 @@ func (b *App) GetGitHubThemes() []GitHubRepos {
 }
 
 func (b *App) GetGitHubScripts() []GitHubRepos {
+	b.err = ""
 	var result []GitHubRepos
 	client := github.NewClient(nil)
 	topics, _, err := client.Search.Repositories(context.Background(), "in:topic emailit in:topic extension in:topic script", nil)
@@ -415,6 +425,7 @@ func (b *App) SendEmail(username string, from string, password string, host stri
 	//
 	// Create the message.
 	//
+	b.err = ""
 	fmt.Println(username, "|", from, "|", toList, "|", msg, "|", msgText)
 	m := mail.NewMessage()
 	m.SetHeader("From", from)
@@ -451,6 +462,7 @@ func (b *App) SendEmail(username string, from string, password string, host stri
 }
 
 func (b *App) CloneGitHub(url string, dir string) {
+	b.err = ""
 	_, err := git.PlainClone(dir, false, &git.CloneOptions{
 		URL: url,
 	})

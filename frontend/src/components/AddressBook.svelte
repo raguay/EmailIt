@@ -2,7 +2,7 @@
   import { onMount } from "svelte";
   import { theme } from "../stores/theme.js";
   import { config } from "../stores/config.js";
-  import * as App from '../../wailsjs/go/main/App.js';
+  import * as App from "../../wailsjs/go/main/App.js";
 
   export let show;
 
@@ -16,7 +16,7 @@
   });
 
   async function saveEmails() {
-    let emailfileloc = await App.AppendPath($config.configDir,"emails.json");
+    let emailfileloc = await App.AppendPath($config.configDir, "emails.json");
     await App.WriteFile(emailfileloc, JSON.stringify(emails));
   }
 
@@ -24,8 +24,8 @@
     //
     // Get the emails from the system.
     //
-    let emailfileloc = await App.AppendPath($config.configDir,"emails.json");
-    if(await App.FileExists(emailfileloc)) {
+    let emailfileloc = await App.AppendPath($config.configDir, "emails.json");
+    if (await App.FileExists(emailfileloc)) {
       let emailfilejson = await App.ReadFile(emailfileloc);
       emails = JSON.parse(emailfilejson);
     }
@@ -73,7 +73,9 @@
   <div id="tablediv">
     <table>
       <thead>
-        <th>Name</th> <th>Address</th> <th /> <th />
+        <tr>
+          <th>Name</th> <th>Address</th> <th /> <th />
+        </tr>
       </thead>
       <tbody>
         {#each emails as pemail}
@@ -126,7 +128,9 @@
       <label for="aename"> Name: </label>
       <input
         type="text"
-        autocomplete="off" spellcheck="false" autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
         id="aename"
         bind:value={name}
         style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
@@ -136,7 +140,9 @@
       <label for="aeemail"> Email: </label>
       <input
         type="text"
-        autocomplete="off" spellcheck="false" autocorrect="off"
+        autocomplete="off"
+        spellcheck="false"
+        autocorrect="off"
         id="aeemail"
         bind:value={email}
         style="background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"

@@ -61,6 +61,8 @@ export function RenameEntry(arg1:string,arg2:string):Promise<void>;
 
 export function RunCommandLine(arg1:string,arg2:Array<string>,arg3:Array<string>,arg4:string):Promise<string>;
 
+export function RunProlog(arg1:string,arg2:string):Promise<string>;
+
 export function SendEmail(arg1:string,arg2:string,arg3:string,arg4:string,arg5:string,arg6:string,arg7:string,arg8:string,arg9:string,arg10:string):Promise<string>;
 
 export function SetClip(arg1:string):Promise<void>;

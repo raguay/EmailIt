@@ -112,7 +112,7 @@
         },
       },
     },
-    { dark: true }
+    { dark: true },
   );
 
   function fire(name, data) {
@@ -187,13 +187,25 @@
       exts.push(lineNumbers());
     }
 
-    switch (config.language) {
+    switch (config.language.toLowerCase()) {
       case "markdown":
         exts.push(markdown());
         break;
       case "javascript":
         exts.push(javascript());
         break;
+
+      /*
+      case "prolog":
+        exts.push(prolog()); // When we get a good prolog highlighter. 
+        break;*/
+
+      /*
+      case "lips":
+        exts.push(scheme());
+        break;
+*/
+
       default:
         exts.push(markdown());
         break;
@@ -290,7 +302,7 @@
     if (typeof edView !== "undefined") {
       return edView.state.sliceDoc(
         edView.state.selection.main.from,
-        edView.state.selection.main.to
+        edView.state.selection.main.to,
       );
     }
   }

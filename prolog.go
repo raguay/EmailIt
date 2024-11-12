@@ -19,7 +19,7 @@ func (b *App) RunProlog(program string, input string) string {
 	//
 	// Add the input as a clause for the program.
 	//
-	full := `intext('` + input + `').` + "\n" + program
+	full := `intext("` + input + `").` + "\n" + program
 
 	//
 	// Load the program.
@@ -46,7 +46,7 @@ func (b *App) RunProlog(program string, input string) string {
 				if err := sols.Scan(&s); err != nil {
 					b.err = err.Error()
 				}
-				result += "Solution = " + s.X + "\n"
+				result += s.X + "\n"
 			}
 		}
 		defer sols.Close()

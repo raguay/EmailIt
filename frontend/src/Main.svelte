@@ -1099,6 +1099,85 @@
   }
 
   //
+  // Function:         runLipsScriptFile
+  //
+  // Description:      This will run the Lips script on the contents of a file.
+  //
+  // Inputs:
+  //                   script          The script.
+  //                   text            The text to process.
+  //
+  async function runLipsScriptFile(script, file) {
+    let result = "Invalid File";
+    if (await App.FileExists(file)) {
+      result = await App.ReadFile(file);
+      result = await runLipsScript(script, result);
+      let parts = await App.SplitFile(file);
+      let nfile = await App.AppendPath(
+        parts.Dir,
+        `${parts.Name}-processed${parts.Extension}`,
+      );
+      await App.WriteFile(nfile, result);
+      result = `${parts.Name}-processed${parts.Extension} was created!`;
+    }
+    return result;
+  }
+
+  //
+  // Function:         runLipsScript
+  //
+  // Description:      This will run some given text with a script.
+  //
+  // Inputs:
+  //                   script          The script.
+  //                   text            The text to process.
+  //
+  async function runLipsScript(script, text) {
+    let result = "";
+
+    //
+    // Figure out how to send in the text.
+    //
+    window.intext = text;
+    try {
+      const results = await this.exec(
+        `(define intext window.intext)\n` + script,
+      );
+      results.forEach((el) => {
+        if (typeof el !== "undefined") result += el.toString();
+      });
+    } catch (e) {
+      result += e.Error();
+    }
+    return result;
+  }
+
+  //
+  // Function:         runPrologScriptFile
+  //
+  // Description:      This will run the Prolog script on the contents of a file.
+  //
+  // Inputs:
+  //                   script          The script.
+  //                   text            The text to process.
+  //
+  async function runPrologScriptFile(script, file) {
+    let result = "Invalid File";
+    if (await App.FileExists(file)) {
+      result = await App.ReadFile(file);
+      result = await runPrologScript(script, result);
+      let parts = await App.SplitFile(file);
+      let nfile = await App.AppendPath(
+        parts.Dir,
+        `${parts.Name}-processed${parts.Extension}`,
+      );
+      await App.WriteFile(nfile, result);
+      result = `${parts.Name}-processed${parts.Extension} was created!`;
+    }
+    return result;
+  }
+
+  //
   // Function:         runPrologScript
   //
   // Description:      This will run some given text with a script.
@@ -1139,7 +1218,6 @@
       var scriptFunction = new Function("SP", `${script} ; return SP;`);
       $sp.text = scriptFunction($sp).text;
     } catch (error) {
-      console.error(error);
       $sp.text = $sp.data.originalText;
     }
     //
@@ -1242,12 +1320,20 @@
     if (typeof scriptIndex !== "undefined") {
       script = scriptIndex.script;
       if (isfile && !isDir && !isLongText) {
-        result = await runJavaScriptFile(script, text);
+        if (scriptIndex.language === "JavaScript") {
+          result = await runJavaScriptFile(script, text);
+        } else if (scriptIndex.language === "Prolog") {
+          result = await runPrologScriptFile(script, text);
+        } else {
+          result = await runLipsScriptFile(script, text);
+        }
       } else {
         if (scriptIndex.language === "JavaScript") {
           result = runJavaScript(script, text);
+        } else if (scriptIndex.language === "Prolog") {
+          result = await runPrologScript(script, text);
         } else {
-          result = runPrologScript(script, text);
+          result = await runLipsScript(script, text);
         }
       }
     } else {
@@ -1257,12 +1343,20 @@
       if (typeof scriptIndex !== "undefined") {
         script = scriptIndex.script;
         if (isfile && !isDir && !isLongText) {
-          result = await runJavaScriptFile(script, text);
+          if (scriptIndex.language === "JavaScript") {
+            result = await runJavaScriptFile(script, text);
+          } else if (scriptIndex.language === "Prolog") {
+            result = await runPrologScriptFile(script, text);
+          } else {
+            result = await runLipsScriptFile(script, text);
+          }
         } else {
           if (scriptIndex.language === "JavaScript") {
             result = runJavaScript(script, text);
+          } else if (scriptIndex === "Prolog") {
+            result = await runPrologScript(script, text);
           } else {
-            result = runPrologScript(script, text);
+            result = await runLipsScript(script, text);
           }
         }
       } else {

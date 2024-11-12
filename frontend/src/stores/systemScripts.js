@@ -7,6 +7,7 @@ export const systemScripts = writable([
     description: "Makes the text all Upper Cased.",
     help: "",
     script: "SP.text = SP.text.toUpperCase()",
+    language: "JavaScript",
     termscript: false,
     system: true,
   },
@@ -16,6 +17,7 @@ export const systemScripts = writable([
     description: "Makes the text all lower cased.",
     help: "",
     script: "SP.text = SP.text.toLowerCase()",
+    language: "JavaScript",
     termscript: false,
     system: true,
   },
@@ -26,6 +28,7 @@ export const systemScripts = writable([
     help: "",
     script:
       "function TitleCase(t){var a=t.split(' ');var e=['to','an','and','at','as','but','by','for','if','in','on','or','is','with','a','the','of','vs','vs.','via','via','en','I','II','III','IV','V','VI','VII','VIII','IX','X','HTML','CSS','AT&T','PHP','Python','JavaScript','IBM'];for(var r=0;r<a.length;r++){var o=a[r];var s=false;for(var I=0;I<e.length;I++){if(o.toLowerCase()===e[I].toLowerCase()){o=e[I];s=true}}if(!s){o=o.charAt(0).toUpperCase()+o.substr(1).toLowerCase()}a[r]=o}a[0]=a[0].charAt(0).toUpperCase()+a[0].substr(1).toLowerCase();return a.join(' ')}SP.text=TitleCase(SP.text);",
+    language: "JavaScript",
     termscript: false,
     system: true,
   },
@@ -37,6 +40,7 @@ export const systemScripts = writable([
     script:
       "function SnakeCase(e){if(e.indexOf(' ')!==-1)return e.split(' ').join('_');else return e.split('_').join(' ')}SP.text=SnakeCase(SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -48,6 +52,7 @@ export const systemScripts = writable([
     script:
       "function LowerCamelCase(e){var a=e.split(' ');for(var r=0;r<a.length;r++){var t=a[r];if(r!==0){t=t.charAt(0).toUpperCase()+t.substr(1).toLowerCase()}else{t=t.toLowerCase()}a[r]=t}return a.join('')}SP.text=LowerCamelCase(SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -58,6 +63,7 @@ export const systemScripts = writable([
     script:
       "function UpperCamelCase(e){var a=e.split(' ');for(var r=0;r<a.length;r++){var t=a[r];t=t.charAt(0).toUpperCase()+t.substr(1).toLowerCase();a[r]=t}return a.join('')}; SP.text=UpperCamelCase(SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -69,6 +75,7 @@ export const systemScripts = writable([
     script:
       "function HyphenCase(e){if(e.indexOf(' ')!==-1)return e.split(' ').join('-');else return e.split('-').join(' ')}SP.text=HyphenCase(SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -78,6 +85,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = encodeURIComponent( SP.text )",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -87,6 +95,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = decodeURIComponent( SP.text )",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -97,6 +106,7 @@ export const systemScripts = writable([
     script:
       "var e = document.createElement( 'DIV' ); var t = document.createTextNode( SP.text );e.appendChild( t );SP.text = e.innerHTML;",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -107,6 +117,7 @@ export const systemScripts = writable([
     script:
       "var e = document.createElement( 'DIV' );e.innerHTML = SP.text; SP.text = e.childNodes.length === 0 ? ' : e.childNodes[ 0 ].nodeValue;",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -116,6 +127,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = '(' + SP.text + ')'",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -125,6 +137,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = '[' + SP.text + ']'",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -134,6 +147,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = '{' + SP.text + '}'",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -143,6 +157,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = '**' + SP.text + '**'",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -153,6 +168,7 @@ export const systemScripts = writable([
     script:
       "function BulletItems(t){var l=t.match(/^.*((\\r\\n|\\n|\\r)|$)/gm);for(var n=0;n<l.length;n++){l[n]='* '+l[n]}return l.join('')}SP.text=BulletItems(SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -164,6 +180,7 @@ export const systemScripts = writable([
     script:
       "function NumberItems(t){var r=t.match(/^.*((\\r\\n|\\n|\\r)|$)/gm);var n=1;for(var e=0;e<r.length;e++){r[e]=n.toString()+'. '+r[e];n++}return r.join('')}SP.text=NumberItems(SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -174,6 +191,7 @@ export const systemScripts = writable([
     script:
       "for(var lines=SP.text.split('\\n'),i=0;i<lines.length;i++){var match=lines[i].match(/^\\d+\\.\\ (.*)$/);null!=match&&(lines[i]=match[1])}SP.text=lines.join('\\n');",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -183,6 +201,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.DateTime.now().toFormat('LLLL dd, yyyy, h:mm:ss a');",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -192,6 +211,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.DateTime.now().toFormat('LLLL dd, yyyy');",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -201,6 +221,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.DateTime.now().toFormat('h:mm:ss a');",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -211,6 +232,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.DateTime.now().toFormat('cccc');",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -221,6 +243,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.DateTime.now().toFormat(SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -232,6 +255,7 @@ export const systemScripts = writable([
     script:
       "SP.text = SP.DateTime.now().plus({ days: SP.text}).toFormat('LLLL dd, yyyy');",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -243,6 +267,7 @@ export const systemScripts = writable([
     script:
       "SP.text = SP.DateTime.now().minus({ days: SP.text}).toFormat('LLLL dd, yyyy');",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -252,6 +277,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.ProcessMathSelection(SP.text)",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -262,6 +288,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.ProcessMathNotes(SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -272,6 +299,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.runScript(SP.returnNote(1), SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -282,6 +310,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.runScript(SP.returnNote(2), SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -292,6 +321,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.runScript(SP.returnNote(3), SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -302,6 +332,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.runScript(SP.returnNote(4), SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -312,6 +343,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.runScript(SP.returnNote(5), SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -322,6 +354,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.runScript(SP.returnNote(6), SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -332,6 +365,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.runScript(SP.returnNote(7), SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -342,6 +376,7 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.runScript(SP.returnNote(8), SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
@@ -352,27 +387,28 @@ export const systemScripts = writable([
     help: "",
     script: "SP.text = SP.runScript(SP.returnNote(9), SP.text);",
     termscript: false,
+    language: "JavaScript",
     system: true,
   },
   {
     name: "help",
     insert: false,
     description: "Show the help command in the terminal.",
-    help:
-      "help <command>?\n\r    If no command is given, it gives a list of built in terminal commands.\n\r    If given the name of a built in termianl command, it displays that command's help.",
+    help: "help <command>?\n\r    If no command is given, it gives a list of built in terminal commands.\n\r    If given the name of a built in termianl command, it displays that command's help.",
     script:
       "SP.text = JSON.stringify({\n  tcommand: `help ${SP.text}`,\n  lines: [],\n});\n",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "ls",
     insert: false,
     description: "  List the items in the specified directory.",
-    help:
-      "ls <command>?\n\r    List the contents of the current directory or the directory given.",
+    help: "ls <command>?\n\r    List the contents of the current directory or the directory given.",
     script:
       "SP.text = JSON.stringify({\n  tcommand: `ls ${SP.text}`,\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "cd",
@@ -382,26 +418,27 @@ export const systemScripts = writable([
     script:
       "SP.text = JSON.stringify({\n  tcommand: `cd '${SP.text}'`,\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "open",
     insert: false,
     description: "Open the file given.",
-    help:
-      "open <file>\n\r    This command opens the file given in the default program for the file.",
+    help: "open <file>\n\r    This command opens the file given in the default program for the file.",
     script:
       "SP.text = JSON.stringify({\n  tcommand: `open ${SP.text}`,\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "runscript",
     insert: false,
     description: "Run a script on a file or text string.",
-    help:
-      "runscript <scriptname>,<file>|<text>\n\r    This command will run the script on the file given or on the text given. The two argument are separated by a comma. The text has to be surrounded by quotes.",
+    help: "runscript <scriptname>,<file>|<text>\n\r    This command will run the script on the file given or on the text given. The two argument are separated by a comma. The text has to be surrounded by quotes.",
     script:
       "SP.text = JSON.stringify({\n  tcommand: `runscript ${SP.text}`,\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "edit",
@@ -411,61 +448,62 @@ export const systemScripts = writable([
     script:
       "SP.text = JSON.stringify({\n  tcommand: `edit ${SP.text}`,\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "alias",
     insert: false,
     description:
       "The alais command allows you to substitute a single command for a list of commands.",
-    help:
-      "alias <name>=<commands>\n\r     This command will run the comma separated list of commands when the name is ran.",
+    help: "alias <name>=<commands>\n\r     This command will run the comma separated list of commands when the name is ran.",
     script:
       "SP.text = JSON.stringify({\n  tcommand: `alias ${SP.text}`,\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "hist",
     insert: false,
     description:
       "The hist command lists the previous command lines that worked. You can activate one to rerun the command.",
-    help:
-      "hist <depth>\n\r     This command displays the previously ran commands to select one for running again. If a depth is given, it will try to display that many commands. The default depth is 5.",
+    help: "hist <depth>\n\r     This command displays the previously ran commands to select one for running again. If a depth is given, it will try to display that many commands. The default depth is 5.",
     script:
       "SP.text = JSON.stringify({\n  tcommand: `hist ${SP.text}`,\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "rm",
     insert: false,
     description:
       "  The rm command will delete the given file or directory. If nothing is given, it will list the current directory and an item can be delete using the command mode and r.",
-    help:
-      "rm <filedir>\n\r     If filedir is blank, then the current directory is listed and an item can be deleted using the command mode and r. Otherwise, the given file/directory is deleted.",
+    help: "rm <filedir>\n\r     If filedir is blank, then the current directory is listed and an item can be deleted using the command mode and r. Otherwise, the given file/directory is deleted.",
     script:
       "SP.text = JSON.stringify({\n  tcommand: `rm ${SP.text}`,\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "mkdir",
     insert: false,
     description:
       "The mkdir command makes the given directory if it doesn't already exist.",
-    help:
-      "mkdir <dir>\n\r     Create the given dir if it doesn't already exist.",
+    help: "mkdir <dir>\n\r     Create the given dir if it doesn't already exist.",
     script:
       "SP.text = JSON.stringify({\n  tcommand: `mkdir ${SP.text}`,\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "mkfile",
     insert: false,
     description:
       "The mkfile command makes the given file if it doesn't already exist.",
-    help:
-      "mkfile <file>\n\r     Create the given file if it doesn't already exist.",
+    help: "mkfile <file>\n\r     Create the given file if it doesn't already exist.",
     script:
       "SP.text = JSON.stringify({\n  tcommand: `mkfile ${SP.text}`,\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "rmalias",
@@ -476,6 +514,7 @@ export const systemScripts = writable([
     script:
       "SP.text = JSON.stringify({\n  tcommand: `rmalias ${SP.text}`,\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "notes",
@@ -485,6 +524,7 @@ export const systemScripts = writable([
     script:
       "SP.text = JSON.stringify({\n  tcommand: 'notes',\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "emailit",
@@ -494,6 +534,7 @@ export const systemScripts = writable([
     script:
       "SP.text = JSON.stringify({\n  tcommand: 'emailit',\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "editscript",
@@ -503,6 +544,7 @@ export const systemScripts = writable([
     script:
       "SP.text = JSON.stringify({\n  tcommand: 'editscript',\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
   {
     name: "quit",
@@ -511,5 +553,6 @@ export const systemScripts = writable([
     help: "Quit the EmailIt program",
     script: "SP.text = JSON.stringify({\n  tcommand: 'quit',\n  lines: []\n});",
     termscript: true,
+    language: "JavaScript",
   },
 ]);

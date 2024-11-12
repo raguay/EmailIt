@@ -23,12 +23,14 @@
     "@codemirror/search": "^6.5.7",
     "@codemirror/state": "^6.4.1",
     "@codemirror/view": "^6.34.1",
+    "@jcubic/lips": "^1.0.0-beta.20",
     "@replit/codemirror-vim": "^6.2.1",
     "handlebars": "^4.7.8",
     "install": "^0.13.0",
     "luxon": "^3.5.0",
     "mathjs": "^13.2.0",
     "npm": "^10.9.0",
+    "save": "^2.9.0",
     "showdown": "^2.1.0",
     "superagent": "^10.1.1"
   }

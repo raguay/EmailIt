@@ -245,9 +245,15 @@
             JavaScript
           </option>
           <option name="Prolog" value="Prolog">Prolog</option>
-        {:else}
+          <option name="Lips" value="Lips">Lips</option>
+        {:else if language === "Prolog"}
           <option name="JavaScript" value="JavaScript">JavaScript</option>
           <option name="Prolog" value="Prolog" selected>Prolog</option>
+          <option name="Lips" value="Lips">Lips</option>
+        {:else}
+          <option name="JavaScript" value="JavaScript">JavaScript</option>
+          <option name="Prolog" value="Prolog">Prolog</option>
+          <option name="Lips" value="Lips" selected>Lips</option>
         {/if}
       </select>
     </div>

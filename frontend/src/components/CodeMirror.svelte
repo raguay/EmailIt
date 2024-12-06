@@ -34,6 +34,7 @@
   import { lintKeymap } from "@codemirror/lint";
   import { markdown } from "@codemirror/lang-markdown";
   import { javascript } from "@codemirror/lang-javascript";
+  import { scheme } from "@codemirror/legacy-modes/mode/scheme";
   import { theme } from "../stores/theme.js";
 
   const dispatch = createEventDispatcher();
@@ -200,11 +201,9 @@
         exts.push(prolog()); // When we get a good prolog highlighter. 
         break;*/
 
-      /*
       case "lips":
         exts.push(scheme());
         break;
-*/
 
       default:
         exts.push(markdown());

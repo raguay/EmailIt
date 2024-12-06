@@ -62,7 +62,11 @@
           language = "JavaScript";
           await saveScript();
         }
-        editorConfig.language = language;
+        if (language !== "Lips") {
+          editorConfig.language = language;
+        } else {
+          editorConfig.language = "Scheme";
+        }
         $scriptEditor.setValue(script);
       }
       if (typeof callback !== "undefined") callback();

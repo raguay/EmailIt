@@ -38,6 +38,7 @@
   import { DateTime } from "luxon";
   import { create, all } from "mathjs";
   import Handlebars from "handlebars";
+  import { exec } from "@jcubic/lips";
   import * as App from "../wailsjs/go/main/App.js";
   import * as rt from "../wailsjs/runtime/runtime.js"; // the runtime for Wails2
 
@@ -1140,14 +1141,12 @@
     //
     window.intext = text;
     try {
-      const results = await this.exec(
-        `(define intext window.intext)\n` + script,
-      );
+      const results = await exec(`(define intext window.intext)\n` + script);
       results.forEach((el) => {
         if (typeof el !== "undefined") result += el.toString();
       });
     } catch (e) {
-      result += e.Error();
+      result += e.toString();
     }
     return result;
   }

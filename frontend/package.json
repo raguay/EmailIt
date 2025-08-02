@@ -11,7 +11,7 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^4.0.0",
     "svelte": "^5.0.0",
-    "vite": "^5.4.11"
+    "vite": "^5.4.19"
   },
   "dependencies": {
     "@codemirror/autocomplete": "^6.18.2",

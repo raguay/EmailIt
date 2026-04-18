@@ -426,7 +426,7 @@ func (b *App) SendEmail(username string, from string, password string, host stri
 	// Create the message.
 	//
 	b.err = ""
-	fmt.Println(username, "|", from, "|", toList, "|", msg, "|", msgText)
+	fmt.Println("SendEmail: ", username, "|", from, "|", toList, "|", msg, "|", msgText)
 	m := mail.NewMessage()
 	m.SetHeader("From", from)
 	m.SetHeader("To", toList)
@@ -442,6 +442,7 @@ func (b *App) SendEmail(username string, from string, password string, host stri
 		for i := 0; i < len(parts); i++ {
 			m.Attach(parts[i])
 		}
+		fmt.Println(" SendEmail: ", parts)
 	}
 
 	//
@@ -456,6 +457,7 @@ func (b *App) SendEmail(username string, from string, password string, host stri
 	//
 	if err := d.DialAndSend(m); err != nil {
 		b.err = err.Error()
+		fmt.Println("Error emailing: ", b.err)
 		return b.err
 	}
 	return "Success"

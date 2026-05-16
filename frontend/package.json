@@ -9,28 +9,28 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^7.0.0",
-    "svelte": "^5.55.4",
-    "vite": "^8.0.8"
+    "@sveltejs/vite-plugin-svelte": "^7.1.2",
+    "svelte": "^5.55.7",
+    "vite": "^8.0.13"
   },
   "dependencies": {
-    "@codemirror/autocomplete": "^6.20.1",
+    "@codemirror/autocomplete": "^6.20.2",
     "@codemirror/commands": "^6.10.3",
     "@codemirror/lang-javascript": "^6.2.5",
     "@codemirror/lang-markdown": "^6.5.0",
     "@codemirror/language": "^6.12.3",
-    "@codemirror/legacy-modes": "^6.5.2",
-    "@codemirror/lint": "^6.9.5",
-    "@codemirror/search": "^6.6.0",
+    "@codemirror/legacy-modes": "^6.5.3",
+    "@codemirror/lint": "^6.9.6",
+    "@codemirror/search": "^6.7.0",
     "@codemirror/state": "^6.6.0",
-    "@codemirror/view": "^6.41.0",
+    "@codemirror/view": "^6.43.0",
     "@jcubic/lips": "^1.0.0-beta.20",
     "@replit/codemirror-vim": "^6.3.0",
     "handlebars": "^4.7.9",
     "install": "^0.13.0",
     "luxon": "^3.7.2",
     "mathjs": "^15.2.0",
-    "npm": "^11.12.1",
+    "npm": "^11.14.1",
     "save": "^2.9.0",
     "showdown": "^2.1.0",
     "superagent": "^10.3.0"

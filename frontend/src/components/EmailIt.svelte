@@ -20,7 +20,6 @@
 
   let receiver = "";
   let subject = "";
-  let listEl = false;
   let emailState = "edit";
   let focusAgain = false;
   let showChangeAccount = false;
@@ -125,11 +124,11 @@
       if (parts.length > 1) {
         currentPart = parts[parts.length - 1];
         elist = elist.filter((item) =>
-          item.toString().toLowerCase().includes(currentPart.trim())
+          item.toString().toLowerCase().includes(currentPart.trim()),
         );
       } else {
         elist = elist.filter((item) =>
-          item.toString().toLowerCase().includes(fullLine)
+          item.toString().toLowerCase().includes(fullLine),
         );
       }
     }
@@ -299,7 +298,7 @@
         previewHTML,
         bodyText,
         subject.value,
-        attachments.join(", ")
+        attachments.join(", "),
       );
       if (result !== "Success") {
         alertTitle = "Sending Email Failed";
@@ -348,7 +347,7 @@
     // Check the email itself.
     //
     const emailRegexp = new RegExp(
-      /^[a-zA-Z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1}([a-zA-Z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1})*[a-zA-Z0-9]@[a-zA-Z0-9][-\.]{0,1}([a-zA-Z][-\.]{0,1})*[a-zA-Z0-9]\.[a-zA-Z0-9]{1,}([\.\-]{0,1}[a-zA-Z]){0,}[a-zA-Z0-9]{0,}$/i
+      /^[a-zA-Z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1}([a-zA-Z0-9][\-_\.\+\!\#\$\%\&\'\*\/\=\?\^\`\{\|]{0,1})*[a-zA-Z0-9]@[a-zA-Z0-9][-\.]{0,1}([a-zA-Z][-\.]{0,1})*[a-zA-Z0-9]\.[a-zA-Z0-9]{1,}([\.\-]{0,1}[a-zA-Z]){0,}[a-zA-Z0-9]{0,}$/i,
     );
     const isEmail = emailRegexp.test(email);
     return isEmail;
@@ -460,7 +459,7 @@
     //
     let accountfileloc = await App.AppendPath(
       $config.configDir,
-      "emailaccounts.json"
+      "emailaccounts.json",
     );
     await App.WriteFile(accountfileloc, JSON.stringify($emailaccounts));
   }
@@ -788,7 +787,7 @@
         <div
           id="elistID"
           style="width: {receiverDOM.offsetWidth}px; left: {cumulativeOffset(
-            receiverDOM
+            receiverDOM,
           ).left}px; top: {cumulativeOffset(receiverDOM).top +
             40}px; background-color: {$theme.textAreaColor}; color: {$theme.textColor}; border-color: {$theme.borderColor};"
         >
@@ -796,7 +795,6 @@
             {#each elist as item}
               <li
                 on:click={() => {
-                  listEl = true;
                   addToInput(item);
                 }}
               >
@@ -819,14 +817,12 @@
         on:blur={() => {
           saveEmailState();
           showEmailList = false;
-          listEl = false;
           $emailEditor.focus();
           focusAgain = true;
         }}
         style="background-color: {$theme.textAreaColor}; font-family: {$theme.font}; color: {$theme.textColor}; border-color: {$theme.borderColor}; font-size: {$theme.fontSize};"
         on:focus={() => {
           showEmailList = false;
-          listEl = false;
         }}
       />
     </div>
@@ -843,21 +839,17 @@
       styling="position: relative; margin-bottom: 20px; border: solid 1px transparent; border-radius: 20px; overflow: hidden;"
       on:textChange={(event) => {
         showEmailList = false;
-        listEl = false;
         textChanged(event.detail.data);
       }}
       on:editorChange={(event) => {
         showEmailList = false;
-        listEl = false;
         editorChange(event.detail.data);
       }}
       on:focus={() => {
         showEmailList = false;
-        listEl = false;
       }}
       on:blur={() => {
         showEmailList = false;
-        listEl = false;
         saveEmailState();
       }}
     />
